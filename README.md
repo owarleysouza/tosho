@@ -8,5 +8,11 @@
 ## Definição de Solução
 - Uma ferramenta que permite ao usuário realizar suas compras de forma simples, e monitorar o preço das compras ao longo do tempo 
 
+## Ferramentas Analisadas
+1. Buy me a pie!
+2. Bring!
+3. SoftList
+4. Listonic
+
 ## Jornada de Usuário
 - [Imagem do fluxo]()
