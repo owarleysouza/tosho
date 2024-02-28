@@ -23,6 +23,19 @@
 6. Criação do protótipo
 7. Definição da stack
 
+## Stack Utilizada
+1. React
+2. Javascript
+3. Vite
+4. NPM
+5. React Router
+6. Redux
+7. Tailwind
+8. Shadcn
+9. Vercel
+10. Date-fns
+11. React Hook Form
+
 ## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
