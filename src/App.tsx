@@ -5,8 +5,8 @@ function App() {
   return (
     <>
       <div className='card'>
-        <h1 className='text-3xl font-bold'>ToSho</h1> 
-        <Button>Saiba mais</Button>
+        <h1 className='text-3xl font-bold text-accent'>ToSho</h1> 
+        <Button className='bg-primary'>Saiba mais</Button>
       </div>     
     </>
   )
