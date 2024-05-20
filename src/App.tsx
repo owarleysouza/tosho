@@ -1,12 +1,12 @@
 import './App.css'
-import { Button } from "@/components/ui/button"
+import SignUp from './pages/auth/SignUp'
+ 
 
 function App() {
   return (
     <>
       <div className='card'>
-        <h1 className='text-3xl font-bold text-accent'>ToSho</h1> 
-        <Button className='bg-primary'>Saiba mais</Button>
+         <SignUp />
       </div>     
     </>
   )
