@@ -27,9 +27,8 @@ const formSchema = z.object({
   }),
 })
 
-export function SignUpForm() {
- 
-   const form = useForm<z.infer<typeof formSchema>>({
+const SignUpForm = () => {
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -110,3 +109,5 @@ export function SignUpForm() {
     </Form>
   )
 }
+
+export default SignUpForm
