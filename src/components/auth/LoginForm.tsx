@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { SignUpFormSchema } from "@/utils/form"
+import { LoginFormSchema } from "@/utils/form"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -13,38 +13,25 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
-const SignUpForm = () => {
-  
-  const form = useForm<z.infer<typeof SignUpFormSchema>>({
-    resolver: zodResolver(SignUpFormSchema),
+
+const LoginForm = () => {
+
+  const form = useForm<z.infer<typeof LoginFormSchema>>({
+    resolver: zodResolver(LoginFormSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   })
 
   
-   function onSubmit(data: z.infer<typeof SignUpFormSchema>) {
+   function onSubmit(data: z.infer<typeof LoginFormSchema>) {
     console.log(data)
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 w-full">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input placeholder="Nome" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="email"
@@ -72,25 +59,11 @@ const SignUpForm = () => {
               <FormMessage className="text-xs" />
             </FormItem>
           )}
-        />
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-             
-              <FormControl>
-                <Input placeholder="Confirmar senha" type="password" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
-              </FormControl>
-              
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" className='w-full bg-primary rounded-full'>Criar conta</Button>
+        /> 
+        <Button type="submit" className='w-full bg-primary rounded-full'>Entrar</Button>
       </form>
     </Form>
   )
 }
 
-export default SignUpForm
+export default LoginForm

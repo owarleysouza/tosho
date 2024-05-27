@@ -19,3 +19,13 @@ export const SignUpFormSchema = z.object({
   message: "As senhas precisam ser iguais",
   path: ["confirmPassword"],
 });
+
+export const LoginFormSchema = z.object({
+  email: z.string().email({
+    message: "O e-mail digitado está inválido",
+  }),
+  password: z.string().min(1, {
+    message: "A senha é obrigatória.",
+  }), 
+  
+}) 
