@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { SignUpFormSchema } from "@/utils/form"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,24 +13,10 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "O nome deve ter pelo menos 2 caracteres.",
-  }),
-  email: z.string().min(2, {
-    message: "O e-mail deve ter pelo menos 2 caracteres.",
-  }),
-  password: z.string().min(2, {
-    message: "A senha deve ter pelo menos 2 caracteres.",
-  }),
-  confirmPassword: z.string().min(2, {
-    message: "A senha deve ter pelo menos 2 caracteres.",
-  }),
-})
-
 const SignUpForm = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+
+  const form = useForm<z.infer<typeof SignUpFormSchema>>({
+    resolver: zodResolver(SignUpFormSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -39,9 +26,8 @@ const SignUpForm = () => {
   })
 
   
-   function onSubmit(values: z.infer<typeof formSchema>) {
- 
-    console.log(values)
+   function onSubmit(data: z.infer<typeof SignUpFormSchema>) {
+    console.log(data)
   }
 
   return (
@@ -52,12 +38,10 @@ const SignUpForm = () => {
           name="name"
           render={({ field }) => (
             <FormItem>
-             
               <FormControl>
                 <Input placeholder="Nome" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
               </FormControl>
-              
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
@@ -68,10 +52,10 @@ const SignUpForm = () => {
             <FormItem>
              
               <FormControl>
-                <Input placeholder="E-mail" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
+                <Input placeholder="E-mail" type="email" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
               </FormControl>
               
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
@@ -82,10 +66,10 @@ const SignUpForm = () => {
             <FormItem>
              
               <FormControl>
-                <Input placeholder="Senha" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
+                <Input placeholder="Senha" type="password" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
               </FormControl>
               
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
@@ -96,10 +80,10 @@ const SignUpForm = () => {
             <FormItem>
              
               <FormControl>
-                <Input placeholder="Confirmar senha" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
+                <Input placeholder="Confirmar senha" type="password" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
               </FormControl>
               
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
