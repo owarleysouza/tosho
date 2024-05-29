@@ -1,18 +1,22 @@
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+
 import { SignUpFormSchema } from "@/utils/form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
-
-import { firebaseApp } from "@/lib/firebase"
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { useNavigate } from "react-router-dom"
 import FormInput from "../form/FormInput"
 
+import  auth  from "@/lib/firebase"
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+
 const SignUpForm = () => {
-  const auth = getAuth(firebaseApp)
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)  
 
   const form = useForm<z.infer<typeof SignUpFormSchema>>({
     resolver: zodResolver(SignUpFormSchema),
@@ -27,13 +31,14 @@ const SignUpForm = () => {
   
    async function onSubmit(data: z.infer<typeof SignUpFormSchema>) { 
     try{
-      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password)
-      const user = userCredential.user;  
-
+      setLoading(true)
+      await createUserWithEmailAndPassword(auth, data.email, data.password)
+   
       await updateProfile(auth.currentUser!, {displayName: data.name})
-
+      setLoading(false)
       navigate("/")
     } catch(error){
+      setLoading(false)
       console.log("error", error)
     }
   }
@@ -67,7 +72,11 @@ const SignUpForm = () => {
           type="password"
         /> 
 
-        <Button type="submit" className='w-full bg-primary rounded-full'>Criar conta</Button>
+        <Button disabled={loading} type="submit" className='w-full bg-primary rounded-full'>
+        { loading ? 
+          (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) 
+          : "Criar conta" }
+        </Button>
       </form>
     </Form>
   )

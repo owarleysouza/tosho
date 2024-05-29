@@ -1,20 +1,22 @@
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { LoginFormSchema } from "@/utils/form"
 
+import { Form } from "@/components/ui/form" 
+import FormInput from "../form/FormInput"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { Loader2 } from "lucide-react"
 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import auth from "@/lib/firebase"
 
 const LoginForm = () => {
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const form = useForm<z.infer<typeof LoginFormSchema>>({
     resolver: zodResolver(LoginFormSchema),
@@ -23,44 +25,40 @@ const LoginForm = () => {
       password: "",
     },
   })
-
   
-   function onSubmit(data: z.infer<typeof LoginFormSchema>) {
-    console.log(data)
+   async function onSubmit(data: z.infer<typeof LoginFormSchema>) {
+    try{
+      setLoading(true)
+      await signInWithEmailAndPassword(auth, data.email, data.password)      
+      setLoading(false)
+      navigate("/")
+    } catch(error){
+      setLoading(false)
+      console.log("error", error)
+    }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 w-full">
-        <FormField
-          control={form.control}
+        <FormInput 
+          formControl={form.control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-             
-              <FormControl>
-                <Input placeholder="E-mail" type="email" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
-              </FormControl>
-              
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
+          placeholder="E-mail"
+          type="email"
         />
-        <FormField
-          control={form.control}
+        <FormInput 
+          formControl={form.control}
           name="password"
-          render={({ field }) => (
-            <FormItem>
-             
-              <FormControl>
-                <Input placeholder="Senha" type="password" className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
-              </FormControl>
-              
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        /> 
-        <Button type="submit" className='w-full bg-primary rounded-full'>Entrar</Button>
+          placeholder="Senha"
+          type="password"
+        />
+ 
+        <Button disabled={loading} type="submit" className='w-full bg-primary rounded-full'>
+        { loading ? 
+          (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) 
+          : "Entrar" }
+        </Button>
       </form>
     </Form>
   )
