@@ -6,7 +6,7 @@ import UserProvider from './context/commom/UserContext.tsx'
 function App() {
   return (
     <>
-      <div className='card'>
+      <div className='min-h-screen flex flex-col justify-center items-center'>
         <UserProvider>
           <RouterProvider router={router} />
         </UserProvider>

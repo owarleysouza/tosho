@@ -1,13 +1,4 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem; 
 }
-
-.card{ 
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  justify-items: center;
-  align-items: center; 
-} 
