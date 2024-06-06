@@ -10,13 +10,16 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import FormInput from "../form/FormInput"
+import { useToast } from "@/components/ui/use-toast"
 
+import { FirebaseError } from "firebase/app"
 import  auth  from "@/lib/firebase"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 const SignUpForm = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)  
+  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof SignUpFormSchema>>({
     resolver: zodResolver(SignUpFormSchema),
@@ -33,13 +36,31 @@ const SignUpForm = () => {
     try{
       setLoading(true)
       await createUserWithEmailAndPassword(auth, data.email, data.password)
-   
       await updateProfile(auth.currentUser!, {displayName: data.name})
-      setLoading(false)
       navigate("/")
-    } catch(error){
+    } catch(error: unknown){ 
+      if(error instanceof FirebaseError){
+        let title: string;
+        let description: string;
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            title = "Ops! Algo está errado";
+            description = "E-mail já cadastrado";
+            break;
+          default:
+            title = "Ops! Algo de errado aconteceu";
+            description = "Um erro inesperado aconteceu";
+            break;
+        }
+
+        toast({
+          variant: "destructive",
+          title,
+          description
+        })
+      }
+    } finally {
       setLoading(false)
-      console.log("error", error)
     }
   }
 

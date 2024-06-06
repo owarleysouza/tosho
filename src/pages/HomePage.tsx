@@ -5,17 +5,30 @@ import { signOut } from 'firebase/auth'
 import auth from '@/lib/firebase'
 import { useNavigate } from 'react-router-dom'
 
+import { useToast } from "@/components/ui/use-toast"
+import { FirebaseError } from "firebase/app"
+
 
 const Home = () => {
   const { user } = useContext(UserContext)
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   const onLogout = async () => {
     try{ 
       await signOut(auth) 
       navigate("/login")
-    } catch(error){
-      console.log("error", error)
+    } catch(error: unknown){
+      if(error instanceof FirebaseError){
+        const title = "Ops! Algo de errado aconteceu";
+        const description = "Um erro inesperado aconteceu";
+        
+        toast({
+          variant: "destructive",
+          title,
+          description
+        }) 
+      }
     }
   }
 

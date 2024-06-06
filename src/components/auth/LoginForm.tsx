@@ -13,10 +13,13 @@ import { Loader2 } from "lucide-react"
 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import auth from "@/lib/firebase"
+import { useToast } from "@/components/ui/use-toast"
+import { FirebaseError } from "firebase/app"
 
 const LoginForm = () => {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof LoginFormSchema>>({
     resolver: zodResolver(LoginFormSchema),
@@ -30,11 +33,30 @@ const LoginForm = () => {
     try{
       setLoading(true)
       await signInWithEmailAndPassword(auth, data.email, data.password)      
-      setLoading(false)
       navigate("/")
-    } catch(error){
+    } catch(error: unknown){
+      if(error instanceof FirebaseError){
+        let title: string;
+        let description: string;
+        switch (error.code) {
+          case 'auth/invalid-credential':
+            title = "Ops! Algo está errado";
+            description = "E-mail ou senha inválidos";
+            break;
+          default:
+            title = "Ops! Algo de errado aconteceu";
+            description = "Um erro inesperado aconteceu";
+            break;
+        }
+       
+        toast({
+          variant: "destructive",
+          title,
+          description
+        }) 
+      }
+    } finally {
       setLoading(false)
-      console.log("error", error)
     }
   }
 
@@ -60,6 +82,7 @@ const LoginForm = () => {
           : "Entrar" }
         </Button>
       </form>
+      
     </Form>
   )
 }
