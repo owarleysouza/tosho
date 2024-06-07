@@ -38,3 +38,13 @@ export const LoginFormSchema = z.object({
   }), 
   
 }) 
+
+export const CreateShopFormSchema = z.object({ 
+  name: z.string().min(5, {
+    message: "O nome deve ter pelo menos 5 caracteres.",
+  }), 
+  date: z.string().min(5, {
+    message: "A data está inválida",
+  }), 
+  
+}) 
