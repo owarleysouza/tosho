@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 
 import shopBlankStateSVG from "@/assets/images/shop-blank-state.svg"
+import userPNG from "@/assets/images/user.png"
 
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -42,9 +43,9 @@ const Home = () => {
   return (
     <div>
       <Header>
-        <h1 className='text-xl font-black'>ToSho</h1>
+        <h1 className='text-xl font-black text-primary'>ToSho</h1>
         <Avatar className='cursor-pointer' onClick={() => navigate("/account")}>
-          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarImage src={userPNG} />
           <AvatarFallback>A</AvatarFallback>
         </Avatar>
       </Header>
