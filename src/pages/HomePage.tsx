@@ -60,7 +60,10 @@ const Home = () => {
           <DialogTrigger>
             <Button className='w-[320px] rounded-full' onClick={() => {}}>Criar compra</Button>
           </DialogTrigger>
-          <DialogContent className="w-[340px]">
+          <DialogContent 
+            className="w-[340px]"
+            onInteractOutside={(e) => {e.preventDefault()}}
+          >
             <DialogHeader>
               <DialogTitle>Criar compra</DialogTitle>
               <DialogDescription>
@@ -80,11 +83,6 @@ const Home = () => {
                   name="date"
                   placeholder="Data"/>
 
-                {/* <Button disabled={loading} type="submit" className='w-full bg-primary rounded-full'>
-                { loading ? 
-                  (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) 
-                  : "Criar conta" }
-                </Button> */}
                 <DialogFooter>
                   <Button className='hover:bg-primary hover:text-white rounded-full' variant="ghost" type="submit">Cancelar</Button>
                   <Button className='rounded-full px-8' type="submit">Criar</Button>

@@ -5,10 +5,22 @@ const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
 
+//Just accept characters and accents, not spaces, special character and numbers
+const usernameValidation = new RegExp(/^[A-Za-zÀ-ÖØ-öø-ÿ]+$/);
+
+//It doesn't permit only spaces, or numbers or special character
+const shopNameValidation = new RegExp(/^(?![\s\d]*$)(?![\W_]*$).*$/);
+
+
 export const SignUpFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "O nome deve ter pelo menos 2 caracteres.",
-  }),
+  name: z
+    .string()
+    .min(2, {
+      message: "O nome deve ter pelo menos 2 caracteres.",
+    })
+    .regex(usernameValidation, {
+      message: 'Nome inválido',
+    }),
   email: z.string().email({
     message: "O e-mail digitado está inválido",
   }),
@@ -40,9 +52,17 @@ export const LoginFormSchema = z.object({
 }) 
 
 export const CreateShopFormSchema = z.object({ 
-  name: z.string().min(5, {
-    message: "O nome deve ter pelo menos 5 caracteres.",
-  }), 
+  name: z
+    .string()
+    .min(5, {
+      message: "O nome deve ter pelo menos 5 caracteres.",
+    })
+    .max(30, {
+      message: "O nome deve ter no máximo 30 caracteres.",
+    })
+    .regex(shopNameValidation, {
+      message: 'Nome inválido',
+    }), 
   date: z.string().min(5, {
     message: "A data está inválida",
   }), 
