@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import PrivateLayout from '@/layouts/PrivateLayout'
 
 
-const Account = () => {
+const AccountPage = () => {
   const { user } = useContext(UserContext) 
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -46,4 +46,4 @@ const Account = () => {
   )
 }
 
-export default Account
+export default AccountPage

@@ -1,9 +1,9 @@
 import shopBlankStateSVG from "@/assets/images/shop-blank-state.svg" 
-import ShopCreateDialog from '@/components/shop/ShopCreateDialog'
+import ShopCreateDialog from '@/pages/shop/ShopCreateDialog'
 import BlankState from '@/components/commom/BlankState'
 import PrivateLayout from "@/layouts/PrivateLayout"
 
-const Home = () => {
+const ShopPage = () => {
 
   return (
     <PrivateLayout>
@@ -14,5 +14,5 @@ const Home = () => {
   )
 }
 
-export default Home
+export default ShopPage
 

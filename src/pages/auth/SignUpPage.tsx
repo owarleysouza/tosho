@@ -1,4 +1,4 @@
-import  SignUpForm from '@/components/auth/SignUpForm'
+import  SignUpForm from './SignUpForm'
 import PublicLayout from '@/layouts/PublicLayout';
 import { useNavigate } from "react-router-dom"
  

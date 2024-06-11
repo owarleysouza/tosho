@@ -4,10 +4,10 @@ import { useState } from "react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { LoginFormSchema } from "@/utils/form"
+import { LoginFormSchema } from "@/utils/formValidations"
 
 import { Form } from "@/components/ui/form" 
-import FormInput from "../form/FormInput"
+import FormInput from "@/components/form/FormInput"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 

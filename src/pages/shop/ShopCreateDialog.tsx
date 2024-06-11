@@ -15,7 +15,7 @@ import FormInput from "@/components/form/FormInput"
 import FormDatePicker from '@/components/form/FormDatePicker'
 
 import { useForm } from "react-hook-form"
-import { ShopCreateFormSchema } from "@/utils/form"
+import { ShopCreateFormSchema } from "@/utils/formValidations"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 

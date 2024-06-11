@@ -2,14 +2,14 @@ import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 
-import { SignUpFormSchema } from "@/utils/form"
+import { SignUpFormSchema } from "@/utils/formValidations"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
-import FormInput from "../form/FormInput"
+import FormInput from "@/components/form/FormInput"
 import { useToast } from "@/components/ui/use-toast"
 
 import { FirebaseError } from "firebase/app"

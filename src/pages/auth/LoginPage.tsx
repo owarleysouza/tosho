@@ -1,4 +1,4 @@
-import LoginForm from '@/components/auth/LoginForm' 
+import LoginForm from './LoginForm' 
 import PublicLayout from '@/layouts/PublicLayout';
 import { useNavigate } from "react-router-dom"
 

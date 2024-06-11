@@ -1,10 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
-import Home from '@/pages/HomePage'
+import Home from '@/pages/shop/ShopPage'
 import SignUp from "@/pages/auth/SignUpPage";
 import Login from "@/pages/auth/LoginPage";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import PublicRoute from "@/routes/PublicRoute";
-import Account from "@/pages/account/Account";
+import AccountPage from "@/pages/account/AccountPage";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +16,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/account',
-        element: <Account />
+        element: <AccountPage />
       }
     ]
   },
