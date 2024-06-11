@@ -29,7 +29,7 @@ const LoginForm = () => {
     },
   })
   
-   async function onSubmit(data: z.infer<typeof LoginFormSchema>) {
+   const onSubmit = async (data: z.infer<typeof LoginFormSchema>): Promise<void> => {
     try{
       setLoading(true)
       await signInWithEmailAndPassword(auth, data.email, data.password)      

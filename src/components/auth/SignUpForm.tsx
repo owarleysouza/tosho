@@ -32,7 +32,7 @@ const SignUpForm = () => {
   })
 
   
-   async function onSubmit(data: z.infer<typeof SignUpFormSchema>) { 
+   const onSubmit = async (data: z.infer<typeof SignUpFormSchema>) => { 
     try{
       setLoading(true)
       await createUserWithEmailAndPassword(auth, data.email, data.password)

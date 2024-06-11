@@ -51,7 +51,7 @@ export const LoginFormSchema = z.object({
   
 }) 
 
-export const CreateShopFormSchema = z.object({ 
+export const ShopCreateFormSchema = z.object({ 
   name: z
     .string()
     .min(5, {
@@ -63,8 +63,8 @@ export const CreateShopFormSchema = z.object({
     .regex(shopNameValidation, {
       message: 'Nome inválido',
     }), 
-  date: z.string().min(5, {
-    message: "A data está inválida",
-  }), 
+  date: z.date({
+    required_error: "A data é necessária.",
+  }),
   
 }) 

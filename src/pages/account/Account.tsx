@@ -9,6 +9,7 @@ import { FirebaseError } from "firebase/app"
 
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from '@/components/ui/button'
+import PrivateLayout from '@/layouts/PrivateLayout'
 
 
 const Account = () => {
@@ -35,11 +36,13 @@ const Account = () => {
   }
 
   return (
-    <div>
-      <h1>Conta</h1>
-      <p>{user?.email}</p>
-      <Button onClick={onLogout}>Sair</Button>
-    </div>
+    <PrivateLayout>
+      <div className='h-screen flex flex-col justify-center items-center p-4'>
+        <h1>Conta</h1>
+        <p>{user?.email}</p>
+        <Button className='w-[200px]' onClick={onLogout}>Sair</Button>
+      </div>
+    </PrivateLayout>
   )
 }
 
