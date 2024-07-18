@@ -66,5 +66,14 @@ export const ShopCreateFormSchema = z.object({
   date: z.date({
     required_error: "A data é necessária.",
   }),
-  
+  isDone: z.boolean(),
+  total: z.number()
+}) 
+
+export const ProductsCreateFormSchema = z.object({ 
+  text: z
+    .string()
+    .min(2, {
+      message: "É obrigatório digitar ao menos um produto.",
+    })
 }) 

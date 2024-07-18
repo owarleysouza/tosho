@@ -13,8 +13,10 @@ import FormInput from "@/components/form/FormInput"
 import { useToast } from "@/components/ui/use-toast"
 
 import { FirebaseError } from "firebase/app"
-import  auth  from "@/lib/firebase"
+import { auth, db }  from "@/lib/firebase"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+
+import { doc, setDoc } from "firebase/firestore"; 
 
 const SignUpForm = () => {
   const navigate = useNavigate()
@@ -36,7 +38,13 @@ const SignUpForm = () => {
     try{
       setLoading(true)
       await createUserWithEmailAndPassword(auth, data.email, data.password)
-      await updateProfile(auth.currentUser!, {displayName: data.name})
+      await updateProfile(auth.currentUser!, {displayName: data.name}) 
+      if(auth.currentUser){
+        await setDoc(doc(db, "users", auth.currentUser.uid), {
+          name: data.name,
+          email: data.email
+        }) 
+      }
       navigate("/")
     } catch(error: unknown){ 
       if(error instanceof FirebaseError){

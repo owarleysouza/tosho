@@ -22,8 +22,9 @@ const PrivateLayout = ({children}: LayoutProps) => {
           <AvatarFallback>A</AvatarFallback>
         </Avatar>
       </Header>
-
-      {children}
+      <div className="flex flex-col justify-center items-center">
+        {children}
+      </div>
     </div>
 
     

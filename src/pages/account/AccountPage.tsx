@@ -1,10 +1,10 @@
-import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useContext } from 'react'
 import { UserContext } from '@/context/commom/UserContext'
 
 import { signOut } from 'firebase/auth'
-import auth from '@/lib/firebase'
+import { auth } from '@/lib/firebase'
 import { FirebaseError } from "firebase/app"
 
 import { useToast } from "@/components/ui/use-toast"

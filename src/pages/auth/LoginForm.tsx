@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 
 import { signInWithEmailAndPassword } from "firebase/auth";
-import auth from "@/lib/firebase"
+import { auth } from "@/lib/firebase"
 import { useToast } from "@/components/ui/use-toast"
 import { FirebaseError } from "firebase/app"
 
