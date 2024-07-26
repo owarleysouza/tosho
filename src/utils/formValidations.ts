@@ -76,4 +76,7 @@ export const ProductsCreateFormSchema = z.object({
     .min(2, {
       message: "É obrigatório digitar ao menos um produto.",
     })
+    .max(350, {
+      message: "Número máximo de produtos por vez atingido",
+    })
 }) 
