@@ -69,7 +69,7 @@ const ShopCreateDialog: React.FC<ShopCreateDialogProps>  = ({ onShopCreated }) =
       toast({
         variant: "destructive",
         title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu"
+        description: "Um erro inesperado aconteceu ao criar a compra"
       }) 
     } finally {
       setLoading(false)
