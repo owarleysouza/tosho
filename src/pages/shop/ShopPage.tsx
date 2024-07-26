@@ -23,8 +23,8 @@ const ShopPage = () => {
   const [loading, setLoading] = useState(true)
 
   const { toast } = useToast()
-
-  const getCurrentShop = async () => { 
+  
+  async function getCurrentShop(){ 
     try{
       if(!user || !Object.keys(user).length){ 
         toast({
