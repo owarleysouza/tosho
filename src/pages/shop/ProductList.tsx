@@ -7,7 +7,11 @@ interface Product {
   isDone: boolean
 }
 
-const ProductList = ({products}: {products: Product[]}) => {
+interface ProductListProps {
+  products: Product[]
+}
+ 
+const ProductList: React.FC<ProductListProps> = ({products}) => {
   return (
     <div>
       {products.map((product: Product) => <p key={product.uid}>{product.name}</p>)}
