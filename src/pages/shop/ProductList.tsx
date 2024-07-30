@@ -1,11 +1,5 @@
+import { Product } from '@/types'
 import React from 'react'
-
-interface Product {
-  uid: string,
-  name: string, 
-  quantity: number, 
-  isDone: boolean
-}
 
 interface ProductListProps {
   products: Product[]

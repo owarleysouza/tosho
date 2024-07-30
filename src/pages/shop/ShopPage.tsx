@@ -19,14 +19,15 @@ import { db } from "@/lib/firebase";
 import LoadingPage from '../commom/LoadingPage'; 
 import ProductList from './ProductList';
 
-interface Product {
-  uid: string,
-  name: string, 
-  quantity: number, 
-  isDone: boolean
-}
+import { addProducts } from '@/app/shop/shopSlice';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { Product } from '@/types';
+
 
 const ShopPage = ({shop}: DocumentData) => { 
+
+  const shopProducts = useAppSelector(state => state.shop.value) 
+  const dispatch = useAppDispatch()
 
   function formatDate(timestamp: number): string {
     const date = new Date(timestamp * 1000); // Convertendo de segundos para milissegundos
@@ -48,7 +49,6 @@ const ShopPage = ({shop}: DocumentData) => {
     },
   })
 
-  const [products, setProducts] = useState<Product[]>([])
   const [createProductsLoading, setCreateProductsLoading] = useState(false)
   const [loadingProducts, setLoadingProducts] = useState(true)
 
@@ -89,7 +89,8 @@ const ShopPage = ({shop}: DocumentData) => {
           }
           auxProducts.push(product as Product) 
         })
-        setProducts(auxProducts)
+
+        dispatch(addProducts(auxProducts))
       }
     } catch (error) { 
       toast({
@@ -120,8 +121,8 @@ const ShopPage = ({shop}: DocumentData) => {
         })
 
         const addedProducts = await Promise.all(productPromises)
-       
-        setProducts([...products, ...addedProducts])
+        dispatch(addProducts(addedProducts))
+
 
         form.reset() 
       }   
@@ -145,8 +146,8 @@ const ShopPage = ({shop}: DocumentData) => {
   return (
     <div className='h-screen flex flex-col justify-center items-center space-y-3 '>
       {
-      products.length ? 
-        (<ProductList products={products} />)
+      shopProducts.length ? 
+        (<ProductList products={shopProducts} />)
         : 
         (
           <>
