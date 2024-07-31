@@ -78,7 +78,8 @@ const ShopPage = ({shop}: DocumentData) => {
     const auxProducts: Product[] = []
 
     try{
-      if(user){
+      //Verification if products is empty for avoid to do a get on firestore again and replicate the products on redux state. Try to improve this approach later
+      if(user && !shopProducts.length){
         const pendingProductsRef = query(collection(db, `users/${user.uid}/shops/${shop.uid}/products`), where("isDone", "==", false))
         const querySnapshot = await getDocs(pendingProductsRef);
      

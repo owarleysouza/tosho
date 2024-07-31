@@ -15,10 +15,13 @@ export const shopSlice = createSlice({
   reducers: {
     addProducts: (state, action: PayloadAction<Product[]>) => {
       state.value = state.value.concat(action.payload)  
+    },
+    cleanProducts: state => {
+      state.value = []
     }
   }
 })
 
-export const { addProducts } = shopSlice.actions
+export const { addProducts, cleanProducts } = shopSlice.actions
 
 export default shopSlice.reducer
