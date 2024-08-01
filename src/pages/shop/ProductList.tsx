@@ -1,5 +1,6 @@
-import { Product } from '@/types'
+import type { Product } from '@/types'
 import React from 'react'
+import ProductCard from './ProductCard'
 
 interface ProductListProps {
   products: Product[]
@@ -7,8 +8,8 @@ interface ProductListProps {
  
 const ProductList: React.FC<ProductListProps> = ({products}) => {
   return (
-    <div>
-      {products.map((product: Product) => <p key={product.uid}>{product.name}</p>)}
+    <div className='h-screen space-y-3'>
+      {products.map((product: Product) => <ProductCard key={product.uid} product={product} />)}
     </div>
   )
 }

@@ -145,45 +145,46 @@ const ShopPage = ({shop}: DocumentData) => {
   if(loadingProducts) return <LoadingPage />
 
   return (
-    <div className='h-screen flex flex-col justify-center items-center space-y-3 '>
-      {
-      shopProducts.length ? 
-        (<ProductList products={shopProducts} />)
-        : 
-        (
-          <>
-            <section className='flex flex-col items-center m-2'>
-              <span className='text-xs text-slate-400'>{ formattedDate }</span>
-              <span className='text-lg text-black font-bold break-all ...'>{shop.name}</span>
-            </section>
+    <div className='mt-16'>
+      <section className='flex flex-col items-center m-2'>
+        <span className='text-xs text-slate-400'>{ formattedDate }</span>
+        <span className='text-lg text-black font-bold break-all ...'>{shop.name}</span>
+      </section>
+    
+      <div className='flex flex-col justify-center items-center space-y-3'>
+        {
+        shopProducts.length ? 
+          (<ProductList products={shopProducts} />)
+          : 
+          (
             <section className='flex flex-col justify-center items-center'>
               <img src={productsBlankStateSVG} alt='Products Empty Image' />
               <span className='text-base text-slate-400'>Nenhum produto adicionado ainda</span>
             </section>
-          </> 
-        )
-      }
-      <footer className='w-80 fixed bottom-0 flex justify-center bg-secondary p-2 rounded-lg shadow-xl'>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-row items-center justify-between w-full">
-            <div className="w-[240px]">
-              <FormTextArea
-                formControl={form.control}
-                name="text"
-                placeholder="Digite um ou mais produtos"
-              />
+          )
+        }
+        <footer className='w-80 fixed bottom-0 flex justify-center bg-secondary p-2 rounded-lg shadow-xl'>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center justify-between w-full space-y-2">
+              <div className="w-[240px]">
+                <FormTextArea
+                  formControl={form.control}
+                  name="text"
+                  placeholder="Digite um ou mais produtos"
+                />
 
-            </div>
-            
-            <Button size="sm" disabled={createProductsLoading} type="submit" className='rounded-full'>
-            { createProductsLoading ? 
-              (<LoaderCircle className="animate-spin" />) 
-              : "Criar" }
-            </Button>
-    
-          </form>
-        </Form>
-      </footer>
+              </div>
+              
+              <Button size="sm" disabled={createProductsLoading} type="submit" className='rounded-full w-[240px]'>
+              { createProductsLoading ? 
+                (<LoaderCircle className="animate-spin" />) 
+                : "Adicionar" }
+              </Button>
+      
+            </form>
+          </Form>
+        </footer>
+      </div>
     </div>
   )
 }
