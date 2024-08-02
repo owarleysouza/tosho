@@ -24,7 +24,7 @@ const FormTextArea: React.FC<FormFieldProps> = ({formControl, name, placeholder}
       render={({ field }) => (
         <FormItem>
           <FormControl>
-            <Textarea placeholder={placeholder} className="rounded-lg ring-1 ring-accent focus-visible:ring-primary resize-none" {...field} />
+            <Textarea placeholder={placeholder} className="rounded-2xl ring-1 ring-accent focus-visible:ring-primary resize-none" {...field} />
           </FormControl>
           
           <FormMessage className="text-xs" />

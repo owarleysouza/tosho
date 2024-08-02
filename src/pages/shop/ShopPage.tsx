@@ -163,10 +163,10 @@ const ShopPage = ({shop}: DocumentData) => {
             </section>
           )
         }
-        <footer className='w-80 fixed bottom-0 flex justify-center bg-secondary p-2 rounded-lg shadow-xl'>
+        <footer className='w-80 fixed bottom-0 flex justify-center py-2'>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center justify-between w-full space-y-2">
-              <div className="w-[240px]">
+              <div className="w-full">
                 <FormTextArea
                   formControl={form.control}
                   name="text"
@@ -175,7 +175,7 @@ const ShopPage = ({shop}: DocumentData) => {
 
               </div>
               
-              <Button size="sm" disabled={createProductsLoading} type="submit" className='rounded-full w-[240px]'>
+              <Button size="sm" disabled={createProductsLoading} type="submit" className='rounded-xl w-full'>
               { createProductsLoading ? 
                 (<LoaderCircle className="animate-spin" />) 
                 : "Adicionar" }
