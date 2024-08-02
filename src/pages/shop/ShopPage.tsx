@@ -66,6 +66,7 @@ const ShopPage = ({shop}: DocumentData) => {
         products.push({
           name: name ? name : "Produto Exemplo", 
           quantity: quantity ? parseInt(quantity) : 1,
+          category: "others",
           isDone: false,
         }) 
       }
@@ -170,7 +171,7 @@ const ShopPage = ({shop}: DocumentData) => {
                 <FormTextArea
                   formControl={form.control}
                   name="text"
-                  placeholder="Digite um ou mais produtos"
+                  placeholder="Digite um ou mais itens a cada linha no formato: Item, Quantidade"
                 />
 
               </div>
