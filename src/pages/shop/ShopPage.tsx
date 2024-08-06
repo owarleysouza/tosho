@@ -164,7 +164,7 @@ const ShopPage = ({shop}: DocumentData) => {
             </section>
           )
         }
-        <footer className='w-80 fixed bottom-0 flex justify-center py-2'>
+        <footer className='w-80 sticky bottom-0 flex justify-center py-2'>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center justify-between w-full space-y-2">
               <div className="w-full">

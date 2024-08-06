@@ -44,7 +44,7 @@ const ProductList: React.FC<ProductListProps> = ({products}) => {
   }, [products])
   
   return (
-    <div className='h-screen space-y-4'>
+    <div className='space-y-4'>
       {Object.keys(categorizedProducts).map((category) => (
         <section key={category}>
           <h3 className='font-bold mb-1'>{productCategories[category]}</h3> 
