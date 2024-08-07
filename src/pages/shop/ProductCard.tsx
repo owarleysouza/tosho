@@ -17,7 +17,7 @@ const ProductCard: React.FC<ProductProps> = ({ product }) =>  {
         <div className='flex flex-col'>
           <label
             htmlFor={product.uid}
-            className="text-sm text-black font-semibold break-all ..."
+            className="cursor-pointer text-sm text-black font-semibold break-all ..."
           >
             {product.name}
           </label>
