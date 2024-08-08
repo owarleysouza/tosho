@@ -32,7 +32,7 @@ const FormDatePicker: React.FC<DateFieldProps> = ({formControl, name, placeholde
       name={name}
       render={({ field }) => (
         <FormItem className="flex flex-col">
-          <Popover>
+          <Popover modal>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
