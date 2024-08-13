@@ -11,23 +11,32 @@ import { UserContext } from '@/context/commom/UserContext'
 import { LoaderCircle } from 'lucide-react';
 import FormTextArea from '@/components/form/FormTextArea';
 import { useToast } from "@/components/ui/use-toast"
+import { ShoppingBasket  } from 'lucide-react';
 
 import productsBlankStateSVG from "@/assets/images/products-blank-state.svg" 
-import { addDoc, collection, DocumentData, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, DocumentData, getDocs } from 'firebase/firestore';
 
 import { db } from "@/lib/firebase"; 
 import LoadingPage from '../commom/LoadingPage'; 
 import ProductList from './ProductList';
 
-import { addProducts } from '@/app/shop/shopSlice';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+
 import { Product } from '@/types';
+
+import {
+  Sheet,
+  SheetContent, 
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 
 const ShopPage = ({shop}: DocumentData) => { 
 
-  const shopProducts = useAppSelector(state => state.shop.value) 
-  const dispatch = useAppDispatch()
+  const [pendingProducts, setPendingProducts] = useState<Product[]>([])
+  const [checkedProducts, setCheckedProducts] = useState<Product[]>([])
+
 
   function formatDate(timestamp: number): string {
     const date = new Date(timestamp * 1000); // Convertendo de segundos para milissegundos
@@ -76,23 +85,32 @@ const ShopPage = ({shop}: DocumentData) => {
   }
 
   async function getProducts(){
-    const auxProducts: Product[] = []
+    const pendingList: Product[] = []
+    const checkedList: Product[] = []
 
     try{
       //Verification if products is empty for avoid to do a get on firestore again and replicate the products on redux state. Try to improve this approach later
-      if(user && !shopProducts.length){
-        const pendingProductsRef = query(collection(db, `users/${user.uid}/shops/${shop.uid}/products`), where("isDone", "==", false))
+      if(user && !pendingProducts.length && !checkedProducts.length){
+        const pendingProductsRef = collection(db, `users/${user.uid}/shops/${shop.uid}/products`)
         const querySnapshot = await getDocs(pendingProductsRef);
      
         querySnapshot.forEach((doc) => {
-          const product = {
+          const {name, quantity, category, isDone, description, price} = doc.data()
+          const product: Product = {
             uid: doc.id,
-            ...doc.data()
+            name,
+            quantity,
+            category,
+            isDone,
+            description, 
+            price
           }
-          auxProducts.push(product as Product) 
+
+          product.isDone ? checkedList.push(product) : pendingList.push(product)
         })
 
-        dispatch(addProducts(auxProducts))
+        setPendingProducts(pendingList)
+        setCheckedProducts(checkedList)
       }
     } catch (error) { 
       toast({
@@ -123,8 +141,7 @@ const ShopPage = ({shop}: DocumentData) => {
         })
 
         const addedProducts = await Promise.all(productPromises)
-        dispatch(addProducts(addedProducts))
-
+        setPendingProducts(pendingProducts.concat(addedProducts))
 
         form.reset() 
       }   
@@ -147,20 +164,42 @@ const ShopPage = ({shop}: DocumentData) => {
 
   return (
     <div className='mt-16'>
-      <section className='flex flex-col items-center m-2'>
-        <span className='text-xs text-slate-400'>{ formattedDate }</span>
-        <span className='text-lg text-black font-bold break-all ...'>{shop.name}</span>
+      <section 
+        className={checkedProducts.length ? 'flex flex-row justify-between items-center my-3' :'flex flex row justify-center items-center my-3' } 
+      >
+        <section className={checkedProducts.length ? 'flex flex-col' : 'flex flex-col items-center'}>
+          <span className='text-xs text-slate-400'>{ formattedDate }</span>
+          <span className='text-lg text-black font-bold'>{shop.name}</span>
+        </section>
+         
+
+        <Sheet>
+          <SheetTrigger >
+           {
+            checkedProducts.length ?  <ShoppingBasket className='text-primary'/> : <></>
+            } 
+          </SheetTrigger>
+          <SheetContent className='flex flex-col justify-start w-full overflow-y-auto'>
+            <SheetHeader>
+              <SheetTitle className='flex justify-center text-xl font-bold'>Carrinho</SheetTitle>
+            </SheetHeader>
+
+            <ProductList products={checkedProducts} />
+          </SheetContent>
+        </Sheet>
+        
       </section>
-    
       <div className='flex flex-col justify-center items-center space-y-3'>
         {
-        shopProducts.length ? 
-          (<ProductList products={shopProducts} />)
+        pendingProducts.length ? 
+          (          
+            <ProductList products={pendingProducts} />      
+          )
           : 
           (
             <section className='flex flex-col justify-center items-center'>
               <img src={productsBlankStateSVG} alt='Products Empty Image' />
-              <span className='text-base text-slate-400'>Nenhum produto adicionado ainda</span>
+              <span className='text-base text-slate-400'>Nenhum produto pendente na lista</span>
             </section>
           )
         }
@@ -186,6 +225,8 @@ const ShopPage = ({shop}: DocumentData) => {
           </Form>
         </footer>
       </div>
+
+      
     </div>
   )
 }

@@ -16,7 +16,13 @@ const PrivateLayout = ({children}: LayoutProps) => {
   return (
     <div>
       <Header>
-        <h1 className='text-xl font-black text-primary cursor-pointer' onClick={() => navigate("/")}>ToSho</h1>
+        <h1 
+          className='text-xl font-black text-primary cursor-pointer'
+          onClick={() => navigate("/")}
+        >
+          ToSho
+        </h1>
+        
         <Avatar className='cursor-pointer' onClick={() => navigate("/account", {replace: true})}>
           <AvatarImage src={userPNG} />
           <AvatarFallback>A</AvatarFallback>

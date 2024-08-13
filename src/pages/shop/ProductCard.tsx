@@ -13,11 +13,15 @@ const ProductCard: React.FC<ProductProps> = ({ product }) =>  {
   return (
     <div className='flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 px-4 rounded-2xl border border-accent shadow'>
       <section className='flex flex-row items-center gap-2'>
-        <Checkbox id={product.uid} className='rounded-md h-5 w-5' />
+        <Checkbox 
+          id={product.uid}
+          className='rounded-md h-5 w-5'
+          checked={product.isDone}
+        />
         <div className='flex flex-col'>
           <label
             htmlFor={product.uid}
-            className="cursor-pointer text-sm text-black font-semibold break-all ..."
+            className="cursor-pointer text-xs text-black font-semibold break-all ..."
           >
             {product.name}
           </label>
