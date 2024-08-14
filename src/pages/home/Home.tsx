@@ -68,9 +68,13 @@ const Home = () => {
       {Object.keys(currentShop).length ? 
         (<Shop shop={currentShop} />) 
         :
-        (<BlankState image={shopBlankStateSVG} title="Nenhuma compra criada ainda :(">
-          <ShopCreateDialog onShopCreated={getCurrentShop} />
-        </BlankState>)
+        (
+          <section className="h-screen flex flex-col justify-center items-center">
+            <BlankState image={shopBlankStateSVG} title="Nenhuma compra criada ainda :(">
+              <ShopCreateDialog onShopCreated={getCurrentShop} />
+            </BlankState>
+          </section>
+        )
     } 
     </PrivateLayout> 
   )
