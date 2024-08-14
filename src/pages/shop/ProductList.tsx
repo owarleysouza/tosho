@@ -3,18 +3,19 @@ import React, { useEffect, useState } from 'react'
 import ProductCard from './ProductCard'
 
 interface ProductListProps {
-  products: Product[]
+  products: Product[];
+  onProductStatusChange: (product: Product, status: boolean) => void
 }
 
 interface CategorizedProductsType{
-  [key: string]: Product[],
+  [key: string]: Product[];
 }
 
 interface ProductCategoriesType{
-  [key: string]: string,
+  [key: string]: string;
 }
  
-const ProductList: React.FC<ProductListProps> = ({products}) => {
+const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChange}) => {
 
   const [categorizedProducts, setCategorizedProducts] = useState<CategorizedProductsType>({})
 
@@ -51,7 +52,7 @@ const ProductList: React.FC<ProductListProps> = ({products}) => {
           
           <section className='space-y-2'>
             {categorizedProducts[category].map((product) => (
-              <ProductCard key={product.uid} product={product} />
+              <ProductCard key={product.uid} product={product} onProductStatusChange={onProductStatusChange} />
             ))}
           </section>     
         </section>

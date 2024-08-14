@@ -4,11 +4,15 @@ import React from 'react'
 import { Checkbox } from "@/components/ui/checkbox"
 
 interface ProductProps{
-  product: Product
+  product: Product;
+  onProductStatusChange: (product: Product, status: boolean) => void;
 }
 
-const ProductCard: React.FC<ProductProps> = ({ product }) =>  {
+const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange }) =>  {
 
+  function handleCheckboxChange(){
+    onProductStatusChange(product, !product.isDone)
+  }
    
   return (
     <div className='flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 px-4 rounded-2xl border border-accent shadow'>
@@ -17,6 +21,7 @@ const ProductCard: React.FC<ProductProps> = ({ product }) =>  {
           id={product.uid}
           className='rounded-md h-5 w-5'
           checked={product.isDone}
+          onCheckedChange={handleCheckboxChange}
         />
         <div className='flex flex-col'>
           <label

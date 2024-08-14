@@ -1,27 +1,14 @@
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-
-import { ProductsCreateFormSchema } from '@/utils/formValidations';
-import { useForm } from "react-hook-form" 
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-
 import { useContext, useEffect, useState } from "react";
-import { UserContext } from '@/context/commom/UserContext'
-import { LoaderCircle } from 'lucide-react';
-import FormTextArea from '@/components/form/FormTextArea';
-import { useToast } from "@/components/ui/use-toast"
-import { ShoppingBasket  } from 'lucide-react';
 
-import productsBlankStateSVG from "@/assets/images/products-blank-state.svg" 
-import { addDoc, collection, DocumentData, getDocs } from 'firebase/firestore';
-
-import { db } from "@/lib/firebase"; 
-import LoadingPage from '../commom/LoadingPage'; 
-import ProductList from './ProductList';
-
-
+import { UseFormReturn } from "react-hook-form" 
+import { ProductsCreateFormSchema } from '@/utils/formValidations';
+import { z } from "zod"
 import { Product } from '@/types';
+
+import { UserContext } from '@/context/commom/UserContext'
+
+import { ShoppingBasket  } from 'lucide-react';
+import productsBlankStateSVG from "@/assets/images/products-blank-state.svg" 
 
 import {
   Sheet,
@@ -30,13 +17,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import BlankState from '@/components/commom/BlankState';
+import AddProductsForm from '@/components/form/AddProductsForm';
+import LoadingPage from '../commom/LoadingPage'; 
+import { useToast } from "@/components/ui/use-toast"
+import ProductList from './ProductList';
 
+import { db } from "@/lib/firebase"; 
+import { addDoc, collection, DocumentData, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 const ShopPage = ({shop}: DocumentData) => { 
-
   const [pendingProducts, setPendingProducts] = useState<Product[]>([])
-  const [checkedProducts, setCheckedProducts] = useState<Product[]>([])
+  const [cartProducts, setCartProducts] = useState<Product[]>([])
+  
+  const [createProductsLoading, setCreateProductsLoading] = useState(false)
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  
+  const { user } = useContext(UserContext)
 
+  const { toast } = useToast()
 
   function formatDate(timestamp: number): string {
     const date = new Date(timestamp * 1000); // Convertendo de segundos para milissegundos
@@ -46,22 +45,8 @@ const ShopPage = ({shop}: DocumentData) => {
     
     return `${day}/${month}/${year}`;
   }
-  
-  const { user } = useContext(UserContext)
 
   const formattedDate = formatDate(shop.date?.seconds);
-
-  const form = useForm<z.infer<typeof ProductsCreateFormSchema>>({
-    resolver: zodResolver(ProductsCreateFormSchema),
-    defaultValues: {
-      text: "",
-    },
-  })
-
-  const [createProductsLoading, setCreateProductsLoading] = useState(false)
-  const [loadingProducts, setLoadingProducts] = useState(true)
-
-  const { toast } = useToast()
 
   function handleProductsInput(text: string) {
     const products = []
@@ -90,7 +75,7 @@ const ShopPage = ({shop}: DocumentData) => {
 
     try{
       //Verification if products is empty for avoid to do a get on firestore again and replicate the products on redux state. Try to improve this approach later
-      if(user && !pendingProducts.length && !checkedProducts.length){
+      if(user && !pendingProducts.length && !cartProducts.length){
         const pendingProductsRef = collection(db, `users/${user.uid}/shops/${shop.uid}/products`)
         const querySnapshot = await getDocs(pendingProductsRef);
      
@@ -110,7 +95,7 @@ const ShopPage = ({shop}: DocumentData) => {
         })
 
         setPendingProducts(pendingList)
-        setCheckedProducts(checkedList)
+        setCartProducts(checkedList)
       }
     } catch (error) { 
       toast({
@@ -123,7 +108,7 @@ const ShopPage = ({shop}: DocumentData) => {
     }
   }
 
-  async function onSubmit(data: z.infer<typeof ProductsCreateFormSchema>): Promise<void>{
+  async function onSubmit(data: z.infer<typeof ProductsCreateFormSchema>, form: UseFormReturn<{text: string;}>): Promise<void>{
     const productsToAdd = handleProductsInput(data.text) 
    
     try{
@@ -156,6 +141,39 @@ const ShopPage = ({shop}: DocumentData) => {
     }
   } 
 
+  async function toggleProductStatus(toggleProduct: Product, status: boolean){
+    try{   
+      if(user){
+        const productRef = doc(db, `users/${user.uid}/shops/${shop.uid}/products`, toggleProduct.uid)
+      
+        await updateDoc(productRef, { isDone: status })
+
+        status === true 
+        ? setPendingProducts(pendingProducts.filter((product) => product.uid != toggleProduct.uid))
+        : setCartProducts(cartProducts.filter((product) => product.uid != toggleProduct.uid))
+        
+        toggleProduct.isDone = status
+        
+        status === true 
+          ? setCartProducts(cartProducts.concat(toggleProduct))
+          : setPendingProducts(pendingProducts.concat(toggleProduct))
+
+          toast({
+            variant: "success",
+            title: "Sucesso!",
+            description: status ? "Produto adicionado ao carrinho" : "Produto removido do carrinho",
+          })
+      }
+    }
+    catch (error) { 
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Um erro inesperado aconteceu ao mudar o status do produto"
+      }) 
+    } 
+  }
+
   useEffect( () => {
     getProducts()
   }, [])
@@ -165,68 +183,44 @@ const ShopPage = ({shop}: DocumentData) => {
   return (
     <div className='mt-16'>
       <section 
-        className={checkedProducts.length ? 'flex flex-row justify-between items-center my-3' :'flex flex row justify-center items-center my-3' } 
+        className='flex flex-row justify-between items-center my-3' 
       >
-        <section className={checkedProducts.length ? 'flex flex-col' : 'flex flex-col items-center'}>
+        <section className='flex flex-col'>
           <span className='text-xs text-slate-400'>{ formattedDate }</span>
           <span className='text-lg text-black font-bold'>{shop.name}</span>
         </section>
          
-
         <Sheet>
-          <SheetTrigger >
-           {
-            checkedProducts.length ?  <ShoppingBasket className='text-primary'/> : <></>
-            } 
+          <SheetTrigger>
+            <ShoppingBasket className='text-primary'/>
           </SheetTrigger>
-          <SheetContent className='flex flex-col justify-start w-full overflow-y-auto'>
+          <SheetContent 
+            aria-describedby={undefined} 
+            className='flex flex-col justify-start w-full overflow-y-auto'
+          >
             <SheetHeader>
               <SheetTitle className='flex justify-center text-xl font-bold'>Carrinho</SheetTitle>
             </SheetHeader>
-
-            <ProductList products={checkedProducts} />
+            {
+              cartProducts.length ?
+                <ProductList products={cartProducts} onProductStatusChange={toggleProductStatus} />
+                :  
+                <BlankState image={productsBlankStateSVG} title="Nenhum produto no carrinho :(" />
+            }
           </SheetContent>
         </Sheet>
-        
       </section>
+
       <div className='flex flex-col justify-center items-center space-y-3'>
         {
-        pendingProducts.length ? 
-          (          
-            <ProductList products={pendingProducts} />      
-          )
-          : 
-          (
-            <section className='flex flex-col justify-center items-center'>
-              <img src={productsBlankStateSVG} alt='Products Empty Image' />
-              <span className='text-base text-slate-400'>Nenhum produto pendente na lista</span>
-            </section>
-          )
+          pendingProducts.length ? 
+            <ProductList products={pendingProducts} onProductStatusChange={toggleProductStatus} />
+            : 
+            <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />
         }
-        <footer className='w-80 sticky bottom-0 flex justify-center py-2'>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center justify-between w-full space-y-2">
-              <div className="w-full">
-                <FormTextArea
-                  formControl={form.control}
-                  name="text"
-                  placeholder="Digite um ou mais itens a cada linha no formato: Item, Quantidade"
-                />
-
-              </div>
-              
-              <Button size="sm" disabled={createProductsLoading} type="submit" className='rounded-xl w-full'>
-              { createProductsLoading ? 
-                (<LoaderCircle className="animate-spin" />) 
-                : "Adicionar" }
-              </Button>
-      
-            </form>
-          </Form>
-        </footer>
+    
+        <AddProductsForm createProductsLoading={createProductsLoading} onProductsAdd={onSubmit} />
       </div>
-
-      
     </div>
   )
 }
