@@ -18,7 +18,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import BlankState from '@/components/commom/BlankState';
-import AddProductsForm from '@/components/form/AddProductsForm';
+import ProductFormFooter from '@/components/form/ProductFormFooter';
 import LoadingPage from '../commom/LoadingPage'; 
 import { useToast } from "@/components/ui/use-toast"
 import ProductList from './ProductList';
@@ -219,7 +219,7 @@ const ShopPage = ({shop}: DocumentData) => {
             <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />
         }
     
-        <AddProductsForm createProductsLoading={createProductsLoading} onProductsAdd={onSubmit} />
+        <ProductFormFooter createProductsLoading={createProductsLoading} onProductsAdd={onSubmit} />
       </div>
     </div>
   )
