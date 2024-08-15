@@ -9,6 +9,7 @@ import { UserContext } from '@/context/commom/UserContext'
 
 import { ShoppingBasket  } from 'lucide-react';
 import productsBlankStateSVG from "@/assets/images/products-blank-state.svg" 
+import cartBlankStateSVG from "@/assets/images/cart-blank-state.svg" 
 
 import {
   Sheet,
@@ -205,7 +206,7 @@ const ShopPage = ({shop}: DocumentData) => {
               cartProducts.length ?
                 <ProductList products={cartProducts} onProductStatusChange={toggleProductStatus} />
                 :  
-                <BlankState image={productsBlankStateSVG} title="Nenhum produto no carrinho :(" />
+                <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
             }
           </SheetContent>
         </Sheet>
