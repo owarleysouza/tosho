@@ -25,7 +25,7 @@ import { useToast } from "@/components/ui/use-toast"
 import ProductList from './ProductList';
 
 import { db } from "@/lib/firebase"; 
-import { addDoc, collection, DocumentData, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, DocumentData, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const ShopPage = ({shop}: DocumentData) => { 
   const [pendingProducts, setPendingProducts] = useState<Product[]>([])
@@ -33,6 +33,7 @@ const ShopPage = ({shop}: DocumentData) => {
   
   const [createProductsLoading, setCreateProductsLoading] = useState(false)
   const [loadingProducts, setLoadingProducts] = useState(true)
+  const [removeProductLoading, setRemoveProductLoading] = useState(false)
   
   const { user } = useContext(UserContext)
 
@@ -109,7 +110,7 @@ const ShopPage = ({shop}: DocumentData) => {
     }
   }
 
-  async function onSubmit(data: z.infer<typeof ProductsCreateFormSchema>, form: UseFormReturn<{text: string;}>): Promise<void>{
+  async function onSubmitProduct(data: z.infer<typeof ProductsCreateFormSchema>, form: UseFormReturn<{text: string;}>): Promise<void>{
     const productsToAdd = handleProductsInput(data.text) 
    
     try{
@@ -175,6 +176,34 @@ const ShopPage = ({shop}: DocumentData) => {
     } 
   }
 
+  async function removeProduct(productUid: string, productIsDone: boolean){
+    try{
+      setRemoveProductLoading(true)
+      if(user){
+        const productRef = doc(db, `users/${user.uid}/shops/${shop.uid}/products`, productUid)
+        await deleteDoc(productRef)
+
+        productIsDone 
+          ? setCartProducts(cartProducts.filter((product) => product.uid != productUid)) 
+          : setPendingProducts(pendingProducts.filter((product) => product.uid != productUid))
+
+          toast({
+            variant: "success",
+            title: "Sucesso!",
+            description: "Produto excluído",
+          })
+      }
+    }catch(error){
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Um erro inesperado aconteceu ao excluir o produto"
+      })
+    } finally{
+      setRemoveProductLoading(false)
+    }
+  }
+
   useEffect( () => {
     getProducts()
   }, [])
@@ -204,7 +233,12 @@ const ShopPage = ({shop}: DocumentData) => {
             </SheetHeader>
             {
               cartProducts.length ?
-                <ProductList products={cartProducts} onProductStatusChange={toggleProductStatus} />
+                <ProductList
+                  products={cartProducts}
+                  onProductStatusChange={toggleProductStatus} 
+                  onRemoveProduct={removeProduct}
+                  removeProductLoading={removeProductLoading}
+                />
                 :  
                 <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
             }
@@ -215,12 +249,17 @@ const ShopPage = ({shop}: DocumentData) => {
       <div className='flex flex-col justify-center items-center space-y-3'>
         {
           pendingProducts.length ? 
-            <ProductList products={pendingProducts} onProductStatusChange={toggleProductStatus} />
+            <ProductList
+              products={pendingProducts}
+              onProductStatusChange={toggleProductStatus} 
+              onRemoveProduct={removeProduct}
+              removeProductLoading={removeProductLoading}
+            />
             : 
             <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />
         }
     
-        <ProductFormFooter createProductsLoading={createProductsLoading} onProductsAdd={onSubmit} />
+        <ProductFormFooter createProductsLoading={createProductsLoading} onProductsAdd={onSubmitProduct} />
       </div>
     </div>
   )

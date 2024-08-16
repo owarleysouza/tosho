@@ -4,7 +4,9 @@ import ProductCard from './ProductCard'
 
 interface ProductListProps {
   products: Product[];
-  onProductStatusChange: (product: Product, status: boolean) => void
+  onProductStatusChange: (product: Product, status: boolean) => void;
+  onRemoveProduct: (productUid: string, status: boolean) => void;
+  removeProductLoading: boolean;
 }
 
 interface CategorizedProductsType{
@@ -15,7 +17,7 @@ interface ProductCategoriesType{
   [key: string]: string;
 }
  
-const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChange}) => {
+const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChange, onRemoveProduct, removeProductLoading}) => {
 
   const [categorizedProducts, setCategorizedProducts] = useState<CategorizedProductsType>({})
 
@@ -52,7 +54,13 @@ const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChang
           
           <section className='space-y-2'>
             {categorizedProducts[category].map((product) => (
-              <ProductCard key={product.uid} product={product} onProductStatusChange={onProductStatusChange} />
+              <ProductCard 
+                key={product.uid}
+                product={product}
+                onProductStatusChange={onProductStatusChange} 
+                onRemoveProduct={onRemoveProduct}
+                removeProductLoading={removeProductLoading}
+              />
             ))}
           </section>     
         </section>
