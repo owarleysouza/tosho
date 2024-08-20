@@ -88,7 +88,7 @@ export const ProductEditFormSchema = z.object({
     .min(2, {
       message: "Número mínimo de caracteres não atingido",
     })
-    .max(30, {
+    .max(25, {
       message: "Número máximo de caracteres atingido",
     }),
   quantity: z
@@ -102,13 +102,13 @@ export const ProductEditFormSchema = z.object({
     }),
   description: z
     .string()
-    .max(30, {
+    .max(25, {
       message: "Número máximo de caracteres atingido",
     })
     .optional(), 
   price: z
     .coerce.number({message: "Preço Inválido"})
-    .positive({message: "Preço precisa ser positivo"})
+    .nonnegative({message: "Preço precisa ser positivo"})
     .optional(),
 }) 
 
