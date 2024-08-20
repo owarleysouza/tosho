@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 
 import { Product } from '@/types'
+import { ProductEditFormSchema } from '@/utils/formValidations'
+import { z } from 'zod'
 
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -10,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import DecisionDialog from '@/components/commom/DecisionDialog'
+import ProductEditDialog from '@/pages/shop/ProductEditDialog'
 
 import { EllipsisVertical   } from 'lucide-react'
 
@@ -17,12 +20,16 @@ interface ProductProps{
   product: Product;
   onProductStatusChange: (product: Product, status: boolean) => void;
   onRemoveProduct: (productUid: string, status: boolean) => void;
+  onEditProduct: (data: Product) => void;
   removeProductLoading: boolean;
+  editProductLoading: boolean;
 }
 
-const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, onRemoveProduct, removeProductLoading }) =>  {
+const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, onRemoveProduct, removeProductLoading, onEditProduct, editProductLoading }) =>  {
 
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false) 
+  const [openProductEditDialog, setOpenProductEditDialog] = useState(false) 
+  
   const [openMenu, setOpenMenu] = useState(false)
   
   function handleCheckboxChange(){
@@ -37,6 +44,21 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
     setOpenRemoveDialog(true)
     setOpenMenu(false)
   }
+
+  function onOpenEditDialog(){
+    setOpenProductEditDialog(true)
+    setOpenMenu(false)
+  }
+ 
+  function editProduct(data: z.infer<typeof ProductEditFormSchema>){
+    const productToEdit = {
+      uid: product.uid,
+      isDone: product.isDone,
+      ...data
+    }
+    onEditProduct(productToEdit)
+  }
+  
    
   return (
     <div className='flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 px-4 rounded-2xl border border-accent shadow'>
@@ -66,7 +88,12 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
             <EllipsisVertical className="h-5 w-5 cursor-pointer"/>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem disabled>Editar</DropdownMenuItem>
+            <DropdownMenuItem 
+              className='cursor-pointer'
+              onClick={onOpenEditDialog}
+            >
+              Editar
+            </DropdownMenuItem>
             <DropdownMenuItem
               className='cursor-pointer'
               onClick={onOpenRemoveDialog}
@@ -85,10 +112,15 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
           loading={removeProductLoading}
           onConfirm={removeProduct}
         />
-        
-      </section>
 
-    
+        <ProductEditDialog 
+          product={product}
+          openProductEditDialog={openProductEditDialog}
+          setOpenProductEditDialog={setOpenProductEditDialog}
+          onEditProduct={editProduct}
+          editProductLoading={editProductLoading}
+        />
+      </section>
     </div>
   )
 }

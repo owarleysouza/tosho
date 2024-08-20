@@ -80,3 +80,36 @@ export const ProductsCreateFormSchema = z.object({
       message: "Número máximo de produtos por vez atingido",
     })
 }) 
+
+export const ProductEditFormSchema = z.object({ 
+  name: z
+    .string()
+    .trim()
+    .min(2, {
+      message: "Número mínimo de caracteres não atingido",
+    })
+    .max(30, {
+      message: "Número máximo de caracteres atingido",
+    }),
+  quantity: z
+    .coerce.number({message: "Quantidade inválida"})
+    .int()
+    .positive({message: "Quantidade precisa ser positiva"}),
+  category: z
+    .string()
+    .min(2, {
+      message: "Número mínimo de caracteres não atingido",
+    }),
+  description: z
+    .string()
+    .max(30, {
+      message: "Número máximo de caracteres atingido",
+    })
+    .optional(), 
+  price: z
+    .coerce.number({message: "Preço Inválido"})
+    .positive({message: "Preço precisa ser positivo"})
+    .optional(),
+}) 
+
+

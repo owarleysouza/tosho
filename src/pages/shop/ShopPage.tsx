@@ -34,6 +34,7 @@ const ShopPage = ({shop}: DocumentData) => {
   const [createProductsLoading, setCreateProductsLoading] = useState(false)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [removeProductLoading, setRemoveProductLoading] = useState(false)
+  const [editProductLoading, setEditProductLoading] = useState(false)
   
   const { user } = useContext(UserContext)
 
@@ -203,6 +204,46 @@ const ShopPage = ({shop}: DocumentData) => {
       setRemoveProductLoading(false)
     }
   }
+ 
+  async function editProduct(product: Product){
+    try{
+      setEditProductLoading(true)
+      if(user){
+        const productRef = doc(db, `users/${user.uid}/shops/${shop.uid}/products`, product.uid)
+        await updateDoc(productRef, {
+          name: product.name,
+          quantity: product.quantity,
+          category: product.category,
+          description: product.description, 
+          price: product.price
+        })
+        //TODO: This can be improved
+        if(product.isDone){
+          setCartProducts(
+            cartProducts.map((element) =>  element.uid === product.uid ? {...element, ...product} : element)
+          ) 
+        } else {
+          setPendingProducts(
+            pendingProducts.map((element) =>  element.uid === product.uid ? {...element, ...product} : element)
+          ) 
+        }
+ 
+          toast({
+            variant: "success",
+            title: "Sucesso!",
+            description: "Produto editado",
+          })
+      }
+    }catch(error){
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Um erro inesperado aconteceu ao editar o produto"
+      })
+    } finally{
+      setEditProductLoading(false)
+    }
+  }
 
   useEffect( () => {
     getProducts()
@@ -238,6 +279,8 @@ const ShopPage = ({shop}: DocumentData) => {
                   onProductStatusChange={toggleProductStatus} 
                   onRemoveProduct={removeProduct}
                   removeProductLoading={removeProductLoading}
+                  onEditProduct={editProduct}
+                  editProductLoading={editProductLoading}
                 />
                 :  
                 <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
@@ -254,6 +297,8 @@ const ShopPage = ({shop}: DocumentData) => {
               onProductStatusChange={toggleProductStatus} 
               onRemoveProduct={removeProduct}
               removeProductLoading={removeProductLoading}
+              onEditProduct={editProduct}
+              editProductLoading={editProductLoading}
             />
             : 
             <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />

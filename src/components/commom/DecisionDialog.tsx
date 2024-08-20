@@ -28,6 +28,7 @@ const DecisionDialog: React.FC<DecisionDialogProps>  = ({title, description, act
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent 
         className="w-[340px]"
+        onInteractOutside={(e) => {e.preventDefault()}}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

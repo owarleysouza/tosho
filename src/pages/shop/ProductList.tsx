@@ -1,34 +1,25 @@
 import type { Product } from '@/types'
 import React, { useEffect, useState } from 'react'
 import ProductCard from './ProductCard'
+import { productCategories } from '@/utils/productCategories';
 
 interface ProductListProps {
   products: Product[];
   onProductStatusChange: (product: Product, status: boolean) => void;
   onRemoveProduct: (productUid: string, status: boolean) => void;
+  onEditProduct: (product: Product) => void;
   removeProductLoading: boolean;
+  editProductLoading: boolean;
 }
 
 interface CategorizedProductsType{
   [key: string]: Product[];
 }
 
-interface ProductCategoriesType{
-  [key: string]: string;
-}
  
-const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChange, onRemoveProduct, removeProductLoading}) => {
+const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChange, onRemoveProduct, removeProductLoading, onEditProduct, editProductLoading}) => {
 
   const [categorizedProducts, setCategorizedProducts] = useState<CategorizedProductsType>({})
-
-  //TODO: Change this with all defined categories on product edit 
-  const productCategories: ProductCategoriesType = {
-    others: "Outros",
-    cleaning: "Limpeza",
-    hygiene: "Higiene Pessoal",
-    fruits: "Frutas",
-    bakery: "Padaria"
-  }
   
   function categorizeProducts(){
     const groupedProducts = products.reduce((acc, product) => {
@@ -40,6 +31,10 @@ const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChang
     }, {} as Record<string, Product[]>)
 
     setCategorizedProducts(groupedProducts)
+  }
+ 
+  function editProduct(product: Product){
+    onEditProduct(product)
   }
 
   useEffect(() => { 
@@ -60,6 +55,8 @@ const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChang
                 onProductStatusChange={onProductStatusChange} 
                 onRemoveProduct={onRemoveProduct}
                 removeProductLoading={removeProductLoading}
+                onEditProduct={editProduct}
+                editProductLoading={editProductLoading}
               />
             ))}
           </section>     
