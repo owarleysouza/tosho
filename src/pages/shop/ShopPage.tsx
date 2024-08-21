@@ -7,39 +7,40 @@ import { Product } from '@/types';
 
 import { UserContext } from '@/context/commom/UserContext'
 
-import { ShoppingBasket  } from 'lucide-react';
 import productsBlankStateSVG from "@/assets/images/products-blank-state.svg" 
 import cartBlankStateSVG from "@/assets/images/cart-blank-state.svg" 
 
-import {
-  Sheet,
-  SheetContent, 
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import BlankState from '@/components/commom/BlankState';
 import ProductFormFooter from '@/components/form/ProductFormFooter';
 import LoadingPage from '../commom/LoadingPage'; 
 import { useToast } from "@/components/ui/use-toast"
-import ProductList from './ProductList';
+import ProductList from '@/pages/shop/ProductList';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { db } from "@/lib/firebase"; 
 import { addDoc, collection, DocumentData, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const ShopPage = ({shop}: DocumentData) => { 
-  const [pendingProducts, setPendingProducts] = useState<Product[]>([])
-  const [cartProducts, setCartProducts] = useState<Product[]>([])
-  
-  const [createProductsLoading, setCreateProductsLoading] = useState(false)
-  const [loadingProducts, setLoadingProducts] = useState(true)
-  const [removeProductLoading, setRemoveProductLoading] = useState(false)
-  const [editProductLoading, setEditProductLoading] = useState(false)
-  
   const { user } = useContext(UserContext)
 
   const { toast } = useToast()
 
+  const [activeTab, setActiveTab] = useState("list")
+  
+  const [pendingProducts, setPendingProducts] = useState<Product[]>([])
+  const [cartProducts, setCartProducts] = useState<Product[]>([])
+  
+  const [createProductsLoading, setCreateProductsLoading] = useState(false)
+  
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  
+  const [removeProductLoading, setRemoveProductLoading] = useState(false)
+  
+  const [editProductLoading, setEditProductLoading] = useState(false)
+  
+  const formattedDate = formatDate(shop.date?.seconds);
+
+  //These two methods can be moved to an util or helper file?!
   function formatDate(timestamp: number): string {
     const date = new Date(timestamp * 1000); // Convertendo de segundos para milissegundos
     const day = String(date.getDate()).padStart(2, '0');
@@ -48,8 +49,6 @@ const ShopPage = ({shop}: DocumentData) => {
     
     return `${day}/${month}/${year}`;
   }
-
-  const formattedDate = formatDate(shop.date?.seconds);
 
   function handleProductsInput(text: string) {
     const products = []
@@ -253,25 +252,37 @@ const ShopPage = ({shop}: DocumentData) => {
 
   return (
     <div className='mt-16'>
-      <section 
-        className='flex flex-row justify-between items-center my-3' 
-      >
-        <section className='flex flex-col'>
-          <span className='text-xs text-slate-400'>{ formattedDate }</span>
-          <span className='text-lg text-black font-bold'>{shop.name}</span>
-        </section>
-         
-        <Sheet>
-          <SheetTrigger>
-            <ShoppingBasket className='text-primary'/>
-          </SheetTrigger>
-          <SheetContent 
-            aria-describedby={undefined} 
-            className='flex flex-col justify-start w-full overflow-y-auto'
-          >
-            <SheetHeader>
-              <SheetTitle className='flex justify-center text-xl font-bold'>Carrinho</SheetTitle>
-            </SheetHeader>
+      <section className='flex flex-col items-center my-3'>
+        <span className='text-xs text-slate-400'>{ formattedDate }</span>
+        <span className='text-lg text-black font-bold'>{shop.name}</span>
+      </section>        
+
+      <Tabs defaultValue="list" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="w-80 bg-secondary">
+          <TabsTrigger value="list" className="w-1/2 data-[state=active]:bg-accent">Lista</TabsTrigger>
+          <TabsTrigger value="cart" className="w-1/2 data-[state=active]:bg-accent">Carrinho</TabsTrigger>
+        </TabsList>
+        <TabsContent value="list" forceMount={true} hidden={"list" !== activeTab}>
+          <section className='flex flex-col justify-center items-center space-y-3'>
+            {
+              pendingProducts.length ? 
+                <ProductList
+                  products={pendingProducts}
+                  onProductStatusChange={toggleProductStatus} 
+                  onRemoveProduct={removeProduct}
+                  removeProductLoading={removeProductLoading}
+                  onEditProduct={editProduct}
+                  editProductLoading={editProductLoading}
+                />
+                : 
+                <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />
+            }
+        
+            <ProductFormFooter createProductsLoading={createProductsLoading} onProductsAdd={onSubmitProduct} />
+          </section>
+        </TabsContent>
+        <TabsContent value="cart" forceMount={true} hidden={"cart" !== activeTab}>
+          <section className='pb-2'>
             {
               cartProducts.length ?
                 <ProductList
@@ -285,27 +296,9 @@ const ShopPage = ({shop}: DocumentData) => {
                 :  
                 <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
             }
-          </SheetContent>
-        </Sheet>
-      </section>
-
-      <div className='flex flex-col justify-center items-center space-y-3'>
-        {
-          pendingProducts.length ? 
-            <ProductList
-              products={pendingProducts}
-              onProductStatusChange={toggleProductStatus} 
-              onRemoveProduct={removeProduct}
-              removeProductLoading={removeProductLoading}
-              onEditProduct={editProduct}
-              editProductLoading={editProductLoading}
-            />
-            : 
-            <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />
-        }
-    
-        <ProductFormFooter createProductsLoading={createProductsLoading} onProductsAdd={onSubmitProduct} />
-      </div>
+          </section>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
