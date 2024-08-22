@@ -108,15 +108,15 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
               className='cursor-pointer'
               onClick={onOpenRemoveDialog}
             >
-              Remover
+              Excluir
             </DropdownMenuItem> 
           </DropdownMenuContent>
         </DropdownMenu>
 
         <DecisionDialog 
-          title='Remover produto?'
+          title='Excluir produto?'
           description='Todos os dados desse produto serão perdidos e esta ação não poderá ser desfeita.'
-          actionLabel='Remover'
+          actionLabel='Excluir'
           open={openRemoveDialog} 
           setOpen={setOpenRemoveDialog}
           loading={removeProductLoading}
