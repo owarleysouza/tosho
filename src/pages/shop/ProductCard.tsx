@@ -117,6 +117,7 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
           title='Excluir produto?'
           description='Todos os dados desse produto serão perdidos e esta ação não poderá ser desfeita.'
           actionLabel='Excluir'
+          type='danger'
           open={openRemoveDialog} 
           setOpen={setOpenRemoveDialog}
           loading={removeProductLoading}

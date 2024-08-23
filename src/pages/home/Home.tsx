@@ -11,7 +11,7 @@ import BlankState from '@/components/commom/BlankState'
 
 import { UserContext } from '@/context/commom/UserContext'
 
-import { getDocs, collection, query, where, DocumentData } from "firebase/firestore";
+import { getDocs, collection, query, where, DocumentData, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 const Home = () => {
@@ -21,6 +21,8 @@ const Home = () => {
   const [currentShop, setCurrentShop] = useState<DocumentData>({})
 
   const [loading, setLoading] = useState(true)
+
+  const [completeShopLoading, setCompleteShopLoading] = useState(false)
 
   const { toast } = useToast()
   
@@ -53,8 +55,35 @@ const Home = () => {
       }) 
     } finally {
       setLoading(false)
+    } 
+  }
+
+  async function completeShop(shopTotal: number){ 
+    try{   
+      setCompleteShopLoading(true)
+      if(user){
+        const shopRef = doc(db, `users/${user.uid}/shops`, currentShop.uid)
+      
+        await updateDoc(shopRef, { isDone: true, total: shopTotal })
+
+        setCurrentShop([])
+         
+        toast({
+          variant: "success",
+          title: "Sucesso!",
+          description: "Compra concluída com sucesso",
+        })
+      }
     }
-    
+    catch (error) { 
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Um erro inesperado aconteceu ao concluir a compra"
+      }) 
+    } finally{
+      setCompleteShopLoading(false)
+    }
   }
 
   useEffect(() => { 
@@ -66,7 +95,11 @@ const Home = () => {
   return (
     <PrivateLayout>
       {Object.keys(currentShop).length ? 
-        (<Shop shop={currentShop} />) 
+        (<Shop 
+          shop={currentShop} 
+          onCompleteShop={completeShop}
+          completeShopLoading={completeShopLoading}
+        />) 
         :
         (
           <section className="h-screen flex flex-col justify-center items-center">

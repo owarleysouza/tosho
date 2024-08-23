@@ -21,7 +21,14 @@ import ShopTotalCard from "@/pages/shop/ShopTotalCard";
 import { db } from "@/lib/firebase"; 
 import { addDoc, collection, DocumentData, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-const ShopPage = ({shop}: DocumentData) => { 
+
+interface ShopProps {
+  shop: DocumentData; //TODO: Change this type to a Shop type
+  onCompleteShop: (shopTotal: number) => void;
+  completeShopLoading: boolean;
+}
+
+const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoading}) => { 
   const { user } = useContext(UserContext)
 
   const { toast } = useToast()
@@ -38,6 +45,8 @@ const ShopPage = ({shop}: DocumentData) => {
   const [removeProductLoading, setRemoveProductLoading] = useState(false)
   
   const [editProductLoading, setEditProductLoading] = useState(false)
+
+  
   
   const formattedDate = formatDate(shop.date?.seconds);
 
@@ -284,18 +293,24 @@ const ShopPage = ({shop}: DocumentData) => {
         </TabsContent>
         <TabsContent value="cart" forceMount={true} hidden={"cart" !== activeTab}>
           <section className='pb-2'>
-            <ShopTotalCard products={cartProducts} />
-            
             {
               cartProducts.length ?
-                <ProductList
-                  products={cartProducts}
-                  onProductStatusChange={toggleProductStatus} 
-                  onRemoveProduct={removeProduct}
-                  removeProductLoading={removeProductLoading}
-                  onEditProduct={editProduct}
-                  editProductLoading={editProductLoading}
-                />
+                <div>
+                  <ShopTotalCard 
+                    products={cartProducts}
+                    onCompleteShop={onCompleteShop}
+                    completeShopLoading={completeShopLoading}
+                  />
+                
+                  <ProductList
+                    products={cartProducts}
+                    onProductStatusChange={toggleProductStatus} 
+                    onRemoveProduct={removeProduct}
+                    removeProductLoading={removeProductLoading}
+                    onEditProduct={editProduct}
+                    editProductLoading={editProductLoading}
+                  />
+                </div>
                 :  
                 <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
             }
