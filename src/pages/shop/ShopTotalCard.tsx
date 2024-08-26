@@ -4,6 +4,8 @@ import { EllipsisVertical, Wallet } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import DecisionDialog from '@/components/commom/DecisionDialog';
 
+import { formatPrice } from '@/utils/formatters';
+
 interface ShopTotalCardProps {
   products: Product[];
   onCompleteShop: (shopTotal: number) => void;
@@ -28,10 +30,7 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, onCompleteShop, 
 
   function formatShopTotal(){
     const total = calculateShopTotal()
-    const shopPrice = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(total)
+    const shopPrice = formatPrice(total)
 
     return shopPrice
   }

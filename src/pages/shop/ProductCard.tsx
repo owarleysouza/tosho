@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 
 import { Product } from '@/types'
-import { ProductEditFormSchema } from '@/utils/formValidations'
 import { z } from 'zod'
+import { ProductEditFormSchema } from '@/utils/formValidations'
+import { formatPrice } from '@/utils/formatters'
 
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -59,16 +60,7 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
     onEditProduct(productToEdit)
   }
 
-  const formattedPrice = () => {
-    if(product.price && product.price > 0){
-      const price = new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(product.price)
-      return price
-    }
-    return 
-  }
+  
    
   return (
     <div className='flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 px-4 rounded-2xl border border-accent shadow gap-2'>
@@ -92,7 +84,7 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
 
       <section className='flex flex-row items-center gap-1.5'>
         <span className="text-xs text-black font-bold">{product.quantity}x</span>
-        <span className="text-xs text-black font-bold">{formattedPrice()}</span>
+        <span className="text-xs text-black font-bold">{formatPrice(product.price)}</span>
         <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
           <DropdownMenuTrigger asChild>
             <EllipsisVertical className="h-5 w-5 cursor-pointer"/>
