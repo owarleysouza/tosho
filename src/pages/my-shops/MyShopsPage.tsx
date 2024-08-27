@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { UserContext } from '@/context/commom/UserContext'
 
 import { db } from '@/lib/firebase';
-import { collection, DocumentData, getDocs, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, DocumentData, getDocs, query, where } from 'firebase/firestore';
 
 import PrivateLayout from '@/layouts/PrivateLayout'
 import { toast } from '@/components/ui/use-toast';
@@ -18,6 +18,8 @@ const MyShopsPage = () => {
   const [shops, setShops] = useState<DocumentData[]>([])
 
   const [loading, setLoading] = useState(true)
+
+  const [removeShopLoading, setRemoveShopLoading] = useState(false)
 
   async function getShops(){ 
     const myShops: DocumentData[] = []
@@ -59,6 +61,32 @@ const MyShopsPage = () => {
     } 
   }
 
+  async function removeShop(shopUid: string){
+    try{
+      setRemoveShopLoading(true)
+      if(user){
+        const shopRef = doc(db, `users/${user.uid}/shops`, shopUid)
+        await deleteDoc(shopRef)
+
+        setShops(shops.filter((shop) => shop.uid != shopUid))
+
+          toast({
+            variant: "success",
+            title: "Sucesso!",
+            description: "Compra excluída",
+          })
+      }
+    }catch(error){
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Um erro inesperado aconteceu ao excluir a compra"
+      })
+    } finally{
+      setRemoveShopLoading(false)
+    }
+  }
+
   useEffect(() => {
     getShops()
   }, [])
@@ -73,7 +101,12 @@ const MyShopsPage = () => {
           {
             shops.map((shop) => 
               (
-                <ShopCard key={shop.uid} shop={shop} />
+                <ShopCard 
+                  key={shop.uid}
+                  shop={shop}
+                  onRemoveShop={removeShop}
+                  removeShopLoading={removeShopLoading}
+                />
               )
             )
           }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import DecisionDialog from '@/components/commom/DecisionDialog';
 
 import { EllipsisVertical, ShoppingBasket } from 'lucide-react'
 
@@ -11,23 +12,35 @@ import { useNavigate } from 'react-router-dom';
 
 interface MyShopsProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
+  onRemoveShop: (shopId: string) => void; 
+  removeShopLoading: boolean;
 }
 
-const ShopCard: React.FC<MyShopsProps> = ({shop}) => {
+const ShopCard: React.FC<MyShopsProps> = ({shop, onRemoveShop, removeShopLoading}) => {
   const [openMenu, setOpenMenu] = useState(false)
+
+  const [openRemoveDialog, setOpenRemoveDialog] = useState(false) 
 
   const navigate = useNavigate()
 
   function goToShopDetail(){
     navigate(`/complete-shops/${shop.uid}`, { state: { shop: shop } }) 
   }
+
+  function onOpenRemoveDialog(){
+    setOpenRemoveDialog(true)
+    setOpenMenu(false)
+  }
+
+  function removeShop(){
+    onRemoveShop(shop.uid)
+  }
   
   return (
     <div 
-      className='cursor-pointer flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 px-4 rounded-2xl border border-accent shadow gap-2'
-      onClick={goToShopDetail}
+      className='flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 px-4 rounded-2xl border border-accent shadow gap-2'
     >
-      <section className='flex flex-row items-center gap-2'>
+      <section className='cursor-pointer flex flex-row items-center gap-2' onClick={goToShopDetail}>
         <ShoppingBasket />
         <div className='flex flex-col'>
           <span 
@@ -48,15 +61,25 @@ const ShopCard: React.FC<MyShopsProps> = ({shop}) => {
           <DropdownMenuContent>
             <DropdownMenuItem
               className='cursor-pointer'
-              onClick={() => {}}
-              disabled
+              onClick={onOpenRemoveDialog}
             >
               Excluir
             </DropdownMenuItem> 
           </DropdownMenuContent>
         </DropdownMenu>
       </section>
-    </div>
+
+      <DecisionDialog 
+        title='Excluir compra?'
+        description='Todos os dados dessa compra serão perdidos e esta ação não poderá ser desfeita.'
+        actionLabel='Excluir'
+        type='danger'
+        open={openRemoveDialog} 
+        setOpen={setOpenRemoveDialog}
+        loading={removeShopLoading}
+        onConfirm={removeShop}
+      />
+  </div>
   )
 }
 
