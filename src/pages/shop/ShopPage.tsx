@@ -270,6 +270,7 @@ const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoadin
                   removeProductLoading={removeProductLoading}
                   onEditProduct={editProduct}
                   editProductLoading={editProductLoading}
+                  isVisualizer={false}
                 />
                 : 
                 <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />
@@ -287,6 +288,7 @@ const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoadin
                     products={cartProducts}
                     onCompleteShop={onCompleteShop}
                     completeShopLoading={completeShopLoading}
+                    isVisualizer={false}
                   />
                 
                   <ProductList
@@ -296,6 +298,7 @@ const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoadin
                     removeProductLoading={removeProductLoading}
                     onEditProduct={editProduct}
                     editProductLoading={editProductLoading}
+                    isVisualizer={false}
                   />
                 </div>
                 :  

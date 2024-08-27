@@ -8,12 +8,12 @@ import { formatPrice } from '@/utils/formatters';
 
 interface ShopTotalCardProps {
   products: Product[];
-  onCompleteShop: (shopTotal: number) => void;
-  completeShopLoading: boolean;
-   
+  onCompleteShop?: (shopTotal: number) => void;
+  completeShopLoading?: boolean;
+  isVisualizer: boolean; 
 }
 
-const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, onCompleteShop, completeShopLoading}) => {
+const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, onCompleteShop, completeShopLoading, isVisualizer}) => {
   const [openMenu, setOpenMenu] = useState(false)
 
   const [openCompleteShopDialog, setOpenCompleteShopDialog] = useState(false) 
@@ -42,7 +42,7 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, onCompleteShop, 
 
   async function completeShop(){
     const shopTotal = calculateShopTotal()
-    await onCompleteShop(shopTotal)
+    if(!isVisualizer && onCompleteShop) await onCompleteShop(shopTotal)
     setOpenCompleteShopDialog(false)
   }
 
@@ -55,40 +55,45 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, onCompleteShop, 
           <h1 className='text-2xl text-black font-bold break-all ...'>{formatShopTotal()}</h1>
         </div>
       </div>
-      <div className='flex flex-row items-center gap-3'>
-        <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
-          <DropdownMenuTrigger asChild>
-            <EllipsisVertical className="h-5 w-5 cursor-pointer"/>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem 
-              className='cursor-pointer'
-              onClick={onOpenCompleteShopDialog}
-            >
-              Concluir compra
-            </DropdownMenuItem> 
-            <DropdownMenuItem 
-              className='cursor-pointer'
-              onClick={() => {}}
-              disabled
-            >
-              Limpar carrinho
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {
+        !isVisualizer && (
+          <div className='flex flex-row items-center gap-3'>
+            <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
+              <DropdownMenuTrigger asChild>
+                <EllipsisVertical className="h-5 w-5 cursor-pointer"/>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem 
+                  className='cursor-pointer'
+                  onClick={onOpenCompleteShopDialog}
+                >
+                  Concluir compra
+                </DropdownMenuItem> 
+                <DropdownMenuItem 
+                  className='cursor-pointer'
+                  onClick={() => {}}
+                  disabled
+                >
+                  Limpar carrinho
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-        <DecisionDialog 
-          title='Concluir compra?'
-          description='Todos os produtos serão marcados como concluídos, e a compra será movida para compras concluídas.'
-          actionLabel='Concluir'
-          type='success'
-          open={openCompleteShopDialog} 
-          setOpen={setOpenCompleteShopDialog}
-          loading={completeShopLoading}
-          onConfirm={completeShop}
-        />
-        
-      </div>
+            <DecisionDialog 
+              title='Concluir compra?'
+              description='Todos os produtos serão marcados como concluídos, e a compra será movida para compras concluídas.'
+              actionLabel='Concluir'
+              type='success'
+              open={openCompleteShopDialog} 
+              setOpen={setOpenCompleteShopDialog}
+              loading={completeShopLoading}
+              onConfirm={completeShop}
+            />
+            
+          </div>
+        )
+      }
+      
     </section>
   )
 }

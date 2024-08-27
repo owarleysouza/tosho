@@ -18,7 +18,7 @@ interface DecisionDialogProps{
   actionLabel: string;
   type: string;
   open: boolean;
-  loading: boolean;
+  loading?: boolean;
   setOpen: (open: boolean) => void;
   onConfirm: () => void;
 }

@@ -1,10 +1,15 @@
 import { createBrowserRouter } from "react-router-dom";
+
+import ProtectedRoute from "@/routes/ProtectedRoute";
+import PublicRoute from "@/routes/PublicRoute";
+
 import Home from '@/pages/home/Home'
 import SignUp from "@/pages/auth/SignUpPage";
 import Login from "@/pages/auth/LoginPage";
-import ProtectedRoute from "@/routes/ProtectedRoute";
-import PublicRoute from "@/routes/PublicRoute";
 import AccountPage from "@/pages/account/AccountPage";
+import MyShopsPage from "@/pages/my-shops/MyShopsPage";
+import ShopDetailPage from "@/pages/my-shops/ShopDetailPage";
+
 
 const router = createBrowserRouter([
   {
@@ -17,6 +22,14 @@ const router = createBrowserRouter([
       {
         path: '/account',
         element: <AccountPage />
+      },
+      {
+        path: '/complete-shops',
+        element: <MyShopsPage />,
+      },
+      {
+        path: '/complete-shops/:shopId',
+        element: <ShopDetailPage />
       }
     ]
   },

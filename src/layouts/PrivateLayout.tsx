@@ -5,6 +5,15 @@ import Header from '@/components/commom/Header'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import userPNG from "@/assets/images/user.png"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem, 
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+
 
 interface LayoutProps {
   children: ReactNode
@@ -22,11 +31,39 @@ const PrivateLayout = ({children}: LayoutProps) => {
         >
           ToSho
         </h1>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Avatar className='cursor-pointer'>
+              <AvatarImage src={userPNG} />
+              <AvatarFallback>A</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem 
+                className='cursor-pointer'
+                onClick={() => navigate("/")}
+            >
+              Compra Atual
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className='cursor-pointer'
+              onClick={() => navigate("/account")}
+            >
+              Minha conta
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className='cursor-pointer'
+              onClick={() => navigate("/complete-shops")}
+            >
+              Compras Concluídas
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         
-        <Avatar className='cursor-pointer' onClick={() => navigate("/account", {replace: true})}>
-          <AvatarImage src={userPNG} />
-          <AvatarFallback>A</AvatarFallback>
-        </Avatar>
+        
       </Header>
       <div className="flex flex-col justify-center items-center">
         {children}

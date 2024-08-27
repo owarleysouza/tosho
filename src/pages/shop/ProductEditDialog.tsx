@@ -27,7 +27,7 @@ interface ProductEditDialogProps{
   onEditProduct: (data: z.infer<typeof ProductEditFormSchema>) => void;
   openProductEditDialog: boolean;
   setOpenProductEditDialog: (open: boolean) => void;
-  editProductLoading: boolean;
+  editProductLoading?: boolean;
 }
 
 const ProductEditDialog: React.FC<ProductEditDialogProps>  = ({ product, onEditProduct, openProductEditDialog, setOpenProductEditDialog, editProductLoading }) => {

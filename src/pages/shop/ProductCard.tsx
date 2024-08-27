@@ -19,14 +19,15 @@ import { EllipsisVertical   } from 'lucide-react'
 
 interface ProductProps{
   product: Product;
-  onProductStatusChange: (product: Product, status: boolean) => void;
-  onRemoveProduct: (productUid: string, status: boolean) => void;
-  onEditProduct: (data: Product) => void;
-  removeProductLoading: boolean;
-  editProductLoading: boolean;
+  onProductStatusChange?: (product: Product, status: boolean) => void;
+  onRemoveProduct?: (productUid: string, status: boolean) => void;
+  onEditProduct?: (data: Product) => void;
+  removeProductLoading?: boolean;
+  editProductLoading?: boolean;
+  isVisualizer: boolean;
 }
 
-const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, onRemoveProduct, removeProductLoading, onEditProduct, editProductLoading }) =>  {
+const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, onRemoveProduct, removeProductLoading, onEditProduct, editProductLoading, isVisualizer }) =>  {
 
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false) 
   const [openProductEditDialog, setOpenProductEditDialog] = useState(false) 
@@ -34,11 +35,11 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
   const [openMenu, setOpenMenu] = useState(false)
   
   function handleCheckboxChange(){
-    onProductStatusChange(product, !product.isDone)
+    if(onProductStatusChange) onProductStatusChange(product, !product.isDone)
   }
 
   function removeProduct(){
-    onRemoveProduct(product.uid, product.isDone)
+    if(onRemoveProduct) onRemoveProduct(product.uid, product.isDone)
   }
 
   function onOpenRemoveDialog(){
@@ -57,7 +58,7 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
       isDone: product.isDone,
       ...data
     }
-    onEditProduct(productToEdit)
+    if(onEditProduct) onEditProduct(productToEdit)
   }
 
   
@@ -68,8 +69,9 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
         <Checkbox 
           id={product.uid}
           className='rounded-md h-5 w-5'
-          checked={product.isDone}
+          checked={isVisualizer ? isVisualizer : product.isDone}
           onCheckedChange={handleCheckboxChange}
+          disabled={isVisualizer}
         />
         <div className='flex flex-col'>
           <label
@@ -85,26 +87,30 @@ const ProductCard: React.FC<ProductProps> = ({ product, onProductStatusChange, o
       <section className='flex flex-row items-center gap-1.5'>
         <span className="text-xs text-black font-bold">{product.quantity}x</span>
         <span className="text-xs text-black font-bold">{formatPrice(product.price)}</span>
-        <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
-          <DropdownMenuTrigger asChild>
-            <EllipsisVertical className="h-5 w-5 cursor-pointer"/>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem 
-              className='cursor-pointer'
-              onClick={onOpenEditDialog}
-            >
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className='cursor-pointer'
-              onClick={onOpenRemoveDialog}
-            >
-              Excluir
-            </DropdownMenuItem> 
-          </DropdownMenuContent>
-        </DropdownMenu>
-
+        {
+          !isVisualizer && (
+            <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
+              <DropdownMenuTrigger asChild>
+                <EllipsisVertical className="h-5 w-5 cursor-pointer"/>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem 
+                  className='cursor-pointer'
+                  onClick={onOpenEditDialog}
+                >
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className='cursor-pointer'
+                  onClick={onOpenRemoveDialog}
+                >
+                  Excluir
+                </DropdownMenuItem> 
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
+        }
+        
         <DecisionDialog 
           title='Excluir produto?'
           description='Todos os dados desse produto serão perdidos e esta ação não poderá ser desfeita.'
