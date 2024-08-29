@@ -6,10 +6,12 @@ import { db } from '@/lib/firebase';
 import { collection, deleteDoc, doc, DocumentData, getDocs, query, where } from 'firebase/firestore';
 
 import PrivateLayout from '@/layouts/PrivateLayout'
-import { toast } from '@/components/ui/use-toast';
+import CompletedShopCard from "@/pages/completed-shops/CompletedShopCard";
 import LoadingPage from '@/pages/commom/LoadingPage';
-import ShopCard from "@/pages/my-shops/ShopCard";
+import { toast } from '@/components/ui/use-toast';
+import BlankState from "@/components/commom/BlankState";
 
+import shopBlankStateSVG from "@/assets/images/shop-blank-state.svg" 
 
 const MyShopsPage = () => {
   const { user } = useContext(UserContext)
@@ -97,20 +99,28 @@ const MyShopsPage = () => {
     <PrivateLayout>
       <div className='flex flex-col items-center mt-16'> 
         <span className='text-lg text-black font-bold my-3'>Compras concluídas</span>
-        <section className='space-y-2'>
-          {
-            shops.map((shop) => 
-              (
-                <ShopCard 
-                  key={shop.uid}
-                  shop={shop}
-                  onRemoveShop={removeShop}
-                  removeShopLoading={removeShopLoading}
-                />
-              )
-            )
-          }
-        </section>
+        {
+          shops.length ? 
+          (
+            <section className='space-y-2'>
+              {
+                shops.map((shop) => 
+                  (
+                    <CompletedShopCard 
+                      key={shop.uid}
+                      shop={shop}
+                      onRemoveShop={removeShop}
+                      removeShopLoading={removeShopLoading}
+                    />
+                  )
+                )
+              }
+            </section>
+          )
+          : <BlankState image={shopBlankStateSVG} title="Nenhuma compra concluída :(" /> 
+
+        }
+        
       </div>
     </PrivateLayout>
     

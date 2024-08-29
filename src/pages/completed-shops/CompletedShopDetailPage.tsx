@@ -9,9 +9,9 @@ import { UserContext } from '@/context/commom/UserContext'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { toast } from '@/components/ui/use-toast'
-import LoadingPage from '../commom/LoadingPage'
-import ShopTotalCard from '../shop/ShopTotalCard'
-import ProductList from '../shop/ProductList'
+import LoadingPage from '@/pages/commom/LoadingPage'; 
+import ShopTotalCard from '@/components/shop/ShopTotalCard'
+import ProductList from '@/components/shop/ProductList'
 
 const ShopDetailPage = () => {
   const { user } = useContext(UserContext)

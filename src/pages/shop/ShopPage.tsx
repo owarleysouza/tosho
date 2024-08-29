@@ -13,11 +13,11 @@ import cartBlankStateSVG from "@/assets/images/cart-blank-state.svg"
 
 import BlankState from '@/components/commom/BlankState';
 import ProductFormFooter from '@/components/form/ProductFormFooter';
-import LoadingPage from '../commom/LoadingPage'; 
+import LoadingPage from '@/pages/commom/LoadingPage'; 
 import { useToast } from "@/components/ui/use-toast"
-import ProductList from '@/pages/shop/ProductList';
+import ProductList from '@/components/shop/ProductList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ShopTotalCard from "@/pages/shop/ShopTotalCard";
+import ShopTotalCard from "@/components/shop/ShopTotalCard";
 
 import { db } from "@/lib/firebase"; 
 import { addDoc, collection, DocumentData, getDocs } from 'firebase/firestore';
