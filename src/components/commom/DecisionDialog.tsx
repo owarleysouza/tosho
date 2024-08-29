@@ -46,7 +46,7 @@ const DecisionDialog: React.FC<DecisionDialogProps>  = ({title, description, act
         </DialogHeader>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="ghost" className='hover:bg-transparent' onClick={() => setOpen(false)}>Cancelar</Button>
           <Button disabled={loading} onClick={onConfirm} className={`${ButtonBackground[type]} rounded-full px-8`}>
           { loading ? 
             (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) 

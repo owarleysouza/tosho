@@ -20,32 +20,69 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ShopTotalCard from "@/pages/shop/ShopTotalCard";
 
 import { db } from "@/lib/firebase"; 
-import { addDoc, collection, DocumentData, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, DocumentData, getDocs } from 'firebase/firestore';
 
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/app/store";
+import { setCurrentShopPendingProducts, setCurrentShopCartProducts } from "@/app/shop/shopSlice";
 
 interface ShopProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
-  onCompleteShop: (shopTotal: number) => void;
-  completeShopLoading: boolean;
 }
 
-const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoading}) => { 
+const ShopPage: React.FC<ShopProps> = ({ shop }) => { 
   const { user } = useContext(UserContext)
 
-  const { toast } = useToast()
-
-  const [activeTab, setActiveTab] = useState("list")
-  
-  const [pendingProducts, setPendingProducts] = useState<Product[]>([])
-  const [cartProducts, setCartProducts] = useState<Product[]>([])
+  const currentShopPendingProducts = useSelector((state: RootState) => state.shop.currentShopPendingProducts) 
+  const currentShopCartProducts = useSelector((state: RootState) => state.shop.currentShopCartProducts) 
+  const dispatch = useDispatch()
   
   const [createProductsLoading, setCreateProductsLoading] = useState(false)
   
-  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [loadingProducts, setLoadingProducts] = useState(true) 
   
-  const [removeProductLoading, setRemoveProductLoading] = useState(false)
-  
-  const [editProductLoading, setEditProductLoading] = useState(false)
+  const { toast } = useToast()
+
+  const [activeTab, setActiveTab] = useState("list")
+
+  async function getProducts(){
+    const pendingList: Product[] = []
+    const checkedList: Product[] = []
+
+    try{
+      //Verification if products is empty for avoid to do a get on firestore again and replicate the products on redux state. Try to improve this approach later
+      if(user && !currentShopPendingProducts.length && !currentShopCartProducts.length){
+        const pendingProductsRef = collection(db, `users/${user.uid}/shops/${shop.uid}/products`)
+        const querySnapshot = await getDocs(pendingProductsRef);
+     
+        querySnapshot.forEach((doc) => {
+          const {name, quantity, category, isDone, description, price} = doc.data()
+          const product: Product = {
+            uid: doc.id,
+            name,
+            quantity,
+            category,
+            isDone,
+            description, 
+            price
+          }
+
+          product.isDone ? checkedList.push(product) : pendingList.push(product)
+        })
+
+        dispatch(setCurrentShopPendingProducts(pendingList))
+        dispatch(setCurrentShopCartProducts(checkedList))
+      }
+    } catch (error) { 
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Um erro inesperado aconteceu ao carregar produtos"
+      }) 
+    } finally {
+      setLoadingProducts(false)
+    }
+  }
 
   function handleProductsInput(text: string) {
     const products = []
@@ -68,45 +105,6 @@ const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoadin
     return products
   }
 
-  async function getProducts(){
-    const pendingList: Product[] = []
-    const checkedList: Product[] = []
-
-    try{
-      //Verification if products is empty for avoid to do a get on firestore again and replicate the products on redux state. Try to improve this approach later
-      if(user && !pendingProducts.length && !cartProducts.length){
-        const pendingProductsRef = collection(db, `users/${user.uid}/shops/${shop.uid}/products`)
-        const querySnapshot = await getDocs(pendingProductsRef);
-     
-        querySnapshot.forEach((doc) => {
-          const {name, quantity, category, isDone, description, price} = doc.data()
-          const product: Product = {
-            uid: doc.id,
-            name,
-            quantity,
-            category,
-            isDone,
-            description, 
-            price
-          }
-
-          product.isDone ? checkedList.push(product) : pendingList.push(product)
-        })
-
-        setPendingProducts(pendingList)
-        setCartProducts(checkedList)
-      }
-    } catch (error) { 
-      toast({
-        variant: "destructive",
-        title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu ao carregar produtos"
-      }) 
-    } finally {
-      setLoadingProducts(false)
-    }
-  }
-
   async function onSubmitProduct(data: z.infer<typeof ProductsCreateFormSchema>, form: UseFormReturn<{text: string;}>): Promise<void>{
     const productsToAdd = handleProductsInput(data.text) 
    
@@ -125,7 +123,7 @@ const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoadin
         })
 
         const addedProducts = await Promise.all(productPromises)
-        setPendingProducts(pendingProducts.concat(addedProducts))
+        dispatch(setCurrentShopPendingProducts(currentShopPendingProducts.concat(addedProducts)))
 
         form.reset() 
       }   
@@ -139,108 +137,7 @@ const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoadin
       setCreateProductsLoading(false)
     }
   } 
-
-  async function toggleProductStatus(toggleProduct: Product, status: boolean){
-    try{   
-      if(user){
-        const productRef = doc(db, `users/${user.uid}/shops/${shop.uid}/products`, toggleProduct.uid)
-      
-        await updateDoc(productRef, { isDone: status })
-
-        status === true 
-        ? setPendingProducts(pendingProducts.filter((product) => product.uid != toggleProduct.uid))
-        : setCartProducts(cartProducts.filter((product) => product.uid != toggleProduct.uid))
-        
-        toggleProduct.isDone = status
-        
-        status === true 
-          ? setCartProducts(cartProducts.concat(toggleProduct))
-          : setPendingProducts(pendingProducts.concat(toggleProduct))
-
-          toast({
-            variant: "success",
-            title: "Sucesso!",
-            description: status ? "Produto adicionado ao carrinho" : "Produto removido do carrinho",
-          })
-      }
-    }
-    catch (error) { 
-      toast({
-        variant: "destructive",
-        title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu ao mudar o status do produto"
-      }) 
-    } 
-  }
-
-  async function removeProduct(productUid: string, productIsDone: boolean){
-    try{
-      setRemoveProductLoading(true)
-      if(user){
-        const productRef = doc(db, `users/${user.uid}/shops/${shop.uid}/products`, productUid)
-        await deleteDoc(productRef)
-
-        productIsDone 
-          ? setCartProducts(cartProducts.filter((product) => product.uid != productUid)) 
-          : setPendingProducts(pendingProducts.filter((product) => product.uid != productUid))
-
-          toast({
-            variant: "success",
-            title: "Sucesso!",
-            description: "Produto excluído",
-          })
-      }
-    }catch(error){
-      toast({
-        variant: "destructive",
-        title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu ao excluir o produto"
-      })
-    } finally{
-      setRemoveProductLoading(false)
-    }
-  }
  
-  async function editProduct(product: Product){
-    try{
-      setEditProductLoading(true)
-      if(user){
-        const productRef = doc(db, `users/${user.uid}/shops/${shop.uid}/products`, product.uid)
-        await updateDoc(productRef, {
-          name: product.name,
-          quantity: product.quantity,
-          category: product.category,
-          description: product.description, 
-          price: product.price
-        })
-        //TODO: This can be improved
-        if(product.isDone){
-          setCartProducts(
-            cartProducts.map((element) =>  element.uid === product.uid ? {...element, ...product} : element)
-          ) 
-        } else {
-          setPendingProducts(
-            pendingProducts.map((element) =>  element.uid === product.uid ? {...element, ...product} : element)
-          ) 
-        }
- 
-          toast({
-            variant: "success",
-            title: "Sucesso!",
-            description: "Produto editado",
-          })
-      }
-    }catch(error){
-      toast({
-        variant: "destructive",
-        title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu ao editar o produto"
-      })
-    } finally{
-      setEditProductLoading(false)
-    }
-  }
-
   useEffect( () => {
     getProducts()
   }, [])
@@ -262,42 +159,33 @@ const ShopPage: React.FC<ShopProps> = ({shop, onCompleteShop, completeShopLoadin
         <TabsContent value="list" forceMount={true} hidden={"list" !== activeTab}>
           <section className='flex flex-col justify-center items-center space-y-3'>
             {
-              pendingProducts.length ? 
+              currentShopPendingProducts.length ? 
                 <ProductList
-                  products={pendingProducts}
-                  onProductStatusChange={toggleProductStatus} 
-                  onRemoveProduct={removeProduct}
-                  removeProductLoading={removeProductLoading}
-                  onEditProduct={editProduct}
-                  editProductLoading={editProductLoading}
+                  products={currentShopPendingProducts}  
                   isVisualizer={false}
                 />
                 : 
                 <BlankState image={productsBlankStateSVG} title="Nenhum produto pendente na lista" />
             }
         
-            <ProductFormFooter createProductsLoading={createProductsLoading} onProductsAdd={onSubmitProduct} />
+            <ProductFormFooter 
+              createProductsLoading={createProductsLoading}
+              onProductsAdd={onSubmitProduct}
+            />
           </section>
         </TabsContent>
         <TabsContent value="cart" forceMount={true} hidden={"cart" !== activeTab}>
           <section className='pb-2'>
             {
-              cartProducts.length ?
+              currentShopCartProducts.length ?
                 <div>
                   <ShopTotalCard 
-                    products={cartProducts}
-                    onCompleteShop={onCompleteShop}
-                    completeShopLoading={completeShopLoading}
+                    products={currentShopCartProducts}
                     isVisualizer={false}
                   />
                 
                   <ProductList
-                    products={cartProducts}
-                    onProductStatusChange={toggleProductStatus} 
-                    onRemoveProduct={removeProduct}
-                    removeProductLoading={removeProductLoading}
-                    onEditProduct={editProduct}
-                    editProductLoading={editProductLoading}
+                    products={currentShopCartProducts}
                     isVisualizer={false}
                   />
                 </div>

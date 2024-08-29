@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Button } from '@/components/ui/button'
 import PrivateLayout from '@/layouts/PrivateLayout'
 
-import { cleanProducts } from '@/app/shop/shopSlice';
+import { cleanStore } from '@/app/shop/shopSlice';
 import { useAppDispatch } from '@/hooks/hooks';
 
 
@@ -24,7 +24,7 @@ const AccountPage = () => {
   const onLogout = async () => {
     try{ 
       await signOut(auth) 
-      dispatch(cleanProducts())
+      dispatch(cleanStore())
       navigate("/login")
     } catch(error: unknown){
       if(error instanceof FirebaseError){

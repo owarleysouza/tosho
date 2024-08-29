@@ -11,18 +11,20 @@ import BlankState from '@/components/commom/BlankState'
 
 import { UserContext } from '@/context/commom/UserContext'
 
-import { getDocs, collection, query, where, DocumentData, doc, updateDoc } from "firebase/firestore";
+import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+import { useSelector, useDispatch } from 'react-redux'
+import { addCurrentShop } from "@/app/shop/shopSlice";
+import { RootState } from "@/app/store";
+
 const Home = () => {
+  const { user } = useContext(UserContext) 
 
-  const { user } = useContext(UserContext)
-  //TODO: Create a correct Shop Type to replace DocumentData type
-  const [currentShop, setCurrentShop] = useState<DocumentData>({})
+  const currentShop = useSelector((state: RootState) => state.shop.currentShop) 
+  const dispatch = useDispatch()
 
-  const [loading, setLoading] = useState(true)
-
-  const [completeShopLoading, setCompleteShopLoading] = useState(false)
+  const [loadingCurrentShop, setLoadingCurrentShop] = useState(true)
 
   const { toast } = useToast()
   
@@ -45,7 +47,7 @@ const Home = () => {
           uid: currentShopDocument.id,
           ...currentShopDocument.data()
         }
-        setCurrentShop(shop)
+        dispatch(addCurrentShop(shop))
       }  
     } catch (error) { 
       toast({
@@ -54,52 +56,20 @@ const Home = () => {
         description: "Um erro inesperado aconteceu ao carregar a compra"
       }) 
     } finally {
-      setLoading(false)
+      setLoadingCurrentShop(false)
     } 
-  }
-
-  async function completeShop(shopTotal: number){ 
-    try{   
-      setCompleteShopLoading(true)
-      if(user){
-        const shopRef = doc(db, `users/${user.uid}/shops`, currentShop.uid)
-      
-        await updateDoc(shopRef, { isDone: true, total: shopTotal })
-
-        setCurrentShop([])
-         
-        toast({
-          variant: "success",
-          title: "Sucesso!",
-          description: "Compra concluída com sucesso",
-        })
-      }
-    }
-    catch (error) { 
-      toast({
-        variant: "destructive",
-        title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu ao concluir a compra"
-      }) 
-    } finally{
-      setCompleteShopLoading(false)
-    }
   }
 
   useEffect(() => { 
     getCurrentShop()
   }, [])
 
-  if (loading) return <LoadingPage />
+  if (loadingCurrentShop) return <LoadingPage />
   
   return (
     <PrivateLayout>
       {Object.keys(currentShop).length ? 
-        (<Shop 
-          shop={currentShop} 
-          onCompleteShop={completeShop}
-          completeShopLoading={completeShopLoading}
-        />) 
+        (<Shop shop={currentShop} />) 
         :
         (
           <section className="h-screen flex flex-col justify-center items-center">

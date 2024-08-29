@@ -1,22 +1,43 @@
+import React, { useContext, useState } from 'react'
+
 import { Product } from '@/types';
-import React, { useState } from 'react'
-import { EllipsisVertical, Wallet } from 'lucide-react';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import DecisionDialog from '@/components/commom/DecisionDialog';
+import { toast } from '@/components/ui/use-toast';
+import { EllipsisVertical, Wallet } from 'lucide-react';
 
 import { formatPrice } from '@/utils/formatters';
 
+import { UserContext } from '@/context/commom/UserContext'
+
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/app/store';
+import { completeCurrentShop } from '@/app/shop/shopSlice';
+
+import { db } from '@/lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+
 interface ShopTotalCardProps {
   products: Product[];
-  onCompleteShop?: (shopTotal: number) => void;
-  completeShopLoading?: boolean;
   isVisualizer: boolean; 
 }
 
-const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, onCompleteShop, completeShopLoading, isVisualizer}) => {
+const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, isVisualizer}) => {
+  const { user } = useContext(UserContext) 
+
+  const currentShop = useSelector((state: RootState) => state.shop.currentShop) 
+  const dispatch = useDispatch()
+
   const [openMenu, setOpenMenu] = useState(false)
 
   const [openCompleteShopDialog, setOpenCompleteShopDialog] = useState(false) 
+  const [completeShopLoading, setCompleteShopLoading] = useState(false)
+
+  function onOpenCompleteShopDialog(){
+    setOpenCompleteShopDialog(true)
+    setOpenMenu(false)
+  }
 
   function calculateShopTotal(){
     let total = 0;
@@ -35,15 +56,35 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({products, onCompleteShop, 
     return shopPrice
   }
 
-  function onOpenCompleteShopDialog(){
-    setOpenCompleteShopDialog(true)
-    setOpenMenu(false)
-  }
+  async function completeShop(){ 
+    try{   
+      setCompleteShopLoading(true)
 
-  async function completeShop(){
-    const shopTotal = calculateShopTotal()
-    if(!isVisualizer && onCompleteShop) await onCompleteShop(shopTotal)
-    setOpenCompleteShopDialog(false)
+      const shopTotal = calculateShopTotal()
+
+      if(user){
+        const shopRef = doc(db, `users/${user.uid}/shops`, currentShop.uid)
+      
+        await updateDoc(shopRef, { isDone: true, total: shopTotal })
+
+        dispatch(completeCurrentShop())
+         
+        toast({
+          variant: "success",
+          title: "Sucesso!",
+          description: "Compra concluída com sucesso",
+        })
+      }
+    }
+    catch (error) { 
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Um erro inesperado aconteceu ao concluir a compra"
+      }) 
+    } finally{
+      setCompleteShopLoading(false)
+    }
   }
 
   return (

@@ -4,12 +4,7 @@ import ProductCard from './ProductCard'
 import { productCategories } from '@/utils/productCategories';
 
 interface ProductListProps {
-  products: Product[];
-  onProductStatusChange?: (product: Product, status: boolean) => void;
-  onRemoveProduct?: (productUid: string, status: boolean) => void;
-  onEditProduct?: (product: Product) => void;
-  removeProductLoading?: boolean;
-  editProductLoading?: boolean;
+  products: Product[]; 
   isVisualizer: boolean;
 }
 
@@ -17,8 +12,7 @@ interface CategorizedProductsType{
   [key: string]: Product[];
 }
 
- 
-const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChange, onRemoveProduct, removeProductLoading, onEditProduct, editProductLoading, isVisualizer}) => {
+const ProductList: React.FC<ProductListProps> = ({products, isVisualizer}) => {
 
   const [categorizedProducts, setCategorizedProducts] = useState<CategorizedProductsType>({})
   
@@ -32,10 +26,6 @@ const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChang
     }, {} as Record<string, Product[]>)
 
     setCategorizedProducts(groupedProducts)
-  }
- 
-  function editProduct(product: Product){
-    if(onEditProduct) onEditProduct(product)
   }
 
   useEffect(() => { 
@@ -52,12 +42,7 @@ const ProductList: React.FC<ProductListProps> = ({products, onProductStatusChang
             {categorizedProducts[category].map((product) => (
               <ProductCard 
                 key={product.uid}
-                product={product}
-                onProductStatusChange={onProductStatusChange} 
-                onRemoveProduct={onRemoveProduct}
-                removeProductLoading={removeProductLoading}
-                onEditProduct={editProduct}
-                editProductLoading={editProductLoading}
+                currentProduct={product}
                 isVisualizer={isVisualizer}
               />
             ))}
