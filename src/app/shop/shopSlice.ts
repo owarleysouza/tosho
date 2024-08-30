@@ -24,7 +24,9 @@ export const shopSlice = createSlice({
       state.currentShop = action.payload
     },
     completeCurrentShop: state => {
-      state.currentShop = []
+      state.currentShop = {}
+      state.currentShopPendingProducts = []
+      state.currentShopCartProducts = [] 
     },
     setCurrentShopPendingProducts: (state, action: PayloadAction<Product[]>) => {
       state.currentShopPendingProducts = action.payload
