@@ -14,7 +14,7 @@ const Login = () => {
         </div>
         <LoginForm />
         <section className='flex flex-row items-center space-x-1'>
-          <span className='text-sm text-center text-gray-500 '>Já possui uma conta? </span>
+          <span className='text-sm text-center text-gray-500 '>Não possui uma conta? </span>
           <span onClick={() =>  navigate("/signUp")} className='text-sm text-center text-gray-500 underline cursor-pointer'>Clique aqui </span>
         </section>
       </div>
