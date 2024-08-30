@@ -3,6 +3,7 @@ import {
   FormControl,
     FormItem,
     FormMessage,
+    FormDescription,
   } from "@/components/ui/form"
 
 import { Input } from "@/components/ui/input"
@@ -14,10 +15,11 @@ interface FormFieldProps {
   name: string;
   placeholder: string;
   type?: string;
+  hint?: string;
 }
 
 
-const FormInput: React.FC<FormFieldProps> = ({formControl, name, placeholder, type }) => {
+const FormInput: React.FC<FormFieldProps> = ({formControl, name, placeholder, type, hint }) => {
   return (
     <FormField
       control={formControl}
@@ -28,6 +30,10 @@ const FormInput: React.FC<FormFieldProps> = ({formControl, name, placeholder, ty
           <FormControl>
             <Input placeholder={placeholder} type={type} className="rounded-full ring-1 ring-accent focus-visible:ring-primary" {...field} />
           </FormControl>
+
+          <FormDescription>
+            { hint }
+          </FormDescription>
           
           <FormMessage className="text-xs" />
         </FormItem>

@@ -2,6 +2,7 @@ import { Control } from "react-hook-form"
  
 import { 
   FormControl, 
+  FormDescription, 
   FormField,
   FormItem, 
   FormMessage,
@@ -21,9 +22,10 @@ interface SelectFieldProps {
   formControl: Control<any>;
   name: string;
   placeholder: string;
+  hint: string;
 }
 
-const FormSelect: React.FC<SelectFieldProps> = ({formControl, name, placeholder}) => {
+const FormSelect: React.FC<SelectFieldProps> = ({formControl, name, placeholder, hint}) => {
  
   const productCategoriesEntries = Object.entries(productCategories)
 
@@ -45,6 +47,10 @@ const FormSelect: React.FC<SelectFieldProps> = ({formControl, name, placeholder}
               }
             </SelectContent>
           </Select>
+
+          <FormDescription>
+            { hint }
+          </FormDescription>
           
           <FormMessage />
         </FormItem>
