@@ -1,22 +1,28 @@
-<img src="assets\images\tosho-logo.png" alt="Tosho Logo" align="center" />
+<img src="src/assets/images/tosho-logo.png" alt="Tosho Logo" align="center" />
 <p align="center"> Uma ferramenta que te permite realizar suas compras de forma <strong>simples</strong>. </p>
 
 # 👀 Sobre o projeto
+
 O ToSho é uma ferramenta desenvolvida para facilitar a realização de compras - normalmente compras no supermercado - de uma maneira simples.
 
 # 🤔 Por que?
-O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em React e diversas outras ferramentas, com uma necessidade pessoal de conseguir fazer uma lista de compras e conseguir acompanhar de forma simples, inclusive monitorando o preço das minhas compras mensais no supermercado.  
+
+O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em React e diversas outras ferramentas, com uma necessidade pessoal de conseguir fazer uma lista de compras e conseguir acompanhar de forma simples, inclusive monitorando o preço das minhas compras mensais no supermercado.
 
 # 📃 Detalhamento do Projeto
+
 ## Definição do(s) Problema(s)
+
 1. Ao fazer minhas compras no supermercado, não lembro dos produtos e as quantidades que preciso comprar
 2. Ao fazer minhas compras, não consigo saber exatamente o que já peguei e o que ainda falta
 3. Ao realizar minhas compras, não sei quanto gastei a cada mês nessas compras
 
 ## Jornada de Usuário
+
 - [Protótipo do tosho](https://www.figma.com/proto/jAMv5sbiyilhpSaUTgYhQ1/Tosho?node-id=56-5775&starting-point-node-id=56%3A5775&mode=design&t=dSEL5dpraiC6kbRI-1)
 
 ## Processo realizado
+
 1. Definição dos problemas
 2. Definição da solução
 3. Criação de backlog e regras de negócio
@@ -30,10 +36,12 @@ O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em 
 7. Implementação
 8. Deploy
 
-## Backlog 
+## Backlog
+
 - Disponível através das [issues do projeto](https://github.com/owarleysouza/tosho/issues)
 
 ## Stack Utilizada
+
 1. React
 2. Typescript
 3. Vite
@@ -48,4 +56,5 @@ O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em 
 12. Zod
 
 # ⚠ Algumas observações sobre o ToSho
+
 - Não há funcionalidade de recuperar senha ainda. Eu espero implementar o mais breve possível.
