@@ -43,9 +43,10 @@ const AccountPage = () => {
   return (
     <PrivateLayout>
       <div className='h-screen flex flex-col justify-center items-center p-4'>
-        <h1>Conta</h1>
+        <span className='text-lg text-black font-bold'>Minha Conta</span>
+        <p>{user?.displayName}</p>
         <p>{user?.email}</p>
-        <Button className='w-[200px]' onClick={onLogout}>Sair</Button>
+        <Button className='w-[200px] mt-2' onClick={onLogout}>Sair</Button>
       </div>
     </PrivateLayout>
   )
