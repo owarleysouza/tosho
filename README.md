@@ -9,6 +9,16 @@ O ToSho é uma ferramenta desenvolvida para facilitar a realização de compras 
 
 O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em React e diversas outras ferramentas, com uma necessidade pessoal de conseguir fazer uma lista de compras e conseguir acompanhar de forma simples, inclusive monitorando o preço das minhas compras mensais no supermercado.
 
+# 🗺 Funcionalidades
+
+1. Criação simplificada de produtos
+2. Acompanhamento de compras
+3. Análise de preço das compras
+
+# 💻 Acesso
+
+Você consegue acessar o ToSho pelo seguinte link: https://tosho.vercel.app
+
 # 📃 Detalhamento do Projeto
 
 ## Definição do(s) Problema(s)
@@ -24,13 +34,13 @@ O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em 
 ## Processo realizado
 
 1. Definição dos problemas
-2. Definição da solução
-3. Criação de backlog e regras de negócio
-4. Análise de ferramentas existentes
+2. Análise de ferramentas existentes
    - Buy me a pie!
    - Bring!
    - SoftList
    - Listonic
+3. Definição da solução
+4. Criação de backlog e regras de negócio
 5. Criação do protótipo
 6. Definição da stack
 7. Implementação
@@ -58,3 +68,5 @@ O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em 
 # ⚠ Algumas observações sobre o ToSho
 
 - Não há funcionalidade de recuperar senha ainda. Eu espero implementar o mais breve possível.
+
+Obrigado!
