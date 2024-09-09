@@ -1,56 +1,56 @@
 <img src="src/assets/images/tosho-logo.png" alt="Tosho Logo" align="center" />
-<p align="center"> Uma ferramenta que te permite realizar suas compras de forma <strong>simples</strong>. </p>
+<p align="center"> A tool that allows you to buy groceries in an <strong>easy way</strong>.</p>
 
-# 👀 Sobre o projeto
+# 👀 About the project
 
-O ToSho é uma ferramenta desenvolvida para facilitar a realização de compras - normalmente compras no supermercado - de uma maneira simples.
+ToSho is a tool developed to facilitate buy groceries - but not only - in an easy way.
 
-# 🤔 Por que?
+# 🤔 Why?
 
-O ToSho foi criado unindo a minha necessidade de melhorar meus conhecimentos em React e diversas outras ferramentas, com uma necessidade pessoal de conseguir fazer uma lista de compras e conseguir acompanhar de forma simples, inclusive monitorando o preço das minhas compras mensais no supermercado.
+ToSho was created out of the need to improve mainly my React skills, with the personal need to be able to buy groceries and to create a shopping list, following it in an easy way, including tracking the shops price.
 
-# 🗺 Funcionalidades
+# 🗺 Features
 
-1. Criação simplificada de produtos
-2. Acompanhamento de compras
-3. Análise de preço das compras
+1. Easy creation of products
+2. Tracking shops
+3. Analysis of shops price
 
-# 💻 Acesso
+# 💻 Access
 
-Você consegue acessar o ToSho pelo seguinte link: https://tosho.vercel.app
+You can use ToSho with the following link: https://tosho.vercel.app
 
-# 📃 Detalhamento do Projeto
+# 📃 Project Details
 
-## Definição do(s) Problema(s)
+## Problems Definition
 
-1. Ao fazer minhas compras no supermercado, não lembro dos produtos e as quantidades que preciso comprar
-2. Ao fazer minhas compras, não consigo saber exatamente o que já peguei e o que ainda falta
-3. Ao realizar minhas compras, não sei quanto gastei a cada mês nessas compras
+1. When I do my grocery shopping, I can't remember the products and quantities that I need to buy.
+2. When I do my grocery shopping, I can't follow the pending and concluded products of my shop.
+3. When I do my grocery shopping, I don't know how much I have spent in each month.
 
-## Jornada de Usuário
+## User Journey
 
-- [Protótipo do tosho](https://www.figma.com/proto/jAMv5sbiyilhpSaUTgYhQ1/Tosho?node-id=56-5775&starting-point-node-id=56%3A5775&mode=design&t=dSEL5dpraiC6kbRI-1)
+- [ToSho Prototype](https://www.figma.com/proto/jAMv5sbiyilhpSaUTgYhQ1/Tosho?node-id=56-5775&starting-point-node-id=56%3A5775&mode=design&t=dSEL5dpraiC6kbRI-1)
 
-## Processo realizado
+## Project Creation Process
 
-1. Definição dos problemas
-2. Análise de ferramentas existentes
+1. Problems Definition
+2. Analysis of Related Tools
    - Buy me a pie!
    - Bring!
    - SoftList
    - Listonic
-3. Definição da solução
-4. Criação de backlog e regras de negócio
-5. Criação do protótipo
-6. Definição da stack
-7. Implementação
+3. Solution Definition
+4. Creation of backlog and business rules
+5. Creation of Prototype
+6. Definition of Stack
+7. Implementation
 8. Deploy
 
 ## Backlog
 
-- Disponível através das [issues do projeto](https://github.com/owarleysouza/tosho/issues)
+- You can see through the [project's issues](https://github.com/owarleysouza/tosho/issues)
 
-## Stack Utilizada
+## Stack
 
 1. React
 2. Typescript
@@ -65,8 +65,8 @@ Você consegue acessar o ToSho pelo seguinte link: https://tosho.vercel.app
 11. React Hook Form
 12. Zod
 
-# ⚠ Algumas observações sobre o ToSho
+# ⚠ Some observations about ToSho
 
-- Não há funcionalidade de recuperar senha ainda. Eu espero implementar o mais breve possível.
+- There is no feature for password recovery yet. But I hope to do that soon.
 
-Obrigado!
+Thank you!
