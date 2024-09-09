@@ -107,6 +107,16 @@ const ShopPage: React.FC<ShopProps> = ({ shop }) => {
 
   async function onSubmitProduct(data: z.infer<typeof ProductsCreateFormSchema>, form: UseFormReturn<{text: string;}>): Promise<void>{
     const productsToAdd = handleProductsInput(data.text) 
+
+    if(productsToAdd.length > 30){
+      toast({
+        variant: "destructive",
+        title: "Ops! Algo de errado aconteceu",
+        description: "Limite de produtos a adicionar por vez atingido"
+      }) 
+
+      return
+    }
    
     try{
       setCreateProductsLoading(true)
