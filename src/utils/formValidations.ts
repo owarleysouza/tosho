@@ -107,9 +107,13 @@ export const ProductEditFormSchema = z.object({
     })
     .optional(), 
   price: z
-    .coerce.number({message: "Preço Inválido"})
-    .nonnegative({message: "Preço precisa ser positivo"})
-    .optional(),
-}) 
+  .string()
+  .transform((val) => val.replace(',', '.'))  
+  .pipe(
+    z.coerce.number({ message: "Preço Inválido" })
+      .nonnegative({ message: "Preço precisa ser positivo" })
+      .optional()
+  )
+  }) 
 
 
