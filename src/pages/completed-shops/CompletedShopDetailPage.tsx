@@ -3,7 +3,7 @@ import PrivateLayout from '@/layouts/PrivateLayout'
 import { Product } from '@/types'
 import { formatDate } from '@/utils/formatters'
 import { useContext, useEffect, useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { UserContext } from '@/context/commom/UserContext'
 import { collection, getDocs } from 'firebase/firestore'
@@ -12,9 +12,12 @@ import { toast } from '@/components/ui/use-toast'
 import LoadingPage from '@/pages/commom/LoadingPage'; 
 import ShopTotalCard from '@/components/shop/ShopTotalCard'
 import ProductList from '@/components/shop/ProductList'
+import { ArrowLeft } from 'lucide-react';
 
 const ShopDetailPage = () => {
   const { user } = useContext(UserContext)
+
+  const navigate = useNavigate()
 
   const { shopId } = useParams()
 
@@ -69,10 +72,12 @@ const ShopDetailPage = () => {
   return (
     <PrivateLayout>
       <div className='mt-16 mb-3'>
-        <section className='flex flex-col items-center my-3'>
+        <ArrowLeft className='cursor-pointer' onClick={() => navigate("/complete-shops")}/>
+        
+        <section className='flex flex-col items-center'>
           <span className='text-xs text-slate-400'>{ formatDate(state.shop.date?.seconds) }</span>
           <span className='text-lg text-black font-bold'>{state.shop.name}</span>
-        </section> 
+        </section>
 
         <ShopTotalCard products={products} isVisualizer={true} /> 
 
