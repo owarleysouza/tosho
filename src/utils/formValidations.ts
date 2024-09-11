@@ -108,6 +108,7 @@ export const ProductEditFormSchema = z.object({
     .optional(), 
   price: z
   .string()
+  .catch((ctx) => ctx.input.toString())
   .transform((val) => val.replace(',', '.'))  
   .pipe(
     z.coerce.number({ message: "Preço Inválido" })
