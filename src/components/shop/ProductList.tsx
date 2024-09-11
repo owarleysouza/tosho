@@ -1,7 +1,7 @@
 import type { Product } from '@/types';
 import React, { useEffect, useState } from 'react';
 import ProductCard from '@/components/shop/ProductCard';
-import { productCategories } from '@/utils/productCategories';
+import { productCategories } from '@/data/productCategories';
 
 interface ProductListProps {
   products: Product[];

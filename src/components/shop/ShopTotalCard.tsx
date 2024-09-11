@@ -12,7 +12,7 @@ import DecisionDialog from '@/components/commom/DecisionDialog';
 import { toast } from '@/components/ui/use-toast';
 import { EllipsisVertical, Wallet } from 'lucide-react';
 
-import { formatPrice } from '@/utils/formatters';
+import { formatPrice } from '@/utils/formatPrice';
 
 import { UserContext } from '@/context/commom/UserContext';
 

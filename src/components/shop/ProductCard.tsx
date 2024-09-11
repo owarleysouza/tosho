@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 import { Product } from '@/types';
 import { z } from 'zod';
 import { ProductEditFormSchema } from '@/utils/formValidations';
-import { formatPrice } from '@/utils/formatters';
+import { formatPrice } from '@/utils/formatPrice';
 
 import ProductEditDialog from '@/pages/shop/ProductEditDialog';
 import { Checkbox } from '@/components/ui/checkbox';

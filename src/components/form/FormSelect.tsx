@@ -1,21 +1,21 @@
-import { Control } from "react-hook-form"
- 
-import { 
-  FormControl, 
-  FormDescription, 
+import { Control } from 'react-hook-form';
+
+import {
+  FormControl,
+  FormDescription,
   FormField,
-  FormItem, 
+  FormItem,
   FormMessage,
-} from "@/components/ui/form"
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select" 
+} from '@/components/ui/select';
 
-import { productCategories } from '@/utils/productCategories'; 
+import { productCategories } from '@/data/productCategories';
 
 interface SelectFieldProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,9 +25,13 @@ interface SelectFieldProps {
   hint: string;
 }
 
-const FormSelect: React.FC<SelectFieldProps> = ({formControl, name, placeholder, hint}) => {
- 
-  const productCategoriesEntries = Object.entries(productCategories)
+const FormSelect: React.FC<SelectFieldProps> = ({
+  formControl,
+  name,
+  placeholder,
+  hint,
+}) => {
+  const productCategoriesEntries = Object.entries(productCategories);
 
   return (
     <FormField
@@ -42,21 +46,21 @@ const FormSelect: React.FC<SelectFieldProps> = ({formControl, name, placeholder,
               </SelectTrigger>
             </FormControl>
             <SelectContent position="item-aligned">
-              {
-                productCategoriesEntries.map(([value, name]) => <SelectItem key={value} value={value}>{name}</SelectItem>)
-              }
+              {productCategoriesEntries.map(([value, name]) => (
+                <SelectItem key={value} value={value}>
+                  {name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
-          <FormDescription>
-            { hint }
-          </FormDescription>
-          
+          <FormDescription>{hint}</FormDescription>
+
           <FormMessage />
         </FormItem>
       )}
     />
-  )
-}
+  );
+};
 
-export default FormSelect
+export default FormSelect;
