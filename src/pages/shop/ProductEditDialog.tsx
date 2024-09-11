@@ -1,28 +1,27 @@
-import React from 'react'
+import React from 'react';
 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle, 
+  DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from '@/components/ui/button'
-import { Form } from "@/components/ui/form"
-import FormInput from "@/components/form/FormInput"
-import FormSelect from "@/components/form/FormSelect"
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import FormInput from '@/components/form/FormInput';
+import FormSelect from '@/components/form/FormSelect';
 
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react';
 
-import { useForm } from "react-hook-form"
-import { ProductEditFormSchema } from "@/utils/formValidations"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Product } from "@/types"
+import { useForm } from 'react-hook-form';
+import { ProductEditFormSchema } from '@/utils/formValidations';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Product } from '@/types';
 
-
-interface ProductEditDialogProps{
+interface ProductEditDialogProps {
   product: Product;
   onEditProduct: (data: z.infer<typeof ProductEditFormSchema>) => void;
   openProductEditDialog: boolean;
@@ -30,8 +29,13 @@ interface ProductEditDialogProps{
   editProductLoading?: boolean;
 }
 
-const ProductEditDialog: React.FC<ProductEditDialogProps>  = ({ product, onEditProduct, openProductEditDialog, setOpenProductEditDialog, editProductLoading }) => {
- 
+const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
+  product,
+  onEditProduct,
+  openProductEditDialog,
+  setOpenProductEditDialog,
+  editProductLoading,
+}) => {
   const form = useForm<z.infer<typeof ProductEditFormSchema>>({
     resolver: zodResolver(ProductEditFormSchema),
     defaultValues: {
@@ -39,30 +43,38 @@ const ProductEditDialog: React.FC<ProductEditDialogProps>  = ({ product, onEditP
       quantity: product.quantity,
       category: product.category,
       description: product.description ? product.description : '',
-      price: product.price ? product.price : 0
+      price: product.price ? product.price : 0,
     },
-  })
- 
-  async function onSubmit (data: z.infer<typeof ProductEditFormSchema>) {
-    await onEditProduct(data); 
-    setOpenProductEditDialog(false)
-  } 
+  });
+
+  async function onSubmit(data: z.infer<typeof ProductEditFormSchema>) {
+    await onEditProduct(data);
+    setOpenProductEditDialog(false);
+  }
 
   return (
-    <Dialog open={openProductEditDialog} onOpenChange={setOpenProductEditDialog}>
-      <DialogContent 
+    <Dialog
+      open={openProductEditDialog}
+      onOpenChange={setOpenProductEditDialog}
+    >
+      <DialogContent
         className="w-[340px]"
-        onInteractOutside={(e) => {e.preventDefault()}}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
       >
         <DialogHeader>
           <DialogTitle>Editar produto</DialogTitle>
           <DialogDescription>
-          Edite um produto digitando seus dados.
+            Edite um produto digitando seus dados.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 w-full">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-3 w-full"
+          >
             <FormInput
               formControl={form.control}
               name="name"
@@ -77,7 +89,7 @@ const ProductEditDialog: React.FC<ProductEditDialogProps>  = ({ product, onEditP
               hint="Digite a quantidade do produto"
             />
 
-            <FormSelect 
+            <FormSelect
               formControl={form.control}
               name="category"
               placeholder="Categoria"
@@ -97,20 +109,25 @@ const ProductEditDialog: React.FC<ProductEditDialogProps>  = ({ product, onEditP
               placeholder="Preço"
               hint="Digite o preço da unidade do produto"
             />
- 
+
             <DialogFooter>
-              <Button disabled={editProductLoading} type="submit" className='rounded-full px-8'>
-              { editProductLoading ? 
-                (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) 
-                : "Editar" }
+              <Button
+                disabled={editProductLoading}
+                type="submit"
+                className="rounded-full px-8"
+              >
+                {editProductLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  'Editar'
+                )}
               </Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-     
-  )
-}
+  );
+};
 
-export default ProductEditDialog
+export default ProductEditDialog;
