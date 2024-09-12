@@ -19,6 +19,13 @@ ToSho was created out of the need to improve mainly my React skills, with the pe
 
 You can use ToSho with the following link: https://tosho.vercel.app
 
+**If you can using ToSho in a easy way like an app, just follow the steps bellow**:
+1. Open ToSho website on Google Chrome
+2. Click on the three dots of Chrome bar
+3. Click on "Add to Initial Page"
+
+Doing this, ToSho will be "installed" as an app on your cellphone and you won't need to type all the url every time when you access
+
 # 📃 Project Details
 
 ## Problems Definition
