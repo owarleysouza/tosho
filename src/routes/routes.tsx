@@ -1,27 +1,27 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from 'react-router-dom';
 
-import ProtectedRoute from "@/routes/ProtectedRoute";
-import PublicRoute from "@/routes/PublicRoute";
+import ProtectedRoute from '@/routes/ProtectedRoute';
+import PublicRoute from '@/routes/PublicRoute';
 
-import Home from '@/pages/home/Home'
-import SignUp from "@/pages/auth/SignUpPage";
-import Login from "@/pages/auth/LoginPage";
-import AccountPage from "@/pages/account/AccountPage";
-import CompletedShopsPage from "@/pages/completed-shops/CompletedShopsPage";
-import CompletedShopDetailPage from "@/pages/completed-shops/CompletedShopDetailPage";
-
+import Home from '@/pages/home/Home';
+import SignUp from '@/pages/auth/SignUpPage';
+import Login from '@/pages/auth/LoginPage';
+import AccountPage from '@/pages/account/AccountPage';
+import CompletedShopsPage from '@/pages/completed-shops/CompletedShopsPage';
+import CompletedShopDetailPage from '@/pages/completed-shops/CompletedShopDetailPage';
+import ProductEditPage from '@/pages/shop/ProductEditPage';
 
 const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
-    children:[
+    children: [
       {
         path: '/',
-        element: <Home />
+        element: <Home />,
       },
       {
         path: '/account',
-        element: <AccountPage />
+        element: <AccountPage />,
       },
       {
         path: '/complete-shops',
@@ -29,27 +29,31 @@ const router = createBrowserRouter([
       },
       {
         path: '/complete-shops/:shopId',
-        element: <CompletedShopDetailPage />
-      }
-    ]
+        element: <CompletedShopDetailPage />,
+      },
+      {
+        path: '/edit-product/:productId',
+        element: <ProductEditPage />,
+      },
+    ],
   },
   {
     element: <PublicRoute />,
     children: [
-      { 
+      {
         path: 'login',
-        element: <Login />
+        element: <Login />,
       },
       {
         path: 'signUp',
-        element: <SignUp />
+        element: <SignUp />,
       },
-    ]
+    ],
   },
   {
     path: '*',
-    element: <h1>Rota não encontrada!</h1>
+    element: <h1>Rota não encontrada!</h1>,
   },
-]) 
+]);
 
 export default router;

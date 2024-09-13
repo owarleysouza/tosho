@@ -1,11 +1,8 @@
 import React, { useContext, useState } from 'react';
 
 import { Product } from '@/types';
-import { z } from 'zod';
-import { ProductEditFormSchema } from '@/utils/formValidations';
 import { formatPrice } from '@/utils/formatPrice';
 
-import ProductEditDialog from '@/pages/shop/ProductEditDialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
@@ -28,6 +25,7 @@ import {
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts,
 } from '@/app/shop/shopSlice';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductProps {
   currentProduct: Product;
@@ -38,6 +36,8 @@ const ProductCard: React.FC<ProductProps> = ({
   currentProduct,
   isVisualizer,
 }) => {
+  const navigate = useNavigate();
+
   const { user } = useContext(UserContext);
 
   const currentShop = useSelector((state: RootState) => state.shop.currentShop);
@@ -62,10 +62,6 @@ const ProductCard: React.FC<ProductProps> = ({
   //Remove Product
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const [removeProductLoading, setRemoveProductLoading] = useState(false);
-
-  //Edit Product
-  const [openProductEditDialog, setOpenProductEditDialog] = useState(false);
-  const [editProductLoading, setEditProductLoading] = useState(false);
 
   async function toggleProductStatus() {
     const newProductStatus = !currentProduct.isDone;
@@ -163,65 +159,10 @@ const ProductCard: React.FC<ProductProps> = ({
     }
   }
 
-  function onOpenEditDialog() {
-    setOpenProductEditDialog(true);
-    setOpenMenu(false);
-  }
-
-  async function editProduct(data: z.infer<typeof ProductEditFormSchema>) {
-    try {
-      setEditProductLoading(true);
-
-      const productToEdit = {
-        uid: currentProduct.uid,
-        isDone: currentProduct.isDone,
-        ...data,
-      };
-
-      await updateDoc(productRef, {
-        name: productToEdit.name,
-        quantity: productToEdit.quantity,
-        category: productToEdit.category,
-        description: productToEdit.description,
-        price: productToEdit.price,
-      });
-      //TODO: This can be improved
-      if (productToEdit.isDone) {
-        dispatch(
-          setCurrentShopCartProducts(
-            currentShopCartProducts.map((element) =>
-              element.uid === productToEdit.uid
-                ? { ...element, ...productToEdit }
-                : element
-            )
-          )
-        );
-      } else {
-        dispatch(
-          setCurrentShopPendingProducts(
-            currentShopPendingProducts.map((element) =>
-              element.uid === productToEdit.uid
-                ? { ...element, ...productToEdit }
-                : element
-            )
-          )
-        );
-      }
-
-      toast({
-        variant: 'success',
-        title: 'Sucesso!',
-        description: 'Produto editado',
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Ops! Algo de errado aconteceu',
-        description: 'Um erro inesperado aconteceu ao editar o produto',
-      });
-    } finally {
-      setEditProductLoading(false);
-    }
+  function navigateToEdit() {
+    navigate(`/edit-product/${currentProduct.uid}`, {
+      state: { product: currentProduct },
+    });
   }
 
   return (
@@ -262,7 +203,7 @@ const ProductCard: React.FC<ProductProps> = ({
             <DropdownMenuContent>
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={onOpenEditDialog}
+                onClick={navigateToEdit}
               >
                 Editar
               </DropdownMenuItem>
@@ -285,14 +226,6 @@ const ProductCard: React.FC<ProductProps> = ({
           setOpen={setOpenRemoveDialog}
           loading={removeProductLoading}
           onConfirm={removeProduct}
-        />
-
-        <ProductEditDialog
-          product={currentProduct}
-          openProductEditDialog={openProductEditDialog}
-          setOpenProductEditDialog={setOpenProductEditDialog}
-          onEditProduct={editProduct}
-          editProductLoading={editProductLoading}
         />
       </section>
     </div>
