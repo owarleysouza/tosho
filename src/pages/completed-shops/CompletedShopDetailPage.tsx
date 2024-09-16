@@ -70,7 +70,12 @@ const ShopDetailPage = () => {
     getProducts();
   }, []);
 
-  if (loadingProducts) return <LoadingPage />;
+  if (loadingProducts)
+    return (
+      <PrivateLayout>
+        <LoadingPage />
+      </PrivateLayout>
+    );
 
   return (
     <PrivateLayout>
