@@ -1,87 +1,90 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from 'react';
 
-import shopBlankStateSVG from "@/assets/images/shop-blank-state.svg"  
+import shopBlankStateSVG from '@/assets/images/shop-blank-state.svg';
 
-import PrivateLayout from "@/layouts/PrivateLayout"
-import ShopCreateDialog from '@/pages/shop/ShopCreateDialog'
-import LoadingPage from "@/pages/commom/LoadingPage"
-import Shop from "@/pages/shop/ShopPage"; 
-import { useToast } from "@/components/ui/use-toast"
-import BlankState from '@/components/commom/BlankState'
+import PrivateLayout from '@/layouts/PrivateLayout';
+import CurrentShopCreateDialog from '@/pages/shop/CurrentShopCreateDialog';
+import LoadingPage from '@/pages/commom/LoadingPage';
+import CurrentShopPage from '@/pages/shop/CurrentShopPage';
+import { useToast } from '@/components/ui/use-toast';
+import BlankState from '@/components/commom/BlankState';
 
-import { UserContext } from '@/context/commom/UserContext'
+import { UserContext } from '@/context/commom/UserContext';
 
-import { getDocs, collection, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getDocs, collection, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-import { useSelector, useDispatch } from 'react-redux'
-import { addCurrentShop } from "@/app/shop/shopSlice";
-import { RootState } from "@/app/store";
+import { useSelector, useDispatch } from 'react-redux';
+import { addCurrentShop } from '@/app/shop/shopSlice';
+import { RootState } from '@/app/store';
 
 const Home = () => {
-  const { user } = useContext(UserContext) 
+  const { user } = useContext(UserContext);
 
-  const currentShop = useSelector((state: RootState) => state.shop.currentShop) 
-  const dispatch = useDispatch()
+  const currentShop = useSelector((state: RootState) => state.shop.currentShop);
+  const dispatch = useDispatch();
 
-  const [loadingCurrentShop, setLoadingCurrentShop] = useState(true)
+  const [loadingCurrentShop, setLoadingCurrentShop] = useState(true);
 
-  const { toast } = useToast()
-  
-  async function getCurrentShop(){ 
-    try{
-      if(!user || !Object.keys(user).length){ 
+  const { toast } = useToast();
+
+  async function getCurrentShop() {
+    try {
+      if (!user || !Object.keys(user).length) {
         toast({
-          variant: "destructive",
-          title: "Ops! Algo de errado aconteceu",
-          description: "Um erro inesperado aconteceu ao carregar o usuário"
-        }) 
-        return
+          variant: 'destructive',
+          title: 'Ops! Algo de errado aconteceu',
+          description: 'Um erro inesperado aconteceu ao carregar o usuário',
+        });
+        return;
       }
-      const openShopsRef  = query(collection(db, "users", user.uid, "shops"), where("isDone", "==", false))
+      const openShopsRef = query(
+        collection(db, 'users', user.uid, 'shops'),
+        where('isDone', '==', false)
+      );
       const querySnapshot = await getDocs(openShopsRef);
-      const currentShopDocument = querySnapshot.docs[0]
+      const currentShopDocument = querySnapshot.docs[0];
 
-      if(currentShopDocument){
+      if (currentShopDocument) {
         const shop = {
           uid: currentShopDocument.id,
-          ...currentShopDocument.data()
-        }
-        dispatch(addCurrentShop(shop))
-      }  
-    } catch (error) { 
+          ...currentShopDocument.data(),
+        };
+        dispatch(addCurrentShop(shop));
+      }
+    } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu ao carregar a compra"
-      }) 
+        variant: 'destructive',
+        title: 'Ops! Algo de errado aconteceu',
+        description: 'Um erro inesperado aconteceu ao carregar a compra',
+      });
     } finally {
-      setLoadingCurrentShop(false)
-    } 
+      setLoadingCurrentShop(false);
+    }
   }
 
-  useEffect(() => { 
-    getCurrentShop()
-  }, [])
+  useEffect(() => {
+    getCurrentShop();
+  }, []);
 
-  if (loadingCurrentShop) return <LoadingPage />
-  
+  if (loadingCurrentShop) return <LoadingPage />;
+
   return (
     <PrivateLayout>
-      {Object.keys(currentShop).length ? 
-        (<Shop shop={currentShop} />) 
-        :
-        (
-          <section className="h-screen flex flex-col justify-center items-center">
-            <BlankState image={shopBlankStateSVG} title="Nenhuma compra criada ainda :(">
-              <ShopCreateDialog onShopCreated={getCurrentShop} />
-            </BlankState>
-          </section>
-        )
-    } 
-    </PrivateLayout> 
-  )
-}
+      {Object.keys(currentShop).length ? (
+        <CurrentShopPage shop={currentShop} />
+      ) : (
+        <section className="h-screen flex flex-col justify-center items-center">
+          <BlankState
+            image={shopBlankStateSVG}
+            title="Nenhuma compra criada ainda :("
+          >
+            <CurrentShopCreateDialog onShopCreated={getCurrentShop} />
+          </BlankState>
+        </section>
+      )}
+    </PrivateLayout>
+  );
+};
 
-export default Home
-
+export default Home;

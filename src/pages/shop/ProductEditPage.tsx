@@ -124,7 +124,7 @@ const ProductEditPage = () => {
 
   return (
     <PrivateLayout>
-      <div className="flex flex-col items-center mt-16">
+      <div className="w-80 flex flex-col items-center mt-16">
         <div className="w-full">
           <ArrowLeft className="cursor-pointer" onClick={() => navigate('/')} />
         </div>

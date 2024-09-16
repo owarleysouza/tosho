@@ -33,7 +33,7 @@ interface ShopProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
 }
 
-const ShopPage: React.FC<ShopProps> = ({ shop }) => {
+const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const { user } = useContext(UserContext);
 
   const currentShopPendingProducts = useSelector(
@@ -260,4 +260,4 @@ const ShopPage: React.FC<ShopProps> = ({ shop }) => {
   );
 };
 
-export default ShopPage;
+export default CurrentShopPage;
