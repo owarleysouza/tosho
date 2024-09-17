@@ -20,6 +20,7 @@ ToSho was created out of the need to improve mainly my React skills, with the pe
 You can use ToSho with the following link: https://tosho.vercel.app
 
 **If you can using ToSho in a easy way like an app, just follow the steps bellow**:
+
 1. Open ToSho website on Google Chrome
 2. Click on the three dots of Chrome bar
 3. Click on "Add to Initial Page"
@@ -71,9 +72,5 @@ Doing this, ToSho will be "installed" as an app on your cellphone and you won't 
 10. Date-fns
 11. React Hook Form
 12. Zod
-
-# ⚠ Some observations about ToSho
-
-- There is no feature for password recovery yet. But I hope to do that soon.
 
 Thank you!
