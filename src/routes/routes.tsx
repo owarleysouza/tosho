@@ -10,6 +10,7 @@ import AccountPage from '@/pages/account/AccountPage';
 import CompletedShopsPage from '@/pages/completed-shops/CompletedShopsPage';
 import CompletedShopDetailPage from '@/pages/completed-shops/CompletedShopDetailPage';
 import ProductEditPage from '@/pages/shop/ProductEditPage';
+import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
       {
         path: 'signUp',
         element: <SignUp />,
+      },
+      {
+        path: 'recoveryPassword',
+        element: <RecoveryPasswordPage />,
       },
     ],
   },

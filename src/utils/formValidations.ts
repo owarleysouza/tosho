@@ -51,6 +51,12 @@ export const LoginFormSchema = z.object({
   
 }) 
 
+export const RecoveryPasswordFormSchema = z.object({
+  email: z.string().email({
+    message: "O e-mail digitado está inválido",
+  }), 
+}) 
+
 export const ShopCreateFormSchema = z.object({ 
   name: z
     .string()
