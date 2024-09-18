@@ -141,35 +141,35 @@ const ProductEditPage = () => {
               formControl={form.control}
               name="name"
               placeholder="Nome"
-              hint="Digite o nome do produto"
+              label="Nome"
             />
 
             <FormInput
               formControl={form.control}
               name="quantity"
               placeholder="Quantidade"
-              hint="Digite a quantidade do produto"
+              label="Quantidade"
             />
 
             <FormSelect
               formControl={form.control}
               name="category"
               placeholder="Categoria"
-              hint="Selecione a categoria do produto"
+              label="Categoria"
             />
 
             <FormInput
               formControl={form.control}
               name="description"
               placeholder="Descrição"
-              hint="Digite a descrição do produto"
+              label="Descrição"
             />
 
             <FormInput
               formControl={form.control}
               name="price"
               placeholder="Preço"
-              hint="Digite o preço da unidade do produto"
+              label="Preço da unidade"
             />
 
             <Button

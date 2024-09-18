@@ -108,8 +108,8 @@ export const ProductEditFormSchema = z.object({
     }),
   description: z
     .string()
-    .max(25, {
-      message: "Número máximo de caracteres atingido",
+    .max(30, {
+      message: "Número máximo de caracteres atingido (30)",
     })
     .optional(), 
   price: z

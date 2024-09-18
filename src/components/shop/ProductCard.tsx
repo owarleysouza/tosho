@@ -182,7 +182,7 @@ const ProductCard: React.FC<ProductProps> = ({
           >
             {currentProduct.name}
           </label>
-          <span className="text-xs text-slate-400 break-all ...">
+          <span className="max-w-[150px] text-xs text-slate-400 break-all ...">
             {currentProduct.description}
           </span>
         </div>

@@ -5,6 +5,7 @@ import {
   FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import {
@@ -18,14 +19,16 @@ import {
 import { productCategories } from '@/data/productCategories';
 
 interface SelectFieldProps {
+  label?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formControl: Control<any>;
   name: string;
   placeholder: string;
-  hint: string;
+  hint?: string;
 }
 
 const FormSelect: React.FC<SelectFieldProps> = ({
+  label,
   formControl,
   name,
   placeholder,
@@ -39,6 +42,7 @@ const FormSelect: React.FC<SelectFieldProps> = ({
       name={name}
       render={({ field }) => (
         <FormItem>
+          <FormLabel>{label}</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger className="rounded-full ring-1 ring-accent focus:ring-primary">
