@@ -25,7 +25,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 
 interface ShopTotalCardProps {
   products: Product[];
-  shopTotalPrice: number;
+  shopTotalPrice?: number;
   isVisualizer: boolean;
 }
 
@@ -60,7 +60,10 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
   }
 
   function formatShopTotal() {
-    const total = shopTotalPrice > 0 ? shopTotalPrice : calculateShopTotal();
+    const total =
+      shopTotalPrice && shopTotalPrice > 0
+        ? shopTotalPrice
+        : calculateShopTotal();
     const shopPrice = formatPrice(total);
 
     return shopPrice;
