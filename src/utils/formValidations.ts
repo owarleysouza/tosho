@@ -123,4 +123,17 @@ export const ProductEditFormSchema = z.object({
   )
   }) 
 
+  export const ConcludeShopFormSchema = z.object({
+    totalPrice: z
+    .string()
+    .catch((ctx) => ctx.input.toString())
+    .transform((val) => val.replace(',', '.'))  
+    .pipe(
+      z.coerce.number({ message: "Preço Inválido" })
+        .nonnegative({ message: "Preço precisa ser positivo" })
+        .optional()
+    )
+  }) 
 
+
+  

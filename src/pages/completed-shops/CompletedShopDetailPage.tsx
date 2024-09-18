@@ -94,7 +94,11 @@ const ShopDetailPage = () => {
           </span>
         </section>
 
-        <ShopTotalCard products={products} isVisualizer={true} />
+        <ShopTotalCard
+          products={products}
+          shopTotalPrice={state.shop.total}
+          isVisualizer={true}
+        />
 
         <ProductList products={products} isVisualizer={true} />
       </div>

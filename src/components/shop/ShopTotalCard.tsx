@@ -2,13 +2,13 @@ import React, { useContext, useState } from 'react';
 
 import { Product } from '@/types';
 
+import ConcludeShopDialog from '@/pages/shop/ConcludeShopDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import DecisionDialog from '@/components/commom/DecisionDialog';
 import { toast } from '@/components/ui/use-toast';
 import { EllipsisVertical, Wallet } from 'lucide-react';
 
@@ -25,11 +25,13 @@ import { doc, updateDoc } from 'firebase/firestore';
 
 interface ShopTotalCardProps {
   products: Product[];
+  shopTotalPrice: number;
   isVisualizer: boolean;
 }
 
 const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
   products,
+  shopTotalPrice,
   isVisualizer,
 }) => {
   const { user } = useContext(UserContext);
@@ -58,13 +60,13 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
   }
 
   function formatShopTotal() {
-    const total = calculateShopTotal();
+    const total = shopTotalPrice > 0 ? shopTotalPrice : calculateShopTotal();
     const shopPrice = formatPrice(total);
 
     return shopPrice;
   }
 
-  async function completeShop() {
+  async function completeShop(totalPrice: number | undefined) {
     try {
       setCompleteShopLoading(true);
 
@@ -73,7 +75,10 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
       if (user) {
         const shopRef = doc(db, `users/${user.uid}/shops`, currentShop.uid);
 
-        await updateDoc(shopRef, { isDone: true, total: shopTotal });
+        await updateDoc(shopRef, {
+          isDone: true,
+          total: totalPrice && totalPrice > 0 ? totalPrice : shopTotal,
+        });
 
         dispatch(completeCurrentShop());
 
@@ -103,6 +108,11 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
           <h1 className="text-2xl text-black font-bold break-all ...">
             {formatShopTotal()}
           </h1>
+          {shopTotalPrice != calculateShopTotal() && (
+            <span className="text-[8px]">
+              * Preço total inserido na conclusão da compra
+            </span>
+          )}
         </div>
       </div>
       {!isVisualizer && (
@@ -128,7 +138,7 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DecisionDialog
+          <ConcludeShopDialog
             title="Concluir compra?"
             description="Todos os produtos serão marcados como concluídos, e a compra será movida para compras concluídas."
             actionLabel="Concluir"

@@ -44,7 +44,7 @@ const FormInput: React.FC<FormFieldProps> = ({
             />
           </FormControl>
 
-          <FormDescription>{hint}</FormDescription>
+          <FormDescription className="text-xs">{hint}</FormDescription>
 
           <FormMessage className="text-xs" />
         </FormItem>
