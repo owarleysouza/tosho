@@ -111,7 +111,7 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
           <h1 className="text-2xl text-black font-bold break-all ...">
             {formatShopTotal()}
           </h1>
-          {shopTotalPrice != calculateShopTotal() && (
+          {shopTotalPrice && shopTotalPrice != calculateShopTotal() && (
             <span className="text-[8px]">
               * Preço total inserido na conclusão da compra
             </span>
