@@ -87,6 +87,7 @@ const ConcludeShopDialog: React.FC<ConcludeShopDialogProps> = ({
 
             <DialogFooter>
               <Button
+                type="button"
                 variant="ghost"
                 className="hover:bg-transparent"
                 onClick={() => setOpen(false)}
