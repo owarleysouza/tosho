@@ -17,7 +17,6 @@ import LoadingPage from '@/pages/commom/LoadingPage';
 import { useToast } from '@/components/ui/use-toast';
 import ProductList from '@/components/shop/ProductList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ShopTotalCard from '@/components/shop/ShopTotalCard';
 
 import { db } from '@/lib/firebase';
 import { addDoc, collection, DocumentData, getDocs } from 'firebase/firestore';
@@ -28,6 +27,7 @@ import {
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts,
 } from '@/app/shop/shopSlice';
+import CurrentShopPriceCard from './CurrentShopPriceCard';
 
 interface ShopProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
@@ -233,7 +233,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
             {currentShopPendingProducts.length ? (
               <ProductList
                 products={currentShopPendingProducts}
-                isVisualizer={false}
+                isCompletedShop={false}
               />
             ) : (
               <BlankState
@@ -256,14 +256,11 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
           <section className="pb-2">
             {currentShopCartProducts.length ? (
               <div>
-                <ShopTotalCard
-                  products={currentShopCartProducts}
-                  isVisualizer={false}
-                />
+                <CurrentShopPriceCard products={currentShopCartProducts} />
 
                 <ProductList
                   products={currentShopCartProducts}
-                  isVisualizer={false}
+                  isCompletedShop={false}
                 />
               </div>
             ) : (

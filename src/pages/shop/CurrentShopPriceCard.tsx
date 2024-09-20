@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 
 import { Product } from '@/types';
 
-import ConcludeShopDialog from '@/pages/shop/ConcludeShopDialog';
+import CompleteShopDialog from '@/pages/shop/CompleteShopDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,16 +23,12 @@ import { completeCurrentShop } from '@/app/shop/shopSlice';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
-interface ShopTotalCardProps {
+interface CurrentShopPriceCardProps {
   products: Product[];
-  shopTotalPrice?: number;
-  isVisualizer: boolean;
 }
 
-const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
+const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
   products,
-  shopTotalPrice,
-  isVisualizer,
 }) => {
   const { user } = useContext(UserContext);
 
@@ -49,7 +45,7 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
     setOpenMenu(false);
   }
 
-  function calculateShopTotal() {
+  function calculateShopPrice() {
     let total = 0;
 
     products.forEach((product) => {
@@ -59,28 +55,28 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
     return total;
   }
 
-  function formatShopTotal() {
-    const total =
-      shopTotalPrice && shopTotalPrice > 0
-        ? shopTotalPrice
-        : calculateShopTotal();
+  function formatShopPrice() {
+    const total = calculateShopPrice();
     const shopPrice = formatPrice(total);
 
     return shopPrice;
   }
 
-  async function completeShop(totalPrice: number | undefined) {
+  async function completeShop(inputShopPrice: number | undefined) {
     try {
       setCompleteShopLoading(true);
 
-      const shopTotal = calculateShopTotal();
+      const calculatedShopPrice = calculateShopPrice();
 
       if (user) {
         const shopRef = doc(db, `users/${user.uid}/shops`, currentShop.uid);
 
         await updateDoc(shopRef, {
           isDone: true,
-          total: totalPrice && totalPrice > 0 ? totalPrice : shopTotal,
+          total:
+            inputShopPrice && inputShopPrice > 0
+              ? inputShopPrice
+              : calculatedShopPrice,
         });
 
         dispatch(completeCurrentShop());
@@ -109,52 +105,46 @@ const ShopTotalCard: React.FC<ShopTotalCardProps> = ({
         <div className="flex flex-col">
           <span className="text-xs text-slate-400">Total da compra</span>
           <h1 className="text-2xl text-black font-bold break-all ...">
-            {formatShopTotal()}
+            {formatShopPrice()}
           </h1>
-          {shopTotalPrice && shopTotalPrice != calculateShopTotal() && (
-            <span className="text-[8px]">
-              * Preço total inserido na conclusão da compra
-            </span>
-          )}
         </div>
       </div>
-      {!isVisualizer && (
-        <div className="flex flex-row items-center gap-3">
-          <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
-            <DropdownMenuTrigger asChild>
-              <EllipsisVertical className="h-5 w-5 cursor-pointer" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={onOpenCompleteShopDialog}
-              >
-                Concluir compra
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => {}}
-                disabled
-              >
-                Limpar carrinho
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
-          <ConcludeShopDialog
-            title="Concluir compra?"
-            description="Todos os produtos serão marcados como concluídos, e a compra será movida para compras concluídas."
-            actionLabel="Concluir"
-            type="success"
-            open={openCompleteShopDialog}
-            setOpen={setOpenCompleteShopDialog}
-            loading={completeShopLoading}
-            onConfirm={completeShop}
-          />
-        </div>
-      )}
+      <div className="flex flex-row items-center gap-3">
+        <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
+          <DropdownMenuTrigger asChild>
+            <EllipsisVertical className="h-5 w-5 cursor-pointer" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={onOpenCompleteShopDialog}
+            >
+              Concluir compra
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => {}}
+              disabled
+            >
+              Limpar carrinho
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <CompleteShopDialog
+          title="Concluir compra?"
+          description="Todos os produtos serão marcados como concluídos, e a compra será movida para compras concluídas."
+          actionLabel="Concluir"
+          type="success"
+          open={openCompleteShopDialog}
+          setOpen={setOpenCompleteShopDialog}
+          loading={completeShopLoading}
+          onConfirm={completeShop}
+        />
+      </div>
     </section>
   );
 };
 
-export default ShopTotalCard;
+export default CurrentShopPriceCard;

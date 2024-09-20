@@ -29,12 +29,12 @@ import { useNavigate } from 'react-router-dom';
 
 interface ProductProps {
   currentProduct: Product;
-  isVisualizer: boolean;
+  isCompletedShop: boolean;
 }
 
 const ProductCard: React.FC<ProductProps> = ({
   currentProduct,
-  isVisualizer,
+  isCompletedShop,
 }) => {
   const navigate = useNavigate();
 
@@ -171,9 +171,9 @@ const ProductCard: React.FC<ProductProps> = ({
         <Checkbox
           id={currentProduct.uid}
           className="rounded-md h-5 w-5"
-          checked={isVisualizer ? isVisualizer : currentProduct.isDone}
+          checked={isCompletedShop ? isCompletedShop : currentProduct.isDone}
           onCheckedChange={toggleProductStatus}
-          disabled={isVisualizer}
+          disabled={isCompletedShop}
         />
         <div className="flex flex-col">
           <label
@@ -195,7 +195,7 @@ const ProductCard: React.FC<ProductProps> = ({
         <span className="text-xs text-black font-bold">
           {formatPrice(currentProduct.price)}
         </span>
-        {!isVisualizer && (
+        {!isCompletedShop && (
           <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
             <DropdownMenuTrigger asChild>
               <EllipsisVertical className="h-5 w-5 cursor-pointer" />

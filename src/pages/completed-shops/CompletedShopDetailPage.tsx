@@ -9,7 +9,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from '@/components/ui/use-toast';
 import LoadingPage from '@/pages/commom/LoadingPage';
-import ShopTotalCard from '@/components/shop/ShopTotalCard';
+import CompletedShopPriceCard from '@/pages/completed-shops/CompletedShopPriceCard';
 import ProductList from '@/components/shop/ProductList';
 import { ArrowLeft } from 'lucide-react';
 
@@ -94,13 +94,12 @@ const ShopDetailPage = () => {
           </span>
         </section>
 
-        <ShopTotalCard
+        <CompletedShopPriceCard
           products={products}
-          shopTotalPrice={state.shop.total}
-          isVisualizer={true}
+          completedShopPrice={state.shop.total}
         />
 
-        <ProductList products={products} isVisualizer={true} />
+        <ProductList products={products} isCompletedShop={true} />
       </div>
     </PrivateLayout>
   );

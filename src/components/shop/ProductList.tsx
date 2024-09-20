@@ -5,7 +5,7 @@ import { productCategories } from '@/data/productCategories';
 
 interface ProductListProps {
   products: Product[];
-  isVisualizer: boolean;
+  isCompletedShop: boolean;
 }
 
 interface CategorizedProductsType {
@@ -14,7 +14,7 @@ interface CategorizedProductsType {
 
 const ProductList: React.FC<ProductListProps> = ({
   products,
-  isVisualizer,
+  isCompletedShop,
 }) => {
   const [categorizedProducts, setCategorizedProducts] =
     useState<CategorizedProductsType>({});
@@ -48,7 +48,7 @@ const ProductList: React.FC<ProductListProps> = ({
               <ProductCard
                 key={product.uid}
                 currentProduct={product}
-                isVisualizer={isVisualizer}
+                isCompletedShop={isCompletedShop}
               />
             ))}
           </section>

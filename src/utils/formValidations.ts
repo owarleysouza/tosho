@@ -123,7 +123,7 @@ export const ProductEditFormSchema = z.object({
   )
   }) 
 
-  export const ConcludeShopFormSchema = z.object({
+  export const CompleteShopFormSchema = z.object({
     totalPrice: z
     .string()
     .catch((ctx) => ctx.input.toString())

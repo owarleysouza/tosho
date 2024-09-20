@@ -13,13 +13,13 @@ import { Form } from '@/components/ui/form';
 import FormInput from '@/components/form/FormInput';
 
 import { useForm } from 'react-hook-form';
-import { ConcludeShopFormSchema } from '@/utils/formValidations';
+import { CompleteShopFormSchema } from '@/utils/formValidations';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Loader2 } from 'lucide-react';
 
-interface ConcludeShopDialogProps {
+interface CompleteShopDialogProps {
   title: string;
   description: string;
   actionLabel: string;
@@ -27,14 +27,14 @@ interface ConcludeShopDialogProps {
   open: boolean;
   loading?: boolean;
   setOpen: (open: boolean) => void;
-  onConfirm: (totalPrice: number | undefined) => void;
+  onConfirm: (inputShopPrice: number | undefined) => void;
 }
 
 interface ButtonBackgroundType {
   [key: string]: string;
 }
 
-const ConcludeShopDialog: React.FC<ConcludeShopDialogProps> = ({
+const CompleteShopDialog: React.FC<CompleteShopDialogProps> = ({
   title,
   description,
   actionLabel,
@@ -49,14 +49,14 @@ const ConcludeShopDialog: React.FC<ConcludeShopDialogProps> = ({
     danger: 'bg-destructive',
   };
 
-  const form = useForm<z.infer<typeof ConcludeShopFormSchema>>({
-    resolver: zodResolver(ConcludeShopFormSchema),
+  const form = useForm<z.infer<typeof CompleteShopFormSchema>>({
+    resolver: zodResolver(CompleteShopFormSchema),
     defaultValues: {
       totalPrice: 0,
     },
   });
 
-  function onSubmit(data: z.infer<typeof ConcludeShopFormSchema>) {
+  function onSubmit(data: z.infer<typeof CompleteShopFormSchema>) {
     onConfirm(data.totalPrice);
   }
 
@@ -113,4 +113,4 @@ const ConcludeShopDialog: React.FC<ConcludeShopDialogProps> = ({
   );
 };
 
-export default ConcludeShopDialog;
+export default CompleteShopDialog;
