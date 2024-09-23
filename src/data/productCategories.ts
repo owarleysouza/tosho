@@ -17,5 +17,6 @@ export const productCategories: ProductCategoriesType = {
   grocery: "Mercearia",
   proteins: "Proteínas",
   dairy: "Laticínios",
-  frozen: "Congelados"
+  frozen: "Congelados",
+  condiment: "Temperos"
 } 
