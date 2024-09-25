@@ -155,11 +155,16 @@ const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
         </DropdownMenu>
       </div>
 
-      <div className="flex flex-row items-center gap-2 mt-3">
+      <div className="flex flex-col items-center mt-1.5">
+        <div className="w-full flex flex-row items-center justify-between">
+          <span className="text-xs text-[10px] text-slate-500">
+            Progresso da compra
+          </span>
+          <span className="text-[10px] text-slate-500">
+            {currentShopProgress}%
+          </span>
+        </div>
         <Progress value={currentShopProgress} className="h-2 bg-slate-200" />
-        <span className="text-[10px] text-slate-500">
-          {currentShopProgress}%
-        </span>
       </div>
 
       <CompleteShopDialog
