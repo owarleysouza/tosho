@@ -11,21 +11,23 @@ ToSho was created out of the need to improve mainly my React skills, with the pe
 
 # 🗺 Features
 
-1. Easy creation of products
-2. Tracking shops
-3. Analysis of shops price
+1. Easy management and tracking of current shop;
+2. Easy creation of products;
+3. Analysis of shops price;
+4. Easy-to-use catalog for adding products;
+5. Easy-to-add shop price.
 
 # 💻 Access
 
 You can use ToSho with the following link: https://tosho.vercel.app
 
-**If you can using ToSho in a easy way like an app, just follow the steps bellow**:
+**If you want to use ToSho in a simple way like an application, just follow the steps below**:
 
-1. Open ToSho website on Google Chrome
-2. Click on the three dots of Chrome bar
-3. Click on "Add to Initial Page"
+1. Open ToSho website on Google Chrome;
+2. Click on the three dots of Chrome bar;
+3. Click on "Add to Initial Page".
 
-Doing this, ToSho will be "installed" as an app on your cellphone and you won't need to type all the url every time when you access
+Doing this, ToSho will be "installed" as an application on your smartphone and you won't need to type all the url every time when you access. :)
 
 # 📃 Project Details
 
@@ -51,7 +53,7 @@ Doing this, ToSho will be "installed" as an app on your cellphone and you won't 
 4. Creation of backlog and business rules
 5. Creation of Prototype
 6. Definition of Stack
-7. Implementation
+7. MVP Implementation
 8. Deploy
 
 ## Backlog
