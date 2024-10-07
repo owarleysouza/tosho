@@ -11,7 +11,13 @@ import BlankState from '@/components/commom/BlankState';
 
 import { UserContext } from '@/context/commom/UserContext';
 
-import { getDocs, collection, query, where } from 'firebase/firestore';
+import {
+  getDocs,
+  collection,
+  query,
+  where,
+  DocumentData,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -21,7 +27,9 @@ import { RootState } from '@/app/store';
 const Home = () => {
   const { user } = useContext(UserContext);
 
-  const currentShop = useSelector((state: RootState) => state.shop.currentShop);
+  const currentShop = useSelector(
+    (state: RootState) => state.store.currentShop
+  );
   const dispatch = useDispatch();
 
   const [loadingCurrentShop, setLoadingCurrentShop] = useState(true);
@@ -29,6 +37,7 @@ const Home = () => {
   const { toast } = useToast();
 
   async function getCurrentShop() {
+    const myOpenShops: DocumentData[] = [];
     try {
       if (!user || !Object.keys(user).length) {
         toast({
@@ -42,16 +51,40 @@ const Home = () => {
         collection(db, 'users', user.uid, 'shops'),
         where('isDone', '==', false)
       );
-      const querySnapshot = await getDocs(openShopsRef);
-      const currentShopDocument = querySnapshot.docs[0];
+      // const querySnapshot = await getDocs(openShopsRef);
+      // console.log('querySnapshot', querySnapshot.docs);
+      // const currentShopDocument = querySnapshot.docs[0];
+      //myNextShops.sort((a, b) => a.date.seconds - b.date.seconds);
 
-      if (currentShopDocument) {
+      const querySnapshot = await getDocs(openShopsRef);
+
+      //TODO: Type this shop later
+      querySnapshot.forEach((doc) => {
+        const { name, date, total, isDone } = doc.data();
         const shop = {
-          uid: currentShopDocument.id,
-          ...currentShopDocument.data(),
+          uid: doc.id,
+          name,
+          date,
+          total,
+          isDone,
         };
-        dispatch(addCurrentShop(shop));
-      }
+
+        myOpenShops.push(shop);
+      });
+
+      myOpenShops.sort((a, b) => a.date.seconds - b.date.seconds);
+      console.log('myOpenShops', myOpenShops);
+      console.log('current shop', myOpenShops[0]);
+
+      dispatch(addCurrentShop(myOpenShops[0]));
+
+      // if (currentShopDocument) {
+      //   const shop = {
+      //     uid: currentShopDocument.id,
+      //     ...currentShopDocument.data(),
+      //   };
+      //   dispatch(addCurrentShop(shop));
+      // }
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -71,8 +104,8 @@ const Home = () => {
 
   return (
     <PrivateLayout>
-      {Object.keys(currentShop).length ? (
-        <CurrentShopPage shop={currentShop} />
+      {currentShop && Object.keys(currentShop).length ? (
+        <CurrentShopPage shop={currentShop} getCurrentShop={getCurrentShop} />
       ) : (
         <section className="h-screen flex flex-col justify-center items-center">
           <BlankState

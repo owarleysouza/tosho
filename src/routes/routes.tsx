@@ -11,6 +11,8 @@ import CompletedShopsPage from '@/pages/completed-shops/CompletedShopsPage';
 import CompletedShopDetailPage from '@/pages/completed-shops/CompletedShopDetailPage';
 import ProductEditPage from '@/pages/shop/ProductEditPage';
 import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
+import NextShopsPage from '@/pages/next-shops/NextShopsPage';
+import NextShopDetailPage from '@/pages/next-shops/NextShopDetailPage';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +25,14 @@ const router = createBrowserRouter([
       {
         path: '/account',
         element: <AccountPage />,
+      },
+      {
+        path: '/next-shops',
+        element: <NextShopsPage />,
+      },
+      {
+        path: '/next-shop/:shopId',
+        element: <NextShopDetailPage />,
       },
       {
         path: '/complete-shops',

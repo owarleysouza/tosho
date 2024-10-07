@@ -20,19 +20,23 @@ import { toast } from '@/components/ui/use-toast';
 import BlankState from '@/components/commom/BlankState';
 
 import shopBlankStateSVG from '@/assets/images/shop-blank-state.svg';
+import { RootState } from '@/app/store';
+import { useDispatch, useSelector } from 'react-redux';
 
-const MyShopsPage = () => {
+import { setNextShops } from '@/app/shop/shopSlice';
+import CurrentShopCreateDialog from '../shop/CurrentShopCreateDialog';
+
+const NextShopsPage = () => {
   const { user } = useContext(UserContext);
 
-  //TODO: Create a correct Shop Type to replace DocumentData type
-  const [shops, setShops] = useState<DocumentData[]>([]);
+  const nextShops = useSelector((state: RootState) => state.store.nextShops);
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(true);
-
   const [removeShopLoading, setRemoveShopLoading] = useState(false);
 
   async function getShops() {
-    const myShops: DocumentData[] = [];
+    const myNextShops: DocumentData[] = [];
     try {
       if (!user || !Object.keys(user).length) {
         toast({
@@ -44,7 +48,7 @@ const MyShopsPage = () => {
       }
       const shopsRef = query(
         collection(db, 'users', user.uid, 'shops'),
-        where('isDone', '==', true)
+        where('isDone', '==', false)
       );
       const querySnapshot = await getDocs(shopsRef);
 
@@ -59,11 +63,12 @@ const MyShopsPage = () => {
           isDone,
         };
 
-        myShops.push(shop);
+        myNextShops.push(shop);
       });
 
-      myShops.sort((a, b) => b.date.seconds - a.date.seconds);
-      setShops(myShops);
+      myNextShops.sort((a, b) => a.date.seconds - b.date.seconds);
+      myNextShops.shift();
+      dispatch(setNextShops(myNextShops));
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -82,7 +87,7 @@ const MyShopsPage = () => {
         const shopRef = doc(db, `users/${user.uid}/shops`, shopUid);
         await deleteDoc(shopRef);
 
-        setShops(shops.filter((shop) => shop.uid != shopUid));
+        dispatch(setNextShops(nextShops.filter((shop) => shop.uid != shopUid)));
 
         toast({
           variant: 'success',
@@ -114,30 +119,33 @@ const MyShopsPage = () => {
 
   return (
     <PrivateLayout>
-      <div className="flex flex-col items-center mt-16">
-        <span className="text-lg text-black font-bold my-3">
-          Compras concluídas
-        </span>
-        {shops.length ? (
-          <section className="space-y-2">
-            {shops.map((shop) => (
-              <ShopCard
-                key={shop.uid}
-                shop={shop}
-                onRemoveShop={removeShop}
-                removeShopLoading={removeShopLoading}
-              />
-            ))}
-          </section>
-        ) : (
-          <BlankState
-            image={shopBlankStateSVG}
-            title="Nenhuma compra concluída :("
-          />
-        )}
+      <div className="flex flex-col space-y-4 justify-between mt-16">
+        <div className="flex flex-col items-center">
+          <span className="text-lg text-black font-bold my-3">
+            Próximas compras
+          </span>
+          {nextShops.length ? (
+            <section className="space-y-2">
+              {nextShops.map((shop) => (
+                <ShopCard
+                  key={shop.uid}
+                  shop={shop}
+                  onRemoveShop={removeShop}
+                  removeShopLoading={removeShopLoading}
+                />
+              ))}
+            </section>
+          ) : (
+            <BlankState
+              image={shopBlankStateSVG}
+              title="Nenhuma próxima compra criada :("
+            />
+          )}
+        </div>
+        <CurrentShopCreateDialog onShopCreated={getShops} />
       </div>
     </PrivateLayout>
   );
 };
 
-export default MyShopsPage;
+export default NextShopsPage;

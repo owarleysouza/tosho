@@ -40,12 +40,14 @@ const ProductCard: React.FC<ProductProps> = ({
 
   const { user } = useContext(UserContext);
 
-  const currentShop = useSelector((state: RootState) => state.shop.currentShop);
+  const currentShop = useSelector(
+    (state: RootState) => state.store.currentShop
+  );
   const currentShopPendingProducts = useSelector(
-    (state: RootState) => state.shop.currentShopPendingProducts
+    (state: RootState) => state.store.currentShopPendingProducts
   );
   const currentShopCartProducts = useSelector(
-    (state: RootState) => state.shop.currentShopCartProducts
+    (state: RootState) => state.store.currentShopCartProducts
   );
 
   const dispatch = useDispatch();
@@ -66,6 +68,8 @@ const ProductCard: React.FC<ProductProps> = ({
   async function toggleProductStatus() {
     const newProductStatus = !currentProduct.isDone;
     try {
+      console.log('currentShop', currentShop);
+      console.log('toggle status', productRef, newProductStatus);
       await updateDoc(productRef, { isDone: newProductStatus });
 
       const changedProduct = { ...currentProduct };

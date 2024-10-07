@@ -15,6 +15,8 @@ import { DocumentData } from 'firebase/firestore';
 import { formatDate } from '@/utils/formatDate';
 import { formatPrice } from '@/utils/formatPrice';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addCurrentShop } from '@/app/shop/shopSlice';
 
 interface MyShopsProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
@@ -33,8 +35,19 @@ const ShopCard: React.FC<MyShopsProps> = ({
 
   const navigate = useNavigate();
 
+  const dispatch = useDispatch();
+
+  const isCompletedShop = shop.isDone === true;
+
+  const cardTagBackground = isCompletedShop ? 'bg-primary' : 'bg-accent';
+
   function goToShopDetail() {
-    navigate(`/complete-shops/${shop.uid}`, { state: { shop: shop } });
+    if (isCompletedShop) {
+      navigate(`/complete-shops/${shop.uid}`, { state: { shop: shop } });
+    } else {
+      navigate(`/next-shop/${shop.uid}`, { state: { shop: shop } });
+      dispatch(addCurrentShop(shop));
+    }
   }
 
   function onOpenRemoveDialog() {
@@ -48,7 +61,9 @@ const ShopCard: React.FC<MyShopsProps> = ({
 
   return (
     <div className="relative ">
-      <div className="absolute t-0 left-0 w-[12px] min-h-full bg-primary rounded-tl-full rounded-bl-full border"></div>
+      <div
+        className={`absolute t-0 left-0 w-[12px] min-h-full ${cardTagBackground} rounded-tl-full rounded-bl-full border`}
+      ></div>
       <div className="flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 pl-6 pr-4 rounded-2xl border border-accent shadow gap-2">
         <section
           className="cursor-pointer flex flex-row items-center gap-2"
@@ -66,9 +81,11 @@ const ShopCard: React.FC<MyShopsProps> = ({
         </section>
 
         <section className="flex flex-row items-center gap-1.5">
-          <span className="text-xs text-black font-bold">
-            {formatPrice(shop.total)}
-          </span>
+          {isCompletedShop && (
+            <span className="text-xs text-black font-bold">
+              {formatPrice(shop.total)}
+            </span>
+          )}
           <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
             <DropdownMenuTrigger asChild>
               <EllipsisVertical className="h-5 w-5 cursor-pointer" />

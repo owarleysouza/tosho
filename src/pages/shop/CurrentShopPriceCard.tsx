@@ -23,22 +23,31 @@ import { completeCurrentShop } from '@/app/shop/shopSlice';
 
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 interface CurrentShopPriceCardProps {
-  products: Product[];
+  cartProducts: Product[];
+  pendingProducts: Product[];
+  getCurrentShop: () => void;
 }
 
 const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
-  products,
+  cartProducts,
+  pendingProducts,
+  getCurrentShop,
 }) => {
+  const navigate = useNavigate();
+
   const { user } = useContext(UserContext);
 
-  const currentShop = useSelector((state: RootState) => state.shop.currentShop);
+  const currentShop = useSelector(
+    (state: RootState) => state.store.currentShop
+  );
   const currentShopPendingProducts = useSelector(
-    (state: RootState) => state.shop.currentShopPendingProducts
+    (state: RootState) => state.store.currentShopPendingProducts
   );
   const currentShopCartProducts = useSelector(
-    (state: RootState) => state.shop.currentShopCartProducts
+    (state: RootState) => state.store.currentShopCartProducts
   );
   const dispatch = useDispatch();
 
@@ -56,7 +65,7 @@ const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
   function calculateShopPrice() {
     let total = 0;
 
-    products.forEach((product) => {
+    cartProducts.forEach((product) => {
       total += product.quantity * (product.price ? product.price : 0);
     });
 
@@ -75,10 +84,11 @@ const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
       setCompleteShopLoading(true);
 
       const calculatedShopPrice = calculateShopPrice();
-
+      // console.log('user', user.uid);
+      // console.log('currentShop', currentShop.uid);
       if (user) {
         const shopRef = doc(db, `users/${user.uid}/shops`, currentShop.uid);
-
+        console.log('shopRef', shopRef);
         await updateDoc(shopRef, {
           isDone: true,
           total:
@@ -89,16 +99,20 @@ const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
 
         dispatch(completeCurrentShop());
 
+        getCurrentShop();
+
         toast({
           variant: 'success',
           title: 'Sucesso!',
           description: 'Compra concluída com sucesso',
         });
+        navigate('/next-shops');
       }
     } catch (error) {
+      console.log('error', error);
       toast({
         variant: 'destructive',
-        title: 'Ops! Algo de errado aconteceu',
+        title: 'Ops! Algo de errado aconteceuuu',
         description: 'Um erro inesperado aconteceu ao concluir a compra',
       });
     } finally {
@@ -107,18 +121,22 @@ const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
   }
 
   function calculateCurrentShopProgress() {
-    const totalProductsCart = currentShopCartProducts.length;
-    const totalProductsShop =
-      currentShopPendingProducts.length + currentShopCartProducts.length;
-
+    const totalProductsCart = cartProducts.length;
+    const totalProductsShop = pendingProducts.length + cartProducts.length;
+    console.log(
+      'currentShopCartProducts',
+      currentShopCartProducts,
+      'currentShopPendingProducts',
+      currentShopPendingProducts
+    );
     const shopProgress = (totalProductsCart / totalProductsShop) * 100;
-
+    console.log('shopProgress', totalProductsCart, totalProductsShop);
     setCurrentShopProgress(Math.round(shopProgress));
   }
 
   useEffect(() => {
     calculateCurrentShopProgress();
-  }, [currentShopCartProducts, currentShopPendingProducts]);
+  }, [cartProducts, pendingProducts]);
 
   return (
     <section className="max-w-[316px] bg-secondary py-5 px-5 rounded-2xl border border-accent my-3">

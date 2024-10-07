@@ -10,7 +10,7 @@ import { UserContext } from '@/context/commom/UserContext';
 
 import productsBlankStateSVG from '@/assets/images/products-blank-state.svg';
 import cartBlankStateSVG from '@/assets/images/cart-blank-state.svg';
-import { ListPlus, Loader2 } from 'lucide-react';
+// import { ListPlus, Loader2 } from 'lucide-react';
 
 import CurrentShopPriceCard from '@/pages/shop/CurrentShopPriceCard';
 
@@ -20,17 +20,17 @@ import LoadingPage from '@/pages/commom/LoadingPage';
 import { useToast } from '@/components/ui/use-toast';
 import ProductList from '@/components/shop/ProductList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+// import {
+//   Sheet,
+//   SheetContent,
+//   SheetDescription,
+//   SheetHeader,
+//   SheetTitle,
+//   SheetTrigger,
+// } from '@/components/ui/sheet';
+// import { Button } from '@/components/ui/button';
 
-import { productsCatalog } from '@/data/productsCatalog';
+// import { productsCatalog } from '@/data/productsCatalog';
 
 import { db } from '@/lib/firebase';
 import { addDoc, collection, DocumentData, getDocs } from 'firebase/firestore';
@@ -41,13 +41,16 @@ import {
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts,
 } from '@/app/shop/shopSlice';
-import { Separator } from '@/components/ui/separator';
+// import { Separator } from '@/components/ui/separator';
+import { handleProductsInput } from '@/utils/formatProductsInput';
+import ProductCatalog from '@/components/shop/ProductCatalog';
 
 interface ShopProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
+  getCurrentShop: () => void;
 }
 
-const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
+const CurrentShopPage: React.FC<ShopProps> = ({ shop, getCurrentShop }) => {
   const { user } = useContext(UserContext);
 
   const productsCollectionRef = collection(
@@ -56,10 +59,10 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   );
 
   const currentShopPendingProducts = useSelector(
-    (state: RootState) => state.shop.currentShopPendingProducts
+    (state: RootState) => state.store.currentShopPendingProducts
   );
   const currentShopCartProducts = useSelector(
-    (state: RootState) => state.shop.currentShopCartProducts
+    (state: RootState) => state.store.currentShopCartProducts
   );
   const dispatch = useDispatch();
 
@@ -67,27 +70,29 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
 
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  const [sortedProductsCatalog, setSortedProductsCatalog] = useState<Product[]>(
-    []
-  );
+  // const [sortedProductsCatalog, setSortedProductsCatalog] = useState<Product[]>(
+  //   []
+  // );
 
-  const [loadingProductCatalogId, setLoadingProductCatalogId] = useState('');
+  // const [loadingProductCatalogId, setLoadingProductCatalogId] = useState('');
 
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('list');
 
   async function getProducts() {
+    console.log('entrou em getProducts');
     const pendingList: Product[] = [];
     const checkedList: Product[] = [];
 
     try {
       //Verification if products is empty for avoid to do a get on firestore again and replicate the products on redux state. Try to improve this approach later
-      if (
-        user &&
-        !currentShopPendingProducts.length &&
-        !currentShopCartProducts.length
-      ) {
+      // if (
+      //   user &&
+      //   !currentShopPendingProducts.length &&
+      //   !currentShopCartProducts.length
+      // ) {
+      if (user) {
         const pendingProductsRef = collection(
           db,
           `users/${user.uid}/shops/${shop.uid}/products`
@@ -124,46 +129,6 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     } finally {
       setLoadingProducts(false);
     }
-  }
-
-  function handleProductsInput(text: string) {
-    const products = [];
-    const rows = text.trim().split('\n');
-
-    for (const row of rows) {
-      const parts = row.trim().split(',');
-
-      const name = parts[0]?.trim();
-      let quantity = 1; // Default value for quantity
-      let description = ''; // Default value for description
-
-      // If there's three parts, we assume the second one as quantity and the third as description
-      if (parts.length === 3) {
-        quantity = parseInt(parts[1]) || 1;
-        description = parts[2]?.trim() || '';
-        // If there's just two parts, we verify if the second one is a quantity or a description
-      } else if (parts.length === 2) {
-        //Second one is quantity
-        if (!isNaN(Number(parts[1]))) {
-          quantity = parseInt(parts[1]);
-        } else {
-          description = parts[1]?.trim() || '';
-        }
-      }
-
-      // Name is mandatory
-      if (name) {
-        products.push({
-          name: name,
-          quantity: quantity,
-          description: description,
-          category: 'others',
-          isDone: false,
-        });
-      }
-    }
-
-    return products;
   }
 
   async function onSubmitProduct(
@@ -214,54 +179,54 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     }
   }
 
-  function sortProductsCatalog() {
-    setSortedProductsCatalog(
-      productsCatalog.sort((a, b) => a.name.localeCompare(b.name))
-    );
-  }
+  // function sortProductsCatalog() {
+  //   setSortedProductsCatalog(
+  //     productsCatalog.sort((a, b) => a.name.localeCompare(b.name))
+  //   );
+  // }
 
-  async function addProductFromCatalog(product: Product) {
-    const productToAdd = {
-      name: product.name,
-      quantity: product.quantity,
-      category: product.category,
-      isDone: false,
-    };
+  // async function addProductFromCatalog(product: Product) {
+  //   const productToAdd = {
+  //     name: product.name,
+  //     quantity: product.quantity,
+  //     category: product.category,
+  //     isDone: false,
+  //   };
 
-    try {
-      setLoadingProductCatalogId(product.uid);
-      if (user) {
-        const { id } = await addDoc(productsCollectionRef, productToAdd);
-        const newProduct = {
-          ...product,
-          uid: id,
-        };
+  //   try {
+  //     setLoadingProductCatalogId(product.uid);
+  //     if (user) {
+  //       const { id } = await addDoc(productsCollectionRef, productToAdd);
+  //       const newProduct = {
+  //         ...product,
+  //         uid: id,
+  //       };
 
-        dispatch(
-          setCurrentShopPendingProducts(
-            currentShopPendingProducts.concat(newProduct)
-          )
-        );
+  //       dispatch(
+  //         setCurrentShopPendingProducts(
+  //           currentShopPendingProducts.concat(newProduct)
+  //         )
+  //       );
 
-        toast({
-          variant: 'success',
-          title: 'Produto adicionado',
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Ops! Algo de errado aconteceu',
-        description: 'Um erro inesperado aconteceu na adição do produto',
-      });
-    } finally {
-      setLoadingProductCatalogId('');
-    }
-  }
+  //       toast({
+  //         variant: 'success',
+  //         title: 'Produto adicionado',
+  //       });
+  //     }
+  //   } catch (error) {
+  //     toast({
+  //       variant: 'destructive',
+  //       title: 'Ops! Algo de errado aconteceu',
+  //       description: 'Um erro inesperado aconteceu na adição do produto',
+  //     });
+  //   } finally {
+  //     setLoadingProductCatalogId('');
+  //   }
+  // }
 
   useEffect(() => {
     getProducts();
-    sortProductsCatalog();
+    // sortProductsCatalog();
   }, []);
 
   if (loadingProducts) return <LoadingPage />;
@@ -275,7 +240,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
           </span>
           <span className="text-lg text-black font-bold">{shop.name}</span>
         </section>
-        <Sheet>
+        {/* <Sheet>
           <SheetTrigger>
             <ListPlus className="cursor-pointer" />
           </SheetTrigger>
@@ -312,7 +277,9 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
               </section>
             </SheetHeader>
           </SheetContent>
-        </Sheet>
+        </Sheet> */}
+
+        <ProductCatalog shop={shop} type="currentShop" />
       </div>
 
       <Tabs defaultValue="list" value={activeTab} onValueChange={setActiveTab}>
@@ -362,7 +329,11 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
           <section className="pb-2">
             {currentShopCartProducts.length ? (
               <div>
-                <CurrentShopPriceCard products={currentShopCartProducts} />
+                <CurrentShopPriceCard
+                  cartProducts={currentShopCartProducts}
+                  pendingProducts={currentShopPendingProducts}
+                  getCurrentShop={getCurrentShop}
+                />
 
                 <ProductList
                   products={currentShopCartProducts}

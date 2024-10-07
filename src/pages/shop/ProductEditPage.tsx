@@ -33,12 +33,14 @@ const ProductEditPage = () => {
   const { state } = useLocation();
   const product = state.product;
 
-  const currentShop = useSelector((state: RootState) => state.shop.currentShop);
+  const currentShop = useSelector(
+    (state: RootState) => state.store.currentShop
+  );
   const currentShopPendingProducts = useSelector(
-    (state: RootState) => state.shop.currentShopPendingProducts
+    (state: RootState) => state.store.currentShopPendingProducts
   );
   const currentShopCartProducts = useSelector(
-    (state: RootState) => state.shop.currentShopCartProducts
+    (state: RootState) => state.store.currentShopCartProducts
   );
 
   const dispatch = useDispatch();

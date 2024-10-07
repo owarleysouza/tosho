@@ -5,15 +5,17 @@ import shopReducer from './shop/shopSlice'
 
 export const store = configureStore({
   reducer: {
-    shop: shopReducer
+    store: shopReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
+        // Ignore these action types
+        ignoredActions: ['shop/setNextShops'],
         // Ignore these field paths in all actions
         ignoredActionPaths: ['payload.date'],
         // Ignore these paths in the state
-        ignoredPaths: ['shop.currentShop']
+        ignoredPaths: ['store.currentShop', 'store.nextShops']
       },
     }),
 })

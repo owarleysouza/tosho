@@ -8,12 +8,18 @@ interface ShopState{
   currentShop: DocumentData;
   currentShopPendingProducts: Product[];
   currentShopCartProducts: Product[];
+  nextShops: DocumentData[];
+  nextShopPendingProducts: Product[];
+  nextShopCartProducts: Product[];
 }
 
 const initialState: ShopState = {
   currentShop: {},
   currentShopPendingProducts: [],
   currentShopCartProducts: [],
+  nextShops: [],
+  nextShopPendingProducts: [],
+  nextShopCartProducts: [],
 }
 
 export const shopSlice = createSlice({
@@ -34,6 +40,15 @@ export const shopSlice = createSlice({
     setCurrentShopCartProducts: (state, action: PayloadAction<Product[]>) => {
       state.currentShopCartProducts = action.payload
     },
+    setNextShops: (state, action: PayloadAction<DocumentData[]>) => {
+      state.nextShops = action.payload
+    },
+    setNextShopPendingProducts: (state, action: PayloadAction<Product[]>) => {
+      state.nextShopPendingProducts = action.payload
+    }, 
+    setNextShopCartProducts: (state, action: PayloadAction<Product[]>) => {
+      state.nextShopCartProducts = action.payload
+    },
     cleanStore: state => {
       state.currentShop = {}
       state.currentShopPendingProducts = []
@@ -47,6 +62,9 @@ export const {
   completeCurrentShop,
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts, 
+  setNextShops,
+  setNextShopPendingProducts,
+  setNextShopCartProducts,
   cleanStore,
 } = shopSlice.actions
 
