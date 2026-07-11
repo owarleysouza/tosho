@@ -43,12 +43,12 @@ module.exports = {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: 'var(--primary)',
-          foreground: 'var(--primary-foreground)',
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
-          DEFAULT: 'var(--secondary)',
-          foreground: 'var(--secondary-foreground)',
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
@@ -59,20 +59,8 @@ module.exports = {
           foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'var(--accent)',
-          foreground: 'var(--accent-foreground)',
-        },
-        warning: {
-          DEFAULT: 'var(--warning)',
-          foreground: 'var(--warning-foreground)',
-        },
-        error: {
-          DEFAULT: 'var(--error)',
-          foreground: 'var(--error-foreground)',
-        },
-        success: {
-          DEFAULT: 'var(--success)',
-          foreground: 'var(--success-foreground)',
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover))',
@@ -81,6 +69,18 @@ module.exports = {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
+        },
+        tosho: {
+          900: 'hsl(var(--tosho-900))',
+          700: 'hsl(var(--tosho-700))',
+          500: 'hsl(var(--tosho-500))',
+          300: 'hsl(var(--tosho-300))',
+          200: 'hsl(var(--tosho-200))',
+          100: 'hsl(var(--tosho-100))',
+          50: 'hsl(var(--tosho-50))',
+          25: 'hsl(var(--tosho-25))',
+          'hero-fg': 'hsl(var(--tosho-hero-fg))',
+          'text-3': 'hsl(var(--tosho-text-3))',
         },
       },
       borderRadius: {
