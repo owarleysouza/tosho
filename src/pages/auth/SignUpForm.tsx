@@ -6,17 +6,18 @@ import { SignUpFormSchema } from "@/utils/formValidations"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Loader2 } from "lucide-react"
+import { Loader2, User, Mail, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import FormInput from "@/components/form/FormInput"
+import FormPasswordInput from "@/components/form/FormPasswordInput"
 import { useToast } from "@/components/ui/use-toast"
 
 import { FirebaseError } from "firebase/app"
 import { auth, db }  from "@/lib/firebase"
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc } from "firebase/firestore";
 
 const SignUpForm = () => {
   const navigate = useNavigate()
@@ -29,43 +30,34 @@ const SignUpForm = () => {
       name: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   })
 
-  
-   const onSubmit = async (data: z.infer<typeof SignUpFormSchema>) => { 
+
+   const onSubmit = async (data: z.infer<typeof SignUpFormSchema>) => {
     try{
       setLoading(true)
       await createUserWithEmailAndPassword(auth, data.email, data.password)
-      await updateProfile(auth.currentUser!, {displayName: data.name}) 
+      await updateProfile(auth.currentUser!, {displayName: data.name})
       if(auth.currentUser){
         await setDoc(doc(db, "users", auth.currentUser.uid), {
           name: data.name,
           email: data.email
-        }) 
-      }
-      navigate("/")
-    } catch(error: unknown){ 
-      if(error instanceof FirebaseError){
-        let title: string;
-        let description: string;
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            title = "Ops! Algo está errado";
-            description = "E-mail já cadastrado";
-            break;
-          default:
-            title = "Ops! Algo de errado aconteceu";
-            description = "Um erro inesperado aconteceu";
-            break;
-        }
-
-        toast({
-          variant: "destructive",
-          title,
-          description
         })
+        await sendEmailVerification(auth.currentUser)
+      }
+      navigate("/verify-email")
+    } catch(error: unknown){
+      if(error instanceof FirebaseError){
+        if(error.code === 'auth/email-already-in-use'){
+          form.setError("email", { message: "Este e-mail já possui uma conta" })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Ops! Algo de errado aconteceu",
+            description: "Um erro inesperado aconteceu"
+          })
+        }
       }
     } finally {
       setLoading(false)
@@ -74,32 +66,31 @@ const SignUpForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-3 w-full">
         <FormInput
           formControl={form.control}
           name="name"
-          placeholder="Nome"/>
-        
+          label="Nome"
+          placeholder="João Silva"
+          icon={<User size={17} />}
+        />
+
         <FormInput
           formControl={form.control}
           name="email"
-          placeholder="E-mail"
+          label="E-mail"
+          placeholder="joao@email.com"
           type="email"
+          icon={<Mail size={17} />}
         />
 
-        <FormInput
+        <FormPasswordInput
           formControl={form.control}
           name="password"
-          placeholder="Senha"
-          type="password"
+          label="Senha"
+          placeholder="••••••••"
+          icon={<Lock size={17} />}
         />
-
-        <FormInput
-          formControl={form.control}
-          name="confirmPassword"
-          placeholder="Confirmar Senha"
-          type="password"
-        /> 
 
         <Button disabled={loading} type="submit" className='w-full bg-primary rounded-full'>
         { loading ? 

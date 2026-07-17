@@ -10,7 +10,10 @@ const ProtectedRoute = () => {
     return <LoadingPage />
   }else if(!user){
     return <Navigate to="/login" replace />
-  } 
+  }else if(!user.emailVerified){
+    // RN-01 — email confirmation required before accessing protected pages
+    return <Navigate to="/verify-email" replace />
+  }
     return <Outlet />
   }
 

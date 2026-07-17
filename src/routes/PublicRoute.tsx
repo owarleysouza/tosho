@@ -8,9 +8,12 @@ const PublicRoute = () => {
   
   if(loading){
     return <LoadingPage />
+  }else if(user && !user.emailVerified){
+    // RN-01 — keep unverified users on the verification screen instead of login/signUp
+    return <Navigate to="/verify-email" replace />
   }else if(user){
     return <Navigate to="/" replace />
-  } 
+  }
     return <Outlet />
 }
 

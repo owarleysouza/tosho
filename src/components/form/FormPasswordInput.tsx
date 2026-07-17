@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+
 import {
   FormField,
   FormControl,
@@ -10,26 +13,26 @@ import {
 import { Input } from '@/components/ui/input';
 import { Control } from 'react-hook-form';
 
-interface FormFieldProps {
+interface FormPasswordInputProps {
   label?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formControl: Control<any>;
   name: string;
   placeholder: string;
-  type?: string;
   hint?: string;
   icon?: React.ReactNode;
 }
 
-const FormInput: React.FC<FormFieldProps> = ({
+const FormPasswordInput: React.FC<FormPasswordInputProps> = ({
   label,
   formControl,
   name,
   placeholder,
-  type,
   hint,
   icon,
 }) => {
+  const [visible, setVisible] = useState(false);
+
   return (
     <FormField
       control={formControl}
@@ -50,10 +53,19 @@ const FormInput: React.FC<FormFieldProps> = ({
               )}
               <Input
                 placeholder={placeholder}
-                type={type}
-                className={`rounded-full ring-1 ring-accent focus-visible:ring-primary placeholder:text-tosho-200 ${icon ? 'pl-10' : ''}`}
+                type={visible ? 'text' : 'password'}
+                className={`rounded-full ring-1 ring-accent focus-visible:ring-primary placeholder:text-tosho-200 pr-10 ${icon ? 'pl-10' : ''}`}
                 {...field}
               />
+              <button
+                type="button"
+                onClick={() => setVisible((prev) => !prev)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-tosho-500"
+                aria-label={visible ? 'Ocultar senha' : 'Mostrar senha'}
+                tabIndex={-1}
+              >
+                {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
           </FormControl>
 
@@ -66,4 +78,4 @@ const FormInput: React.FC<FormFieldProps> = ({
   );
 };
 
-export default FormInput;
+export default FormPasswordInput;

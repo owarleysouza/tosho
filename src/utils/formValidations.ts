@@ -5,8 +5,8 @@ const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
 
-//Just accept characters and accents, not spaces, special character and numbers
-const usernameValidation = new RegExp(/^[A-Za-zÀ-ÖØ-öø-ÿ]+$/);
+// Accepts full names: letters and accents, single spaces between words — no leading/trailing spaces, numbers or other special characters
+const usernameValidation = new RegExp(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s[A-Za-zÀ-ÖØ-öø-ÿ]+)*$/);
 
 //It doesn't permit only spaces, or numbers or special character
 const shopNameValidation = new RegExp(/^(?![\s\d]*$)(?![\W_]*$).*$/);
@@ -32,13 +32,6 @@ export const SignUpFormSchema = z.object({
     .regex(passwordValidation, {
       message: 'A senha deve conter letra maiúscula, letra minúscula, número e caractere especial',
     }),
-  confirmPassword: z.string().min(2, {
-    message: "A senha deve ter pelo menos 6 caracteres.",
-  }),
-  
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas precisam ser iguais",
-  path: ["confirmPassword"],
 });
 
 export const LoginFormSchema = z.object({

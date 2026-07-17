@@ -11,6 +11,7 @@ import CompletedShopsPage from '@/pages/completed-shops/CompletedShopsPage';
 import CompletedShopDetailPage from '@/pages/completed-shops/CompletedShopDetailPage';
 import ProductEditPage from '@/pages/shop/ProductEditPage';
 import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
+import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
         element: <RecoveryPasswordPage />,
       },
     ],
+  },
+  {
+    path: '/verify-email',
+    element: <VerifyEmailPage />,
   },
   {
     path: '*',
