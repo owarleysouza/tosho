@@ -233,7 +233,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
       <div className="flex flex-row items-center justify-between">
         <section className="flex flex-col items-center my-3 mx-auto">
           <span className="text-xs text-slate-400">
-            {formatDate(shop.date?.seconds)}
+            {formatDate((shop.scheduledAt ?? shop.date)?.seconds)}
           </span>
           <span className="text-lg text-black font-bold">{shop.name}</span>
         </section>

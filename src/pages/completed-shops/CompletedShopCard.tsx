@@ -60,7 +60,7 @@ const ShopCard: React.FC<MyShopsProps> = ({
               {shop.name}
             </span>
             <span className="text-xs text-slate-400 break-all ...">
-              {formatDate(shop.date?.seconds)}
+              {formatDate((shop.scheduledAt ?? shop.date)?.seconds)}
             </span>
           </div>
         </section>

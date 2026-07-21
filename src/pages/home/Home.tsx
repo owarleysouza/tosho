@@ -10,8 +10,9 @@ import { useToast } from '@/components/ui/use-toast';
 import BlankState from '@/components/commom/BlankState';
 
 import { UserContext } from '@/context/commom/UserContext';
+import { getActivePurchase, ActivePurchaseCandidate } from '@/utils/getActivePurchase';
 
-import { getDocs, collection, query, where } from 'firebase/firestore';
+import { getDocs, collection, query, where, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -43,14 +44,18 @@ const Home = () => {
         where('isDone', '==', false)
       );
       const querySnapshot = await getDocs(openShopsRef);
-      const currentShopDocument = querySnapshot.docs[0];
+      const openShops = querySnapshot.docs.map((document) => {
+        const data = document.data() as ActivePurchaseCandidate & DocumentData;
+        return { uid: document.id, ...data };
+      });
 
-      if (currentShopDocument) {
-        const shop = {
-          uid: currentShopDocument.id,
-          ...currentShopDocument.data(),
-        };
-        dispatch(addCurrentShop(shop));
+      // RN-06/RN-08 — the active purchase is the pending one whose
+      // scheduledAt is closest to now, centralized in getActivePurchase so
+      // HU-06 and HU-14 reuse the same rule instead of re-deriving it.
+      const activeShop = getActivePurchase(openShops);
+
+      if (activeShop) {
+        dispatch(addCurrentShop(activeShop));
       }
     } catch (error) {
       toast({

@@ -87,7 +87,7 @@ const ShopDetailPage = () => {
 
         <section className="flex flex-col items-center">
           <span className="text-xs text-slate-400">
-            {formatDate(state.shop.date?.seconds)}
+            {formatDate((state.shop.scheduledAt ?? state.shop.date)?.seconds)}
           </span>
           <span className="text-lg text-black font-bold">
             {state.shop.name}

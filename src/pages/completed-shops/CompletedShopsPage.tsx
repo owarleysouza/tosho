@@ -50,18 +50,22 @@ const MyShopsPage = () => {
 
       //TODO: Type this shop later
       querySnapshot.forEach((doc) => {
-        const { name, date, total } = doc.data();
+        const { name, date, scheduledAt, total } = doc.data();
         const shop = {
           uid: doc.id,
           name,
           date,
+          scheduledAt,
           total,
         };
 
         myShops.push(shop);
       });
 
-      myShops.sort((a, b) => b.date.seconds - a.date.seconds);
+      myShops.sort(
+        (a, b) =>
+          (b.scheduledAt ?? b.date).seconds - (a.scheduledAt ?? a.date).seconds
+      );
       setShops(myShops);
     } catch (error) {
       toast({

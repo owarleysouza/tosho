@@ -50,7 +50,11 @@ export const RecoveryPasswordFormSchema = z.object({
   }), 
 }) 
 
-export const ShopCreateFormSchema = z.object({ 
+// RN-26 — only "scratch" is wired up yet; "template" and "previous" are kept
+// in the enum so the selector can offer them (disabled) ahead of HU-29/HU-20.
+export const ShopStartingPointEnum = z.enum(['scratch', 'template', 'previous'])
+
+export const ShopCreateFormSchema = z.object({
   name: z
     .string()
     .min(5, {
@@ -61,13 +65,12 @@ export const ShopCreateFormSchema = z.object({
     })
     .regex(shopNameValidation, {
       message: 'Nome inválido',
-    }), 
-  date: z.date({
-    required_error: "A data é necessária.",
+    }),
+  scheduledAt: z.date({
+    required_error: "Data e hora são obrigatórias.",
   }),
-  isDone: z.boolean(),
-  total: z.number()
-}) 
+  startingPoint: ShopStartingPointEnum,
+})
 
 export const ProductsCreateFormSchema = z.object({ 
   text: z
