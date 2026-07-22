@@ -7,6 +7,7 @@ import { ProductsCreateFormSchema } from '@/utils/formValidations';
 
 import { handleProductsInput } from '@/utils/handleProductsInput';
 import { getVisibleItems } from '@/utils/itemVisibility';
+import { getSortedCategoryGroups } from '@/utils/categories';
 
 import { UserContext } from '@/context/commom/UserContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -33,6 +34,7 @@ import {
 } from '@/components/ui/sheet';
 import { Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 
 import { db } from '@/lib/firebase';
@@ -58,6 +60,13 @@ interface ShopProps {
 
 const tabTriggerClassName =
   'w-full rounded-none border-b-[2.5px] border-transparent pb-2 text-[13px] font-normal text-white data-[state=active]:border-tosho-300 data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:shadow-none';
+
+// RN-13 — sentinel for "no category filter"/"Todos", never a real category
+// name, so it can't collide with an actual category.
+const ALL_CATEGORIES = 'all';
+
+const categoryChipClassName =
+  'shrink-0 rounded-full border border-border bg-muted px-3.5 py-1 text-xs font-medium text-muted-foreground data-[state=on]:border-transparent data-[state=on]:bg-tosho-900 data-[state=on]:text-tosho-hero-fg';
 
 const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const { user } = useContext(UserContext);
@@ -88,6 +97,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const [activeTab, setActiveTab] = useState('list');
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES);
 
   async function getProducts() {
     const pendingList: Product[] = [];
@@ -202,8 +212,17 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const completedCount = currentShopCartProducts.length;
   const totalCount = currentShopPendingProducts.length + completedCount;
 
+  // Chips reflect the categories actually present in the purchase (not
+  // filtered by the current search term) — reusing the same helper that
+  // groups the list itself guarantees chips never diverge from the
+  // headings actually rendered below.
+  const presentCategories = getSortedCategoryGroups(currentShopPendingProducts).map(
+    (group) => group.category
+  );
+
   const visiblePendingProducts = getVisibleItems(currentShopPendingProducts, {
     searchTerm,
+    category: selectedCategory === ALL_CATEGORIES ? undefined : selectedCategory,
   });
 
   const searchInput = currentShopPendingProducts.length > 0 && (
@@ -216,6 +235,30 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
         className="rounded-xl border-border bg-muted pl-10 placeholder:text-tosho-text-3"
       />
     </div>
+  );
+
+  const categoryChips = currentShopPendingProducts.length > 0 && (
+    <ToggleGroup
+      type="single"
+      value={selectedCategory}
+      // Radix lets you deselect the active chip in single mode, which would
+      // otherwise leave an invalid empty value — fall back to "Todos".
+      onValueChange={(value) => setSelectedCategory(value || ALL_CATEGORIES)}
+      className="w-full justify-start gap-1.5 overflow-x-auto"
+    >
+      <ToggleGroupItem value={ALL_CATEGORIES} className={categoryChipClassName}>
+        Todos
+      </ToggleGroupItem>
+      {presentCategories.map((category) => (
+        <ToggleGroupItem
+          key={category}
+          value={category}
+          className={categoryChipClassName}
+        >
+          {category}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 
   const listContent = !currentShopPendingProducts.length ? (
@@ -308,6 +351,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
               </p>
             </div>
             {searchInput}
+            {categoryChips}
             {listContent}
             <div className="flex w-full justify-end">{addItemsTrigger}</div>
           </section>
@@ -320,6 +364,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
           <TabsContent value="list" forceMount hidden={activeTab !== 'list'}>
             <section className="flex flex-col items-center justify-center space-y-3 px-5 py-4">
               {searchInput}
+              {categoryChips}
               {listContent}
               {addItemsTrigger}
             </section>

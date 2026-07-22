@@ -1,17 +1,20 @@
 export interface VisibilityFilters {
   searchTerm?: string;
-  // HU-13 will add `category` here — chained onto the same filtered list,
-  // so "search within a filtered category" composes without rewriting this.
+  category?: string; // RN-13 — HU-13's category filter
 }
 
 // Single entry point for "which items are visible right now". Runs on the
 // flat list, before grouping — categories with no matching item simply
 // never appear as a group once getSortedCategoryGroups runs on the result.
-export function getVisibleItems<T extends { name: string }>(
+export function getVisibleItems<T extends { name: string; category: string }>(
   items: T[],
   filters: VisibilityFilters
 ): T[] {
   let visible = items;
+
+  if (filters.category) {
+    visible = visible.filter((item) => item.category === filters.category);
+  }
 
   const term = filters.searchTerm?.trim().toLowerCase();
   if (term) {
