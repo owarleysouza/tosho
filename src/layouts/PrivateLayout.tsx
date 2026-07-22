@@ -57,9 +57,9 @@ const PrivateLayout = ({ children }: LayoutProps) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={() => navigate('/complete-shops')}
+              onClick={() => navigate('/purchases')}
             >
-              Compras Concluídas
+              Compras
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

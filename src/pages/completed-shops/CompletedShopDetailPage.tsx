@@ -2,7 +2,7 @@ import PrivateLayout from '@/layouts/PrivateLayout';
 import { Product } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { useContext, useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { UserContext } from '@/context/commom/UserContext';
 import { collection, getDocs } from 'firebase/firestore';
@@ -70,6 +70,12 @@ const ShopDetailPage = () => {
     getProducts();
   }, []);
 
+  // Direct access / reload has no navigation state to read the shop from —
+  // bounce back to the manager instead of crashing on state.shop.
+  if (!state?.shop) {
+    return <Navigate to="/purchases" replace />;
+  }
+
   if (loadingProducts)
     return (
       <PrivateLayout>
@@ -82,7 +88,7 @@ const ShopDetailPage = () => {
       <div className="mt-16 mb-3">
         <ArrowLeft
           className="cursor-pointer"
-          onClick={() => navigate('/complete-shops')}
+          onClick={() => navigate('/purchases')}
         />
 
         <section className="flex flex-col items-center">

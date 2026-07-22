@@ -14,7 +14,7 @@ import DecisionDialog from '@/components/commom/DecisionDialog';
 import { toast } from '@/components/ui/use-toast';
 import { EllipsisVertical } from 'lucide-react';
 
-import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { doc, increment, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 import { UserContext } from '@/context/commom/UserContext';
@@ -58,6 +58,7 @@ const ProductCard: React.FC<ProductProps> = ({
     `users/${user?.uid}/shops/${currentShop.uid}/products`,
     currentProduct.uid
   );
+  const shopDocRef = doc(db, `users/${user?.uid}/shops`, currentShop.uid);
 
   //Remove Product
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
@@ -125,7 +126,12 @@ const ProductCard: React.FC<ProductProps> = ({
     try {
       setRemoveProductLoading(true);
 
-      await deleteDoc(productRef);
+      // Deletes the product and decrements the shop's itemsCount counter
+      // atomically, so PurchasesPage never needs a per-card products query.
+      const batch = writeBatch(db);
+      batch.delete(productRef);
+      batch.update(shopDocRef, { itemsCount: increment(-1) });
+      await batch.commit();
 
       currentProduct.isDone
         ? dispatch(

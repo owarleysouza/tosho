@@ -114,6 +114,7 @@ const ShopCreateDialog: React.FC<ShopCreateDialogProps> = ({ onShopCreated, trig
           scheduledAt: data.scheduledAt,
           isDone: false,
           total: 0,
+          itemsCount: 0,
           createdAt: serverTimestamp(),
         })
         setOpen(false)

@@ -35,7 +35,14 @@ import { Button } from '@/components/ui/button';
 import { productsCatalog } from '@/data/productsCatalog';
 
 import { db } from '@/lib/firebase';
-import { addDoc, collection, DocumentData, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  DocumentData,
+  getDocs,
+  increment,
+  writeBatch,
+} from 'firebase/firestore';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/app/store';
@@ -56,6 +63,8 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     db,
     `users/${user?.uid}/shops/${shop.uid}/products`
   );
+
+  const shopDocRef = doc(db, `users/${user?.uid}/shops`, shop.uid);
 
   const currentShopPendingProducts = useSelector(
     (state: RootState) => state.shop.currentShopPendingProducts
@@ -147,16 +156,21 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     try {
       setCreateProductsLoading(true);
       if (user) {
-        const productPromises = productsToAdd.map(async (product) => {
-          const { id } = await addDoc(productsCollectionRef, product);
-          const newProduct = {
-            uid: id,
-            ...product,
-          };
-          return newProduct;
+        // Writes every product and the shop's itemsCount counter in one
+        // atomic batch, so the denormalized count never drifts from the
+        // actual number of product documents.
+        const batch = writeBatch(db);
+
+        const addedProducts = productsToAdd.map((product) => {
+          const productRef = doc(productsCollectionRef);
+          batch.set(productRef, product);
+          return { uid: productRef.id, ...product };
         });
 
-        const addedProducts = await Promise.all(productPromises);
+        batch.update(shopDocRef, { itemsCount: increment(addedProducts.length) });
+
+        await batch.commit();
+
         dispatch(
           setCurrentShopPendingProducts(
             currentShopPendingProducts.concat(addedProducts)
@@ -193,10 +207,15 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     try {
       setLoadingProductCatalogId(product.uid);
       if (user) {
-        const { id } = await addDoc(productsCollectionRef, productToAdd);
+        const productRef = doc(productsCollectionRef);
+        const batch = writeBatch(db);
+        batch.set(productRef, productToAdd);
+        batch.update(shopDocRef, { itemsCount: increment(1) });
+        await batch.commit();
+
         const newProduct = {
           ...product,
-          uid: id,
+          uid: productRef.id,
         };
 
         dispatch(

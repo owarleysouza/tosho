@@ -7,7 +7,7 @@ import Home from '@/pages/home/Home';
 import SignUp from '@/pages/auth/SignUpPage';
 import Login from '@/pages/auth/LoginPage';
 import AccountPage from '@/pages/account/AccountPage';
-import CompletedShopsPage from '@/pages/completed-shops/CompletedShopsPage';
+import PurchasesPage from '@/pages/purchases/PurchasesPage';
 import CompletedShopDetailPage from '@/pages/completed-shops/CompletedShopDetailPage';
 import ProductEditPage from '@/pages/shop/ProductEditPage';
 import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
@@ -26,8 +26,8 @@ const router = createBrowserRouter([
         element: <AccountPage />,
       },
       {
-        path: '/complete-shops',
-        element: <CompletedShopsPage />,
+        path: '/purchases',
+        element: <PurchasesPage />,
       },
       {
         path: '/complete-shops/:shopId',
