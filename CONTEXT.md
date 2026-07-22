@@ -68,11 +68,17 @@ interface Purchase {
   userId: string;
   name: string;
   scheduledAt: Timestamp;
-  status: 'pending' | 'in_progress' | 'completed';
+  isDone: boolean;          // false = pendente | true = concluída
   createdAt: Timestamp;
   completedAt?: Timestamp;
 }
 ```
+
+> **Modelo de dois estados.** Não existe estado "em progresso" armazenado. Uma compra é pendente (`isDone: false`) ou concluída (`isDone: true`). A **compra ativa** é sempre derivada em tempo de leitura — a pendente com `scheduledAt` mais próximo de hoje — nunca persistida. Ver RN-06 e RN-07.
+>
+> Isso elimina a possibilidade de duas compras ficarem marcadas como ativas simultaneamente, e remove escritas desnecessárias no Firestore.
+>
+> **O codebase já usa `isDone`** — não há migração de dados a fazer neste campo.
 
 ### Purchase Item
 ```typescript
@@ -137,22 +143,27 @@ Nenhuma página é acessível sem sessão ativa. Tentativas redirecionam para lo
 ### Domínio: Compra Ativa
 
 **RN-06 — Definição de compra ativa**
-Compra ativa = compra com status pendente cuja data/hora é a mais próxima de hoje, incluindo compras com data passada ainda não concluídas.
+Compra ativa = a compra pendente (`isDone: false`) cujo `scheduledAt` é o mais próximo de hoje, incluindo compras com data passada ainda não concluídas. Como `scheduledAt` é um Timestamp com data e hora, a comparação por milissegundos já resolve o desempate por horário (RN-08).
 
-**RN-07 — Apenas uma compra em progresso por vez**
-Somente uma compra pode ter status "in_progress" simultaneamente. Ao abrir a tela de compra ativa, o sistema atualiza o status de "pending" para "in_progress". Quando concluída, a próxima pendente mais próxima assume.
+**RN-07 — Compra ativa é derivada, nunca armazenada**
+Não existe um campo de status "em progresso". A compra ativa é sempre calculada em tempo de leitura a partir de RN-06, por um helper centralizado (`getActivePurchase`). Nenhuma tela ou ação escreve esse estado no banco.
+
+Consequências:
+- Abrir a tela de compra ativa **não** altera nenhum dado
+- É impossível duas compras serem ativas ao mesmo tempo
+- Ao concluir a ativa, a próxima pendente mais próxima assume automaticamente, sem escrita adicional
 
 **RN-08 — Desempate de compras com mesma data**
-Quando duas compras têm a mesma data, o horário é critério de desempate. A com horário mais próximo do momento atual é a ativa.
+Quando duas compras caem no mesmo dia, o horário decide. Coberto automaticamente pela comparação de Timestamp em RN-06.
 
 **RN-09 — Cálculo de progresso**
-Progresso = itens concluídos / total de itens. Atualizado em tempo real a cada marcação ou desmarcação.
+Progresso = itens concluídos / total de itens. Sempre derivado do estado atual dos itens, nunca armazenado — evita dessincronização. Atualizado em tempo real a cada marcação ou desmarcação.
 
 **RN-10 — Registro de conclusão**
-Ao concluir uma compra, registrar data e hora exata automaticamente. Dado imutável após conclusão.
+Ao concluir uma compra, definir `isDone: true` e registrar `completedAt` com a data e hora exata. `completedAt` é imutável após a conclusão.
 
 **RN-11 — Compra ativa não pode ser excluída diretamente**
-Compra com status "in_progress" não pode ser excluída. Usuário deve primeiro concluí-la.
+A compra ativa (determinada por RN-06) não pode ser excluída. A opção aparece desabilitada com indicação do motivo. O usuário deve concluí-la primeiro, ou alterar sua data para que outra compra assuma como ativa.
 
 ---
 
@@ -534,7 +545,7 @@ Dentro do template:
 - Mobile: botão "Concluir compra" fixo no rodapé da tela
 - Desktop: botão fixo no topo do painel direito do carrinho
 - Exibe modal de confirmação antes de finalizar
-- Após confirmação: status → "concluida", data/hora de conclusão registrada
+- Após confirmação: `isDone: true` e `completedAt` registrado
 - App identifica próxima compra pendente e a exibe como ativa
 - Sem próxima compra → CTA para criar nova
 - Compra concluída acessível no histórico
@@ -599,7 +610,7 @@ Dentro do template:
 - Opção de excluir via menu de contexto no card
 - Modal de confirmação antes de remover
 - Após confirmação, compra e itens removidos permanentemente
-- Compra com status "in_progress" não pode ser excluída
+- A compra ativa (RN-06) não pode ser excluída — opção desabilitada com motivo visível
 - Gerenciador e cards de resumo atualizados imediatamente
 
 ---
@@ -927,12 +938,37 @@ Antes de iniciar cada fase que toque em dados, verificar a compatibilidade da co
 | Coleção (atual → alvo) | Estrutura alvo (seção 3) | Campos que existem | Campos que faltam | Campos que mudam de nome/tipo |
 |---|---|---|---|---|
 | `users` → `users` | `User` | `name`, `email` | `id` (implícito no doc id, ok), `createdAt` | — |
-| `shops` → `purchases` | `Purchase` | `name`, `date` (Timestamp), `isDone` (boolean), `total` (number) | `userId` (hoje só implícito no path), `scheduledAt`, `status`, `createdAt`, `completedAt` | `date` → renomeia para `scheduledAt`; `isDone: boolean` → `status: 'pending'\|'in_progress'\|'completed'` (precisa script de migração + nova lógica de "compra ativa"/RN-06 a RN-08); `total` (preço) não existe no modelo alvo — feature de preço fica fora do escopo desta evolução, decidir se remove ou mantém como campo extra |
+| `shops` → `purchases` | `Purchase` | `name`, `date` (Timestamp), `isDone` (boolean), `total` (number) | `userId` (hoje só implícito no path), `scheduledAt`, `createdAt`, `completedAt` | `date` → renomeia para `scheduledAt`; **`isDone` PERMANECE como está** — o modelo de dois estados é o alvo (RN-07), não há migração de status a fazer; `total` (preço) não existe no modelo alvo — feature de preço fica fora do escopo desta evolução, decidir se remove ou mantém como campo extra |
 | `products` → `purchase items` | `PurchaseItem` | `name`, `quantity` (number), `category` (string livre), `description` (opcional), `isDone` (boolean), `price` (number, opcional) | `purchaseId` (implícito no path), `createdAt` | `isDone` → `completed`; `quantity: number` → `quantity?: string`; `category` hoje é chave livre sem ordem fixa — precisa migrar valores para o enum/ordem fixa da RN-13; `price` não existe no modelo alvo |
 | — → `templates` | `Template` | não existe | `id`, `userId`, `name`, `description`, `createdAt` | ➕ coleção nova |
 | — → `template items` | `TemplateItem` | não existe | `id`, `templateId`, `name`, `quantity`, `description`, `category` | ➕ coleção nova |
 
 Quando um campo precisar ser adicionado a documentos existentes, escrever um script de migração único, rodá-lo uma vez, e documentar no commit.
+
+---
+
+### Helper canônico: compra ativa
+
+Já existe no projeto e implementa RN-06 e RN-08 corretamente. **Reusar sempre — nunca reimplementar a lógica de "qual é a compra ativa" em outro lugar.**
+
+```typescript
+export function getActivePurchase<T extends ActivePurchaseCandidate>(
+  purchases: T[]
+): T | undefined {
+  const pending = purchases.filter((purchase) => !purchase.isDone);
+
+  return pending.reduce<T | undefined>((closest, purchase) => {
+    const purchaseMillis = (purchase.scheduledAt ?? purchase.date)?.toMillis() ?? Infinity;
+    const closestMillis = (closest?.scheduledAt ?? closest?.date)?.toMillis() ?? Infinity;
+
+    return purchaseMillis < closestMillis ? purchase : closest;
+  }, undefined);
+}
+```
+
+Dois pontos a revisar quando houver oportunidade (nenhum urgente):
+- O fallback `?? Infinity` faz uma compra sem data nunca ser escolhida como ativa, mesmo sendo a única pendente
+- O `scheduledAt ?? date` reflete dois nomes para o mesmo campo no banco — unificar em `scheduledAt`
 
 ---
 
@@ -946,8 +982,8 @@ Quando um campo precisar ser adicionado a documentos existentes, escrever um scr
 | Autenticação — Google OAuth | ➕ | Não existe — nenhuma ocorrência de `GoogleAuthProvider`/`signInWithPopup` no projeto. Implementar do zero, incluindo RN-02 (sem exigência de confirmação de e-mail) | HU-02, HU-04 |
 | Guards de rota / redirecionamento | ✅ | `ProtectedRoute.tsx`/`PublicRoute.tsx` já cobrem RN-04/RN-05 via `onAuthStateChanged` no `UserContext`. Nenhuma mudança necessária | HU-05 |
 | Redux — estrutura de estado | 🔧 | `shopSlice.ts` (em `app/`, não `store/`) cobre só a compra ativa. Falta slice/estado para lista de compras (Fase 2) e templates (Fases 6-7); mover pasta `app/` → `store/slices/` | todas |
-| Firestore — modelagem | 🔧 | Ver tabela de migração acima — `isDone`→`status`, `quantity` muda de tipo, categorias sem ordem fixa, `templates`/`template items` não existem | todas |
-| Criar / listar / editar / excluir compra | 🔧 | Criar: `CurrentShopCreateDialog.tsx` só pede nome+data (falta hora e as 3 opções de ponto de partida + indicador de passos). Listar: `CompletedShopsPage.tsx` só lista **concluídas** — não existe tela com as 3 seções (Em progresso/Pendentes/Concluídas) nem cards de resumo. Editar: **não existe** nenhuma tela/fluxo de edição de compra. Excluir: existe em `CompletedShopsPage.tsx` (`removeShop`), mas sem checar RN-11 (compra `in_progress` não pode ser excluída) | HU-15 a HU-19 |
+| Firestore — modelagem | 🔧 | Ver tabela de migração acima — `isDone` permanece (RN-07), `date`→`scheduledAt`, `quantity` muda de tipo, categorias sem ordem fixa, `templates`/`template items` não existem | todas |
+| Criar / listar / editar / excluir compra | 🔧 | Criar: `CurrentShopCreateDialog.tsx` só pede nome+data (falta hora e as 3 opções de ponto de partida + indicador de passos). Listar: `CompletedShopsPage.tsx` só lista **concluídas** — não existe tela com as 3 seções (Em progresso/Pendentes/Concluídas) nem cards de resumo. Editar: **não existe** nenhuma tela/fluxo de edição de compra. Excluir: existe em `CompletedShopsPage.tsx` (`removeShop`), mas sem checar RN-11 (a compra ativa não pode ser excluída) | HU-15 a HU-19 |
 | Compra ativa — lista de itens | 🔧 | `CurrentShopPage.tsx` + `ProductList.tsx` + `ProductCard.tsx` cobrem exibição, agrupamento e CRUD básico. Falta: ordem fixa de categorias (RN-13 — hoje é ordem de inserção do objeto JS), ordenação alfabética dentro da categoria (RN-14), `quantity` como string livre (hoje é `number`) | HU-06, HU-07, HU-10, HU-11 |
 | Compra ativa — carrinho | 🎨 | Migração de item entre Lista/Carrinho ao marcar checkbox já funciona (`toggleProductStatus` em `ProductCard.tsx`), RN-18 já atendida em essência via abas (`Tabs`). Falta layout desktop em duas colunas (hoje só abas, sem versão responsiva) e botão "Concluir compra" fixo — não existe fluxo de conclusão de compra | HU-09, HU-14 |
 | Categorias e agrupamento | 🔧 | `productCategories.ts` é só um dicionário chave→label sem ordem; `ProductList.tsx` agrupa via `reduce` na ordem de inserção dos produtos, não na ordem fixa da RN-13 | HU-06, RN-12/13/14 |
@@ -1137,7 +1173,7 @@ Substituir o bloco de tokens existente no arquivo de CSS global:
 | Erro inline de validação | `FormMessage` | vem de graça com `Form` |
 | Checkbox do item | `Checkbox` | customizar tamanho para 28px e `rounded-lg` |
 | Chips de filtro por categoria | `ToggleGroup` type `single` | ou `Badge` clicável — `ToggleGroup` dá o comportamento de seleção única (RN: um filtro por vez) |
-| Badge de status (compra) | `Badge` — **novas variants** | `in-progress`, `pending`, `completed` |
+| Badge de status (compra) | `Badge` — **novas variants** | `active` (derivado, RN-06), `pending`, `completed` |
 | Abas Lista / Carrinho (mobile) | `Tabs` | customizar `TabsTrigger` ativo: `text-tosho-500` + `border-b-tosho-500` |
 | Modal de confirmação — desktop | `AlertDialog` | RN-25 — semanticamente correto para confirmação destrutiva |
 | Modal / bottom sheet — mobile | `Drawer` (vaul) | RN-25 — bottom sheet nativo |
@@ -1171,9 +1207,9 @@ pill: "rounded-full bg-primary text-primary-foreground text-xs font-medium px-3.
 
 **`Badge` — variants de status:**
 ```tsx
-"in-progress": "bg-tosho-500 text-tosho-hero-fg border-transparent",
-"pending":     "bg-tosho-50 text-tosho-900 border-transparent",
-"completed":   "bg-tosho-25 text-muted-foreground border-border",
+"active":    "bg-tosho-500 text-tosho-hero-fg border-transparent",  // compra ativa (derivada, RN-06)
+"pending":   "bg-tosho-50 text-tosho-900 border-transparent",       // demais pendentes
+"completed": "bg-tosho-25 text-muted-foreground border-border",     // isDone: true
 ```
 
 ---
