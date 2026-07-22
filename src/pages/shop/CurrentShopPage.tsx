@@ -6,6 +6,7 @@ import { Product } from '@/types';
 import { ProductsCreateFormSchema } from '@/utils/formValidations';
 
 import { handleProductsInput } from '@/utils/handleProductsInput';
+import { getVisibleItems } from '@/utils/itemVisibility';
 
 import { UserContext } from '@/context/commom/UserContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -30,7 +31,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 import { db } from '@/lib/firebase';
@@ -84,6 +86,8 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('list');
+
+  const [searchTerm, setSearchTerm] = useState('');
 
   async function getProducts() {
     const pendingList: Product[] = [];
@@ -198,13 +202,31 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const completedCount = currentShopCartProducts.length;
   const totalCount = currentShopPendingProducts.length + completedCount;
 
-  const listContent = currentShopPendingProducts.length ? (
-    <ProductList products={currentShopPendingProducts} isCompletedShop={false} />
-  ) : (
+  const visiblePendingProducts = getVisibleItems(currentShopPendingProducts, {
+    searchTerm,
+  });
+
+  const searchInput = currentShopPendingProducts.length > 0 && (
+    <div className="relative w-full">
+      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-tosho-500" />
+      <Input
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.target.value)}
+        placeholder="Buscar item..."
+        className="rounded-xl border-border bg-muted pl-10 placeholder:text-tosho-text-3"
+      />
+    </div>
+  );
+
+  const listContent = !currentShopPendingProducts.length ? (
     <BlankState
       image={productsBlankStateSVG}
       title="Nenhum produto pendente na lista"
     />
+  ) : visiblePendingProducts.length ? (
+    <ProductList products={visiblePendingProducts} isCompletedShop={false} />
+  ) : (
+    <BlankState image={productsBlankStateSVG} title="Nenhum item encontrado" />
   );
 
   const cartContent = currentShopCartProducts.length ? (
@@ -285,6 +307,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
                 {currentShopPendingProducts.length === 1 ? 'item' : 'itens'}
               </p>
             </div>
+            {searchInput}
             {listContent}
             <div className="flex w-full justify-end">{addItemsTrigger}</div>
           </section>
@@ -296,6 +319,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
         <>
           <TabsContent value="list" forceMount hidden={activeTab !== 'list'}>
             <section className="flex flex-col items-center justify-center space-y-3 px-5 py-4">
+              {searchInput}
               {listContent}
               {addItemsTrigger}
             </section>
