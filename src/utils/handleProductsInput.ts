@@ -1,3 +1,5 @@
+import { DEFAULT_CATEGORY } from '@/utils/categories';
+
 export function handleProductsInput(text: string) {
   const products = [];
   const rows = text.trim().split('\n');
@@ -29,7 +31,7 @@ export function handleProductsInput(text: string) {
         name: name,
         quantity: quantity,
         description: description,
-        category: 'others',
+        category: DEFAULT_CATEGORY,
         isDone: false,
       });
     }

@@ -4,18 +4,18 @@ import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { Product } from '@/types';
 import { ProductsCreateFormSchema } from '@/utils/formValidations';
-import { formatDate } from '@/utils/formatDate';
 
 import { handleProductsInput } from '@/utils/handleProductsInput';
 
 import { UserContext } from '@/context/commom/UserContext';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 import productsBlankStateSVG from '@/assets/images/products-blank-state.svg';
 import cartBlankStateSVG from '@/assets/images/cart-blank-state.svg';
-import { ListPlus, Loader2 } from 'lucide-react';
 
 import CurrentShopPriceCard from '@/pages/shop/CurrentShopPriceCard';
 
+import PurchaseHero from '@/components/purchase/PurchaseHero';
 import BlankState from '@/components/commom/BlankState';
 import ProductFormFooter from '@/components/form/ProductFormFooter';
 import LoadingPage from '@/pages/commom/LoadingPage';
@@ -30,9 +30,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-
-import { productsCatalog } from '@/data/productsCatalog';
+import { Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 import { db } from '@/lib/firebase';
 import {
@@ -50,11 +49,13 @@ import {
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts,
 } from '@/app/shop/shopSlice';
-import { Separator } from '@/components/ui/separator';
 
 interface ShopProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
 }
+
+const tabTriggerClassName =
+  'w-full rounded-none border-b-[2.5px] border-transparent pb-2 text-[13px] font-normal text-white data-[state=active]:border-tosho-300 data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:shadow-none';
 
 const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const { user } = useContext(UserContext);
@@ -65,6 +66,8 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   );
 
   const shopDocRef = doc(db, `users/${user?.uid}/shops`, shop.uid);
+
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const currentShopPendingProducts = useSelector(
     (state: RootState) => state.shop.currentShopPendingProducts
@@ -77,12 +80,6 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const [createProductsLoading, setCreateProductsLoading] = useState(false);
 
   const [loadingProducts, setLoadingProducts] = useState(true);
-
-  const [sortedProductsCatalog, setSortedProductsCatalog] = useState<Product[]>(
-    []
-  );
-
-  const [loadingProductCatalogId, setLoadingProductCatalogId] = useState('');
 
   const { toast } = useToast();
 
@@ -190,176 +187,127 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     }
   }
 
-  function sortProductsCatalog() {
-    setSortedProductsCatalog(
-      productsCatalog.sort((a, b) => a.name.localeCompare(b.name))
-    );
-  }
-
-  async function addProductFromCatalog(product: Product) {
-    const productToAdd = {
-      name: product.name,
-      quantity: product.quantity,
-      category: product.category,
-      isDone: false,
-    };
-
-    try {
-      setLoadingProductCatalogId(product.uid);
-      if (user) {
-        const productRef = doc(productsCollectionRef);
-        const batch = writeBatch(db);
-        batch.set(productRef, productToAdd);
-        batch.update(shopDocRef, { itemsCount: increment(1) });
-        await batch.commit();
-
-        const newProduct = {
-          ...product,
-          uid: productRef.id,
-        };
-
-        dispatch(
-          setCurrentShopPendingProducts(
-            currentShopPendingProducts.concat(newProduct)
-          )
-        );
-
-        toast({
-          variant: 'success',
-          title: 'Produto adicionado',
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Ops! Algo de errado aconteceu',
-        description: 'Um erro inesperado aconteceu na adição do produto',
-      });
-    } finally {
-      setLoadingProductCatalogId('');
-    }
-  }
-
   useEffect(() => {
     getProducts();
-    sortProductsCatalog();
   }, []);
 
   if (loadingProducts) return <LoadingPage />;
 
-  return (
-    <div className="mt-16">
-      <div className="flex flex-row items-center justify-between">
-        <section className="flex flex-col items-center my-3 mx-auto">
-          <span className="text-xs text-slate-400">
-            {formatDate((shop.scheduledAt ?? shop.date)?.seconds)}
-          </span>
-          <span className="text-lg text-black font-bold">{shop.name}</span>
-        </section>
-        <Sheet>
-          <SheetTrigger>
-            <ListPlus className="cursor-pointer" />
-          </SheetTrigger>
-          <SheetContent className="w-full overflow-y-scroll">
-            <SheetHeader>
-              <SheetTitle>Catálogo de Produtos</SheetTitle>
-              <SheetDescription>
-                Adicione um ou mais produtos para sua compra atual de forma
-                simples e rápida
-              </SheetDescription>
+  // RN-09 — derived from the current item lists on every render, never
+  // stored, so it can't drift out of sync with the actual data.
+  const completedCount = currentShopCartProducts.length;
+  const totalCount = currentShopPendingProducts.length + completedCount;
 
-              <section className="py-2">
-                {sortedProductsCatalog.map((product) => (
-                  <div key={product.uid}>
-                    <div className="flex flex-row items-center justify-between">
-                      <span>{product.name}</span>
-                      <Button
-                        disabled={loadingProductCatalogId === product.uid}
-                        type="button"
-                        onClick={() => addProductFromCatalog(product)}
-                        className="rounded-full px-4"
-                        variant="ghost"
-                      >
-                        {loadingProductCatalogId === product.uid ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          'Adicionar'
-                        )}
-                      </Button>
-                    </div>
-                    <Separator className="my-1" />
-                  </div>
-                ))}
-              </section>
-            </SheetHeader>
-          </SheetContent>
-        </Sheet>
-      </div>
+  const listContent = currentShopPendingProducts.length ? (
+    <ProductList products={currentShopPendingProducts} isCompletedShop={false} />
+  ) : (
+    <BlankState
+      image={productsBlankStateSVG}
+      title="Nenhum produto pendente na lista"
+    />
+  );
 
-      <Tabs defaultValue="list" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-80 bg-secondary">
-          <TabsTrigger
-            value="list"
-            className="w-1/2 data-[state=active]:bg-accent"
-          >
-            Lista
-          </TabsTrigger>
-          <TabsTrigger
-            value="cart"
-            className="w-1/2 data-[state=active]:bg-accent"
-          >
-            Carrinho
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent
-          value="list"
-          forceMount={true}
-          hidden={'list' !== activeTab}
-        >
-          <section className="flex flex-col justify-center items-center space-y-3">
-            {currentShopPendingProducts.length ? (
-              <ProductList
-                products={currentShopPendingProducts}
-                isCompletedShop={false}
-              />
-            ) : (
-              <BlankState
-                image={productsBlankStateSVG}
-                title="Nenhum produto pendente na lista"
-              />
-            )}
-
-            <ProductFormFooter
-              createProductsLoading={createProductsLoading}
-              onProductsAdd={onSubmitProduct}
-            />
-          </section>
-        </TabsContent>
-        <TabsContent
-          value="cart"
-          forceMount={true}
-          hidden={'cart' !== activeTab}
-        >
-          <section className="pb-2">
-            {currentShopCartProducts.length ? (
-              <div>
-                <CurrentShopPriceCard products={currentShopCartProducts} />
-
-                <ProductList
-                  products={currentShopCartProducts}
-                  isCompletedShop={false}
-                />
-              </div>
-            ) : (
-              <BlankState
-                image={cartBlankStateSVG}
-                title="Nenhum produto no carrinho :("
-              />
-            )}
-          </section>
-        </TabsContent>
-      </Tabs>
+  const cartContent = currentShopCartProducts.length ? (
+    <div className="w-full">
+      <CurrentShopPriceCard products={currentShopCartProducts} />
+      <ProductList products={currentShopCartProducts} isCompletedShop={false} />
     </div>
+  ) : (
+    <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
+  );
+
+  // Stand-in for HU-07's FAB (which will add "Por template"/"Por texto
+  // livre" pills): reuses the existing free-text form inside a Sheet
+  // instead of leaving it always visible in the list, matching the clean
+  // list + floating button from the print.
+  const addItemsTrigger = (
+    <Sheet>
+      <SheetTrigger asChild>
+        <button
+          type="button"
+          aria-label="Adicionar itens"
+          className={cn(
+            'flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg',
+            !isDesktop && 'fixed bottom-20 right-5 z-40'
+          )}
+        >
+          <Plus className="h-5 w-5" />
+        </button>
+      </SheetTrigger>
+      <SheetContent side="bottom">
+        <SheetHeader>
+          <SheetTitle>Adicionar itens</SheetTitle>
+          <SheetDescription>
+            Digite um ou mais produtos, um por linha.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="flex justify-center pt-3">
+          <ProductFormFooter
+            createProductsLoading={createProductsLoading}
+            onProductsAdd={onSubmitProduct}
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <PurchaseHero
+        name={shop.name}
+        scheduledAt={shop.scheduledAt}
+        date={shop.date}
+        completedCount={completedCount}
+        totalCount={totalCount}
+      >
+        {/* Mobile-only tabs, embedded in the same green hero box as the
+            print. Desktop shows both columns at once — genuinely different
+            markup, not the same tree with a column hidden via CSS. */}
+        {!isDesktop && (
+          <TabsList className="mt-4 grid h-auto w-full grid-cols-2 rounded-none bg-transparent p-0">
+            <TabsTrigger value="list" className={tabTriggerClassName}>
+              Lista
+            </TabsTrigger>
+            <TabsTrigger value="cart" className={tabTriggerClassName}>
+              Carrinho
+            </TabsTrigger>
+          </TabsList>
+        )}
+      </PurchaseHero>
+
+      {isDesktop ? (
+        <div className="grid grid-cols-2 px-8 py-6">
+          <section className="min-w-0 flex flex-col items-center space-y-3 pr-6">
+            <div className="flex w-full flex-col">
+              <h2 className="text-base font-semibold text-foreground">Lista</h2>
+              <p className="text-xs text-muted-foreground">
+                {currentShopPendingProducts.length}{' '}
+                {currentShopPendingProducts.length === 1 ? 'item' : 'itens'}
+              </p>
+            </div>
+            {listContent}
+            <div className="flex w-full justify-end">{addItemsTrigger}</div>
+          </section>
+          <section className="min-w-0 flex flex-col items-center space-y-3 border-l border-border pl-6">
+            {cartContent}
+          </section>
+        </div>
+      ) : (
+        <>
+          <TabsContent value="list" forceMount hidden={activeTab !== 'list'}>
+            <section className="flex flex-col items-center justify-center space-y-3 px-5 py-4">
+              {listContent}
+              {addItemsTrigger}
+            </section>
+          </TabsContent>
+          <TabsContent value="cart" forceMount hidden={activeTab !== 'cart'}>
+            <section className="flex flex-col items-center px-5 py-4 pb-2">
+              {cartContent}
+            </section>
+          </TabsContent>
+        </>
+      )}
+    </Tabs>
   );
 };
 

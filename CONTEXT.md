@@ -212,13 +212,6 @@ Mobile: item marcado migra da aba Lista para aba Carrinho. Desktop: item aparece
 
 ---
 
-### Domínio: Catálogo
-
-**RN-19 — Ordenação do catálogo**
-Produtos agrupados por categoria seguindo a mesma ordem fixa de RN-13. Dentro de cada categoria, ordenados alfabeticamente.
-
----
-
 ### Domínio: Templates
 
 **RN-20 — Clonagem de itens ao carregar template**

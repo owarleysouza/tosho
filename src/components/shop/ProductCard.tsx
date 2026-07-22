@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react';
 
 import { Product } from '@/types';
-import { formatPrice } from '@/utils/formatPrice';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -26,6 +25,7 @@ import {
   setCurrentShopCartProducts,
 } from '@/app/shop/shopSlice';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 interface ProductProps {
   currentProduct: Product;
@@ -63,6 +63,11 @@ const ProductCard: React.FC<ProductProps> = ({
   //Remove Product
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const [removeProductLoading, setRemoveProductLoading] = useState(false);
+
+  // An item checked into the cart of an active (not read-only) purchase gets
+  // the undo-only treatment from the print — checking it off is still done
+  // via the same checkbox/toggle, editing/deleting isn't offered there.
+  const isInCart = currentProduct.isDone && !isCompletedShop;
 
   async function toggleProductStatus() {
     const newProductStatus = !currentProduct.isDone;
@@ -172,68 +177,77 @@ const ProductCard: React.FC<ProductProps> = ({
   }
 
   return (
-    <div className="flex flex-row w-[316px] min-h-[62px] justify-between bg-secondary py-3 px-4 rounded-2xl border border-accent shadow gap-2">
-      <section className="flex flex-row items-center gap-2">
-        <Checkbox
-          id={currentProduct.uid}
-          className="rounded-md h-5 w-5"
-          checked={isCompletedShop ? isCompletedShop : currentProduct.isDone}
-          onCheckedChange={toggleProductStatus}
-          disabled={isCompletedShop}
-        />
-        <div className="flex flex-col">
-          <label
-            htmlFor={currentProduct.uid}
-            className="cursor-pointer text-xs text-black font-semibold break-all ..."
-          >
-            {currentProduct.name}
-          </label>
-          <span className="max-w-[150px] text-xs text-slate-400 break-all ...">
+    <div
+      className={cn(
+        'flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3.5',
+        currentProduct.isDone && 'bg-tosho-25'
+      )}
+    >
+      <Checkbox
+        id={currentProduct.uid}
+        className="h-7 w-7 shrink-0 rounded-[8px] border-border bg-tosho-50 data-[state=checked]:border-primary"
+        checked={isCompletedShop ? true : currentProduct.isDone}
+        onCheckedChange={toggleProductStatus}
+        disabled={isCompletedShop}
+      />
+
+      <div className="min-w-0 flex-1">
+        <label
+          htmlFor={currentProduct.uid}
+          className={cn(
+            'block cursor-pointer truncate text-sm font-bold text-foreground',
+            currentProduct.isDone && 'text-tosho-500 line-through'
+          )}
+        >
+          {currentProduct.name}
+        </label>
+        <p
+          className={cn(
+            'text-xs font-medium text-primary',
+            currentProduct.isDone && 'text-tosho-500 line-through'
+          )}
+        >
+          {currentProduct.quantity}
+        </p>
+        {currentProduct.description && (
+          <p className="truncate text-xs text-muted-foreground">
             {currentProduct.description}
-          </span>
-        </div>
-      </section>
-
-      <section className="flex flex-row items-center gap-1.5">
-        <span className="text-xs text-black font-bold">
-          {currentProduct.quantity}x
-        </span>
-        <span className="text-xs text-black font-bold">
-          {formatPrice(currentProduct.price)}
-        </span>
-        {!isCompletedShop && (
-          <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
-            <DropdownMenuTrigger asChild>
-              <EllipsisVertical className="h-5 w-5 cursor-pointer" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={navigateToEdit}
-              >
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={onOpenRemoveDialog}
-              >
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          </p>
         )}
+      </div>
 
-        <DecisionDialog
-          title="Excluir produto?"
-          description="Todos os dados desse produto serão perdidos e esta ação não poderá ser desfeita."
-          actionLabel="Excluir"
-          type="danger"
-          open={openRemoveDialog}
-          setOpen={setOpenRemoveDialog}
-          loading={removeProductLoading}
-          onConfirm={removeProduct}
-        />
-      </section>
+      {!isCompletedShop && !isInCart && (
+        <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
+          <DropdownMenuTrigger asChild>
+            <EllipsisVertical className="h-[17px] w-[17px] shrink-0 cursor-pointer text-tosho-500" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={navigateToEdit}
+            >
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={onOpenRemoveDialog}
+            >
+              Excluir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
+      <DecisionDialog
+        title="Excluir produto?"
+        description="Todos os dados desse produto serão perdidos e esta ação não poderá ser desfeita."
+        actionLabel="Excluir"
+        type="danger"
+        open={openRemoveDialog}
+        setOpen={setOpenRemoveDialog}
+        loading={removeProductLoading}
+        onConfirm={removeProduct}
+      />
     </div>
   );
 };

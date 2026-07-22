@@ -1,50 +1,31 @@
 import type { Product } from '@/types';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ProductCard from '@/components/shop/ProductCard';
-import { productCategories } from '@/data/productCategories';
+import { getSortedCategoryGroups } from '@/utils/categories';
 
 interface ProductListProps {
   products: Product[];
   isCompletedShop: boolean;
 }
 
-interface CategorizedProductsType {
-  [key: string]: Product[];
-}
-
 const ProductList: React.FC<ProductListProps> = ({
   products,
   isCompletedShop,
 }) => {
-  const [categorizedProducts, setCategorizedProducts] =
-    useState<CategorizedProductsType>({});
-
-  function categorizeProducts() {
-    const groupedProducts = products.reduce((acc, product) => {
-      if (!acc[product.category]) {
-        acc[product.category] = [];
-      }
-      acc[product.category].push(product);
-      return acc;
-    }, {} as Record<string, Product[]>);
-
-    setCategorizedProducts(groupedProducts);
-  }
-
-  useEffect(() => {
-    categorizeProducts();
-  }, [products]);
+  // RN-12/13/14 — grouped by category in the fixed order, alphabetical
+  // within each group.
+  const categoryGroups = getSortedCategoryGroups(products);
 
   return (
-    <div className="space-y-4">
-      {Object.keys(categorizedProducts).map((category) => (
+    <div className="w-full space-y-4">
+      {categoryGroups.map(({ category, items }) => (
         <section key={category}>
-          <h3 className="text-sm font-bold mb-1">
-            {productCategories[category]}
+          <h3 className="text-[11px] font-medium uppercase tracking-wide text-tosho-700 mb-2">
+            {category}
           </h3>
 
           <section className="space-y-2">
-            {categorizedProducts[category].map((product) => (
+            {items.map((product) => (
               <ProductCard
                 key={product.uid}
                 currentProduct={product}

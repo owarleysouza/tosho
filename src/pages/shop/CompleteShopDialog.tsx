@@ -97,7 +97,7 @@ const CompleteShopDialog: React.FC<CompleteShopDialogProps> = ({
               <Button
                 disabled={loading}
                 type="submit"
-                className={`${ButtonBackground[type]} rounded-full px-8`}
+                className={`${ButtonBackground[type]} rounded-2xl px-8`}
               >
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

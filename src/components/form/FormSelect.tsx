@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { productCategories } from '@/data/productCategories';
+import { FIXED_CATEGORIES } from '@/utils/categories';
 
 interface SelectFieldProps {
   label?: string;
@@ -34,8 +34,6 @@ const FormSelect: React.FC<SelectFieldProps> = ({
   placeholder,
   hint,
 }) => {
-  const productCategoriesEntries = Object.entries(productCategories);
-
   return (
     <FormField
       control={formControl}
@@ -50,9 +48,9 @@ const FormSelect: React.FC<SelectFieldProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent position="item-aligned">
-              {productCategoriesEntries.map(([value, name]) => (
-                <SelectItem key={value} value={value}>
-                  {name}
+              {FIXED_CATEGORIES.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
                 </SelectItem>
               ))}
             </SelectContent>
