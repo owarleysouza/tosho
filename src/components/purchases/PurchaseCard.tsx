@@ -1,20 +1,33 @@
-import { Timestamp } from 'firebase/firestore';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ShoppingCart, Clock, Check } from 'lucide-react';
+import { ShoppingCart, Clock, Check, EllipsisVertical } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
+import ShopFormDialog, { EditableShop } from '@/pages/shop/ShopFormDialog';
+import DeletePurchaseDialog from '@/components/purchases/DeletePurchaseDialog';
 
 export type PurchaseCardStatus = 'in-progress' | 'pending' | 'completed';
 
-interface PurchaseCardProps {
-  name: string;
-  scheduledAt?: Timestamp;
-  date?: Timestamp; // legacy fallback for shops created before scheduledAt (HU-16)
+interface PurchaseCardShop extends EditableShop {
   itemsCount?: number;
+}
+
+interface PurchaseCardProps {
+  shop: PurchaseCardShop;
   status: PurchaseCardStatus;
   onClick?: () => void;
+  // Refetch trigger after a successful edit or delete — undefined skips
+  // rendering the context menu entirely (no-op card, if ever needed).
+  onChanged?: () => void;
 }
 
 const statusConfig: Record<
@@ -42,17 +55,21 @@ const statusConfig: Record<
 };
 
 const PurchaseCard: React.FC<PurchaseCardProps> = ({
-  name,
-  scheduledAt,
-  date,
-  itemsCount,
+  shop,
   status,
   onClick,
+  onChanged,
 }) => {
-  const timestamp = scheduledAt ?? date;
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const timestamp = shop.scheduledAt ?? shop.date;
   const config = statusConfig[status];
   const Icon = config.icon;
-  const itemsLabel = `${itemsCount ?? 0} ${itemsCount === 1 ? 'item' : 'itens'}`;
+  const itemsLabel = `${shop.itemsCount ?? 0} ${shop.itemsCount === 1 ? 'item' : 'itens'}`;
+
+  // RN-11 — the in-progress purchase can't be deleted directly.
+  const deleteDisabled = status === 'in-progress';
 
   return (
     <div
@@ -73,7 +90,7 @@ const PurchaseCard: React.FC<PurchaseCardProps> = ({
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+        <p className="truncate text-sm font-semibold text-foreground">{shop.name}</p>
         <p className="text-xs text-muted-foreground">
           {timestamp
             ? `${format(timestamp.toDate(), 'd MMM yyyy', { locale: ptBR })} · ${format(
@@ -85,6 +102,59 @@ const PurchaseCard: React.FC<PurchaseCardProps> = ({
       </div>
 
       <Badge variant={status}>{config.label}</Badge>
+
+      {onChanged && (
+        <div onClick={(event) => event.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="p-1 -m-1">
+              <EllipsisVertical className="h-4 w-4 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onSelect={() => {
+                  // Let the dropdown close on its own default behavior first;
+                  // opening the edit dialog in the same tick fights it for
+                  // focus and leaves the dropdown stuck unable to reopen.
+                  setTimeout(() => setEditOpen(true), 0);
+                }}
+              >
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={deleteDisabled}
+                className={cn(!deleteDisabled && 'cursor-pointer')}
+                onSelect={() => {
+                  if (!deleteDisabled) setTimeout(() => setDeleteOpen(true), 0);
+                }}
+              >
+                <div className="flex flex-col">
+                  <span>Excluir</span>
+                  {deleteDisabled && (
+                    <span className="text-[10px] text-muted-foreground">
+                      Conclua a compra antes de excluir
+                    </span>
+                  )}
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <ShopFormDialog
+            shop={shop}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            onSaved={onChanged}
+          />
+
+          <DeletePurchaseDialog
+            shopUid={shop.uid}
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            onDeleted={onChanged}
+          />
+        </div>
+      )}
     </div>
   );
 };

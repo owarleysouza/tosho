@@ -588,7 +588,7 @@ Dentro do template:
 - Formulário pré-preenchido com dados atuais
 - Nome e data/hora obrigatórios
 - Alterações refletidas imediatamente no card e na ordenação
-- Nova data/hora mais próxima de hoje → compra passa a ser a ativa
+- Nova data/hora mais próxima de hoje → compra passa a ser a ativa (no caso das pendentes, porque uma compra concluída mesmo que com data anterior às pendentes ou em progresso não muda o status, continua concluída)
 
 ---
 

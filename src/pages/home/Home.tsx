@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import shopBlankStateSVG from '@/assets/images/shop-blank-state.svg';
 
 import PrivateLayout from '@/layouts/PrivateLayout';
-import CurrentShopCreateDialog from '@/pages/shop/CurrentShopCreateDialog';
+import ShopFormDialog from '@/pages/shop/ShopFormDialog';
 import LoadingPage from '@/pages/commom/LoadingPage';
 import CurrentShopPage from '@/pages/shop/CurrentShopPage';
 import { useToast } from '@/components/ui/use-toast';
@@ -84,7 +84,7 @@ const Home = () => {
             image={shopBlankStateSVG}
             title="Nenhuma compra criada ainda :("
           >
-            <CurrentShopCreateDialog onShopCreated={getCurrentShop} />
+            <ShopFormDialog onSaved={getCurrentShop} />
           </BlankState>
         </section>
       )}

@@ -10,7 +10,7 @@ import PrivateLayout from '@/layouts/PrivateLayout';
 import LoadingPage from '@/pages/commom/LoadingPage';
 import PurchaseCard from '@/components/purchases/PurchaseCard';
 import PurchaseSummaryCards from '@/components/purchases/PurchaseSummaryCards';
-import CurrentShopCreateDialog from '@/pages/shop/CurrentShopCreateDialog';
+import ShopFormDialog from '@/pages/shop/ShopFormDialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -119,8 +119,8 @@ const PurchasesPage = () => {
               </div>
 
               <div className="hidden md:block">
-                <CurrentShopCreateDialog
-                  onShopCreated={getPurchases}
+                <ShopFormDialog
+                  onSaved={getPurchases}
                   trigger={
                     <Button className="rounded-full gap-1.5">
                       <Plus className="h-4 w-4" />
@@ -145,8 +145,8 @@ const PurchasesPage = () => {
           {/* Mobile-only dashed CTA (moved above "Em progresso" for easy
               one-thumb reach) — desktop already has the header button above. */}
           <div className="md:hidden">
-            <CurrentShopCreateDialog
-              onShopCreated={getPurchases}
+            <ShopFormDialog
+              onSaved={getPurchases}
               trigger={
                 <button
                   type="button"
@@ -165,12 +165,10 @@ const PurchasesPage = () => {
             </h2>
             {activePurchase ? (
               <PurchaseCard
-                name={activePurchase.name}
-                scheduledAt={activePurchase.scheduledAt}
-                date={activePurchase.date}
-                itemsCount={activePurchase.itemsCount}
+                shop={activePurchase}
                 status="in-progress"
                 onClick={() => navigate('/')}
+                onChanged={getPurchases}
               />
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -188,12 +186,10 @@ const PurchasesPage = () => {
                 {pendingPurchases.map((shop) => (
                   <PurchaseCard
                     key={shop.uid}
-                    name={shop.name}
-                    scheduledAt={shop.scheduledAt}
-                    date={shop.date}
-                    itemsCount={shop.itemsCount}
+                    shop={shop}
                     status="pending"
                     onClick={() => goToShopDetail(shop)}
+                    onChanged={getPurchases}
                   />
                 ))}
               </div>
@@ -213,12 +209,10 @@ const PurchasesPage = () => {
                 {completedPurchases.map((shop) => (
                   <PurchaseCard
                     key={shop.uid}
-                    name={shop.name}
-                    scheduledAt={shop.scheduledAt}
-                    date={shop.date}
-                    itemsCount={shop.itemsCount}
+                    shop={shop}
                     status="completed"
                     onClick={() => goToShopDetail(shop)}
+                    onChanged={getPurchases}
                   />
                 ))}
               </div>
