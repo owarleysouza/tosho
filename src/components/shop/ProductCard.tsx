@@ -201,14 +201,16 @@ const ProductCard: React.FC<ProductProps> = ({
         >
           {currentProduct.name}
         </label>
-        <p
-          className={cn(
-            'text-xs font-medium text-primary',
-            currentProduct.isDone && 'text-tosho-500 line-through'
-          )}
-        >
-          {currentProduct.quantity}
-        </p>
+        {currentProduct.quantity && (
+          <p
+            className={cn(
+              'text-xs font-medium text-primary',
+              currentProduct.isDone && 'text-tosho-500 line-through'
+            )}
+          >
+            {currentProduct.quantity}
+          </p>
+        )}
         {currentProduct.description && (
           <p className="truncate text-xs text-muted-foreground">
             {currentProduct.description}

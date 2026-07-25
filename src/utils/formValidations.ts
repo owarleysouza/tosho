@@ -94,9 +94,11 @@ export const ProductEditFormSchema = z.object({
       message: "Número máximo de caracteres atingido",
     }),
   quantity: z
-    .coerce.number({message: "Quantidade inválida"})
-    .int()
-    .positive({message: "Quantidade precisa ser positiva"}),
+    .string()
+    .max(20, {
+      message: "Número máximo de caracteres atingido (20)",
+    })
+    .optional(),
   category: z
     .string()
     .min(2, {

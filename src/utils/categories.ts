@@ -46,8 +46,31 @@ const LEGACY_CATEGORY_MAP: Record<string, string> = {
   others: 'Outros',
 };
 
-function normalizeCategory(category: string): string {
-  return LEGACY_CATEGORY_MAP[category] ?? category;
+function toTitleCase(value: string): string {
+  return value
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+// Case/whitespace-insensitive so "fruta", "Fruta" and "FRUTA" all collapse
+// into the same group instead of three — exported so handleProductsInput
+// can normalize at write time too (keeps RN-17's duplicate check correct,
+// not just how things group on screen).
+export function normalizeCategory(category: string): string {
+  const trimmed = category.trim();
+  if (!trimmed) return DEFAULT_CATEGORY;
+
+  const legacyMatch = LEGACY_CATEGORY_MAP[trimmed.toLowerCase()];
+  if (legacyMatch) return legacyMatch;
+
+  const fixedMatch = FIXED_CATEGORIES.find(
+    (fixed) => fixed.toLowerCase() === trimmed.toLowerCase()
+  );
+  if (fixedMatch) return fixedMatch;
+
+  return toTitleCase(trimmed);
 }
 
 const OUTROS_RANK = FIXED_CATEGORIES.length - 1;

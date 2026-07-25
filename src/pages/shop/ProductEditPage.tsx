@@ -58,7 +58,7 @@ const ProductEditPage = () => {
     resolver: zodResolver(ProductEditFormSchema),
     defaultValues: {
       name: product.name,
-      quantity: product.quantity,
+      quantity: product.quantity ? product.quantity : '',
       category: product.category,
       description: product.description ? product.description : '',
       price: product.price ? product.price : 0,

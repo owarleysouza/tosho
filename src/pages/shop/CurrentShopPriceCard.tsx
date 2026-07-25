@@ -34,7 +34,7 @@ const CurrentShopPriceCard: React.FC<CurrentShopPriceCardProps> = ({
     let total = 0;
 
     products.forEach((product) => {
-      total += product.quantity * (product.price ? product.price : 0);
+      total += product.price ? product.price : 0;
     });
 
     return total;

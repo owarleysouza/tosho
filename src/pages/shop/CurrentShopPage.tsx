@@ -7,7 +7,7 @@ import { ProductsCreateFormSchema } from '@/utils/formValidations';
 
 import { handleProductsInput } from '@/utils/handleProductsInput';
 import { getVisibleItems } from '@/utils/itemVisibility';
-import { getSortedCategoryGroups } from '@/utils/categories';
+import { getSortedCategoryGroups, normalizeCategory } from '@/utils/categories';
 
 import { UserContext } from '@/context/commom/UserContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -32,7 +32,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
@@ -99,6 +99,8 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES);
 
+  const [fabExpanded, setFabExpanded] = useState(false);
+
   async function getProducts() {
     const pendingList: Product[] = [];
     const checkedList: Product[] = [];
@@ -164,6 +166,49 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
       return;
     }
 
+    // RN-17 — same name (case-insensitive) + category as something already
+    // in the purchase (pending or cart) is skipped silently, no error.
+    // Duplicates within the same pasted batch are folded in as we go, so
+    // pasting the same line twice doesn't create two identical documents.
+    const existingProducts = currentShopPendingProducts.concat(currentShopCartProducts);
+    const isSameItem = (a: { name: string; category: string }, b: { name: string; category: string }) =>
+      a.name.toLowerCase() === b.name.toLowerCase() &&
+      normalizeCategory(a.category).toLowerCase() === normalizeCategory(b.category).toLowerCase();
+
+    const duplicateNames: string[] = [];
+    const newProducts = productsToAdd.reduce<typeof productsToAdd>(
+      (accepted, candidate) => {
+        const isDuplicate =
+          existingProducts.some((existing) => isSameItem(existing, candidate)) ||
+          accepted.some((existing) => isSameItem(existing, candidate));
+        if (isDuplicate) duplicateNames.push(candidate.name);
+        return isDuplicate ? accepted : accepted.concat(candidate);
+      },
+      []
+    );
+
+    // RN-17 says no *error* for duplicates, but silence makes it look like
+    // the item vanished — this is an informational heads-up (soft yellow,
+    // not destructive) naming what was skipped, so the user knows to go
+    // check the list/cart instead of assuming something broke.
+    function notifyDuplicates() {
+      if (!duplicateNames.length) return;
+      toast({
+        variant: 'warning',
+        title: 'Já estava na compra',
+        description:
+          duplicateNames.length === 1
+            ? `"${duplicateNames[0]}" já estava na lista ou no carrinho e não foi adicionado de novo.`
+            : `Já estavam na lista ou no carrinho e não foram adicionados de novo: ${duplicateNames.join(', ')}.`,
+      });
+    }
+
+    if (!newProducts.length) {
+      notifyDuplicates();
+      form.reset();
+      return;
+    }
+
     try {
       setCreateProductsLoading(true);
       if (user) {
@@ -172,7 +217,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
         // actual number of product documents.
         const batch = writeBatch(db);
 
-        const addedProducts = productsToAdd.map((product) => {
+        const addedProducts = newProducts.map((product) => {
           const productRef = doc(productsCollectionRef);
           batch.set(productRef, product);
           return { uid: productRef.id, ...product };
@@ -189,6 +234,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
         );
 
         form.reset();
+        notifyDuplicates();
       }
     } catch (error) {
       toast({
@@ -281,39 +327,67 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
   );
 
-  // Stand-in for HU-07's FAB (which will add "Por template"/"Por texto
-  // livre" pills): reuses the existing free-text form inside a Sheet
-  // instead of leaving it always visible in the list, matching the clean
-  // list + floating button from the print.
+  // FAB expands into "Por template" (HU-08, placeholder for now) and "Por
+  // texto livre" pills (print 06) instead of opening the Sheet directly.
   const addItemsTrigger = (
-    <Sheet>
-      <SheetTrigger asChild>
-        <button
-          type="button"
-          aria-label="Adicionar itens"
-          className={cn(
-            'flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg',
-            !isDesktop && 'fixed bottom-20 right-5 z-40'
-          )}
-        >
-          <Plus className="h-5 w-5" />
-        </button>
-      </SheetTrigger>
-      <SheetContent side="bottom">
-        <SheetHeader>
-          <SheetTitle>Adicionar itens</SheetTitle>
-          <SheetDescription>
-            Digite um ou mais produtos, um por linha.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex justify-center pt-3">
-          <ProductFormFooter
-            createProductsLoading={createProductsLoading}
-            onProductsAdd={onSubmitProduct}
-          />
-        </div>
-      </SheetContent>
-    </Sheet>
+    <div
+      className={cn(
+        'flex items-center gap-2',
+        !isDesktop && 'fixed bottom-20 right-5 z-40'
+      )}
+    >
+      {fabExpanded && (
+        <>
+          <button
+            type="button"
+            disabled
+            className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-4 py-2.5 text-xs font-medium text-tosho-900 opacity-60"
+          >
+            Por template
+          </button>
+
+          <Sheet
+            onOpenChange={(open) => {
+              if (!open) setFabExpanded(false);
+            }}
+          >
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-4 py-2.5 text-xs font-medium text-tosho-900"
+              >
+                Por texto livre
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom">
+              <SheetHeader className="sm:text-center">
+                <SheetTitle>Adicionar itens</SheetTitle>
+                <SheetDescription className="text-xs">
+                  Digite um ou mais produtos, um por linha, no formato Nome,
+                  Categoria, Quantidade, Descrição. Apenas o nome é
+                  obrigatório — campos do final podem ficar em branco.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="flex justify-center pt-3">
+                <ProductFormFooter
+                  createProductsLoading={createProductsLoading}
+                  onProductsAdd={onSubmitProduct}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setFabExpanded((expanded) => !expanded)}
+        aria-label={fabExpanded ? 'Fechar' : 'Adicionar itens'}
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"
+      >
+        {fabExpanded ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+      </button>
+    </div>
   );
 
   return (

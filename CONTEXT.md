@@ -202,7 +202,7 @@ Dentro de cada categoria, itens ordenados alfabeticamente. Aplicado automaticame
 Itens sem categoria informada são automaticamente atribuídos à categoria "Outros".
 
 **RN-16 — Formato de entrada por texto livre**
-Formato: `Nome, Quantidade, Descrição, Categoria` — separados por vírgula, um item por linha. Apenas nome é obrigatório. Linhas em branco e campos inválidos são ignorados silenciosamente.
+Formato: `Nome, Categoria, Quantidade, Descrição` — separados por vírgula, um item por linha, estritamente posicional (sem adivinhação por conteúdo). Apenas nome é obrigatório. Campos do final podem ser omitidos (ex: só nome, ou nome + categoria), mas um campo do meio não pode ser pulado sem também informar os que vêm depois — a posição é o único critério. Linhas em branco são ignoradas silenciosamente.
 
 **RN-17 — Itens duplicados são ignorados**
 Itens com mesmo nome e categoria de um já existente são ignorados silenciosamente. Sem mensagem de erro.
@@ -449,7 +449,7 @@ Dentro do template:
 
 **Critérios de aceitação:**
 - Botão "Por texto livre" abre campo de entrada
-- Formato: Nome, Quantidade, Descrição, Categoria — vírgula, um item por linha
+- Formato: Nome, Categoria, Quantidade, Descrição — vírgula, um item por linha
 - Apenas nome obrigatório
 - Sem categoria → "Outros"
 - Múltiplos itens de uma vez, um por linha

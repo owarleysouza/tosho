@@ -1,40 +1,31 @@
-import { DEFAULT_CATEGORY } from '@/utils/categories';
+import { normalizeCategory } from '@/utils/categories';
 
+// RN-16 — strictly positional: Nome, Categoria, Quantidade, Descrição.
+// Only name is mandatory; trailing fields can be omitted, but a field in
+// the middle can't be skipped without also giving the ones after it —
+// no content-based guessing, position is all that decides a field's role.
 export function handleProductsInput(text: string) {
   const products = [];
   const rows = text.trim().split('\n');
 
   for (const row of rows) {
-    const parts = row.trim().split(',');
+    const [name, category, quantity, description] = row
+      .split(',')
+      .map((part) => part.trim());
 
-    const name = parts[0]?.trim();
-    let quantity = 1; // Default value for quantity
-    let description = ''; // Default value for description
+    // Blank lines and rows missing the mandatory name are ignored silently.
+    if (!name) continue;
 
-    // If there's three parts, we assume the second one as quantity and the third as description
-    if (parts.length === 3) {
-      quantity = parseInt(parts[1]) || 1;
-      description = parts[2]?.trim() || '';
-      // If there's just two parts, we verify if the second one is a quantity or a description
-    } else if (parts.length === 2) {
-      //Second one is quantity
-      if (!isNaN(Number(parts[1]))) {
-        quantity = parseInt(parts[1]);
-      } else {
-        description = parts[1]?.trim() || '';
-      }
-    }
-
-    // Name is mandatory
-    if (name) {
-      products.push({
-        name: name,
-        quantity: quantity,
-        description: description,
-        category: DEFAULT_CATEGORY,
-        isDone: false,
-      });
-    }
+    products.push({
+      name,
+      quantity: quantity || undefined,
+      description: description || undefined,
+      // RN-15 — no category typed falls back to "Outros". A category
+      // outside the fixed 16 (RN-13) is accepted, normalized for
+      // case/whitespace so repeat typos don't fragment into new groups.
+      category: normalizeCategory(category || ''),
+      isDone: false,
+    });
   }
 
   return products;

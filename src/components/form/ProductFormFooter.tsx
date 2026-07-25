@@ -3,10 +3,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import FormTextArea from '@/components/form/FormTextArea';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
-import { LoaderCircle } from 'lucide-react';
+import { Info, LoaderCircle } from 'lucide-react';
 
 import { ProductsCreateFormSchema } from '@/utils/formValidations';
+import { FIXED_CATEGORIES } from '@/utils/categories';
 
 import { useForm, UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
@@ -36,18 +42,46 @@ const AddProductsForm: React.FC<AddProductsFormProps> = ({
   }
 
   return (
-    <footer className="w-80 sticky bottom-0 flex justify-center py-2">
+    <footer className="w-full max-w-md mx-auto sticky bottom-0 flex justify-center py-2">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleAddProducts)}
           className="flex flex-col items-center justify-between w-full space-y-2"
         >
-          <div className="w-full">
+          <div className="relative w-full">
             <FormTextArea
               formControl={form.control}
               name="text"
-              placeholder="Digite um ou mais produtos, um por linha, no formato: Nome, Quantidade, Descrição. Apenas o nome é obrigatório."
+              placeholder="Nome, Categoria, Quantidade, Descrição — um produto por linha."
+              className="pr-9"
             />
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Ver categorias disponíveis"
+                  className="absolute right-3 top-3 text-tosho-500"
+                >
+                  <Info className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64" align="end">
+                <p className="mb-2 text-xs font-medium text-foreground">
+                  Categorias
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {FIXED_CATEGORIES.map((category) => (
+                    <span
+                      key={category}
+                      className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                    >
+                      {category}
+                    </span>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <Button
