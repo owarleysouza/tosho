@@ -101,25 +101,17 @@ export const ProductEditFormSchema = z.object({
     .optional(),
   category: z
     .string()
-    .min(2, {
-      message: "Número mínimo de caracteres não atingido",
-    }),
+    .max(30, {
+      message: "Número máximo de caracteres atingido (30)",
+    })
+    .optional(),
   description: z
     .string()
     .max(30, {
       message: "Número máximo de caracteres atingido (30)",
     })
-    .optional(), 
-  price: z
-  .string()
-  .catch((ctx) => ctx.input.toString())
-  .transform((val) => val.replace(',', '.'))  
-  .pipe(
-    z.coerce.number({ message: "Preço Inválido" })
-      .nonnegative({ message: "Preço precisa ser positivo" })
-      .optional()
-  )
-  }) 
+    .optional(),
+  })
 
   export const CompleteShopFormSchema = z.object({
     totalPrice: z

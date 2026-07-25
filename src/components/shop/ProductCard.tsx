@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import DecisionDialog from '@/components/commom/DecisionDialog';
+import ProductEditDialog from '@/components/shop/ProductEditDialog';
 import { toast } from '@/components/ui/use-toast';
 import { EllipsisVertical } from 'lucide-react';
 
@@ -24,7 +25,6 @@ import {
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts,
 } from '@/app/shop/shopSlice';
-import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface ProductProps {
@@ -36,8 +36,6 @@ const ProductCard: React.FC<ProductProps> = ({
   currentProduct,
   isCompletedShop,
 }) => {
-  const navigate = useNavigate();
-
   const { user } = useContext(UserContext);
 
   const currentShop = useSelector((state: RootState) => state.shop.currentShop);
@@ -63,6 +61,9 @@ const ProductCard: React.FC<ProductProps> = ({
   //Remove Product
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
   const [removeProductLoading, setRemoveProductLoading] = useState(false);
+
+  //Edit Product
+  const [openEditDialog, setOpenEditDialog] = useState(false);
 
   // An item checked into the cart of an active (not read-only) purchase gets
   // the undo-only treatment from the print — checking it off is still done
@@ -170,11 +171,6 @@ const ProductCard: React.FC<ProductProps> = ({
     }
   }
 
-  function navigateToEdit() {
-    navigate(`/edit-product/${currentProduct.uid}`, {
-      state: { product: currentProduct },
-    });
-  }
 
   return (
     <div
@@ -226,7 +222,13 @@ const ProductCard: React.FC<ProductProps> = ({
           <DropdownMenuContent>
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={navigateToEdit}
+              onSelect={() => {
+                // Let the dropdown close on its own default behavior first —
+                // opening the edit dialog in the same tick fights it for
+                // focus and leaves the dropdown stuck (same bug hit in the
+                // purchases manager's Editar/Excluir menu).
+                setTimeout(() => setOpenEditDialog(true), 0);
+              }}
             >
               Editar
             </DropdownMenuItem>
@@ -249,6 +251,12 @@ const ProductCard: React.FC<ProductProps> = ({
         setOpen={setOpenRemoveDialog}
         loading={removeProductLoading}
         onConfirm={removeProduct}
+      />
+
+      <ProductEditDialog
+        product={currentProduct}
+        open={openEditDialog}
+        onOpenChange={setOpenEditDialog}
       />
     </div>
   );

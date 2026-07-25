@@ -16,8 +16,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { FIXED_CATEGORIES } from '@/utils/categories';
-
 interface SelectFieldProps {
   label?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,6 +23,8 @@ interface SelectFieldProps {
   name: string;
   placeholder: string;
   hint?: string;
+  options: string[];
+  className?: string;
 }
 
 const FormSelect: React.FC<SelectFieldProps> = ({
@@ -33,14 +33,20 @@ const FormSelect: React.FC<SelectFieldProps> = ({
   name,
   placeholder,
   hint,
+  options,
+  className,
 }) => {
   return (
     <FormField
       control={formControl}
       name={name}
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}</FormLabel>
+        <FormItem className={className}>
+          {label && (
+            <FormLabel className="text-[11px] font-medium uppercase tracking-wide text-tosho-700">
+              {label}
+            </FormLabel>
+          )}
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger className="rounded-full ring-1 ring-accent focus:ring-primary">
@@ -48,17 +54,17 @@ const FormSelect: React.FC<SelectFieldProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent position="item-aligned">
-              {FIXED_CATEGORIES.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              {options.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <FormDescription>{hint}</FormDescription>
+          {hint && <FormDescription className="text-xs">{hint}</FormDescription>}
 
-          <FormMessage />
+          <FormMessage className="text-xs" />
         </FormItem>
       )}
     />

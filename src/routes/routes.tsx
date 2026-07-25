@@ -9,7 +9,6 @@ import Login from '@/pages/auth/LoginPage';
 import AccountPage from '@/pages/account/AccountPage';
 import PurchasesPage from '@/pages/purchases/PurchasesPage';
 import CompletedShopDetailPage from '@/pages/completed-shops/CompletedShopDetailPage';
-import ProductEditPage from '@/pages/shop/ProductEditPage';
 import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 
@@ -32,10 +31,6 @@ const router = createBrowserRouter([
       {
         path: '/complete-shops/:shopId',
         element: <CompletedShopDetailPage />,
-      },
-      {
-        path: '/edit-product/:productId',
-        element: <ProductEditPage />,
       },
     ],
   },

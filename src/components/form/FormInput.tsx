@@ -19,6 +19,7 @@ interface FormFieldProps {
   type?: string;
   hint?: string;
   icon?: React.ReactNode;
+  className?: string;
 }
 
 const FormInput: React.FC<FormFieldProps> = ({
@@ -29,13 +30,14 @@ const FormInput: React.FC<FormFieldProps> = ({
   type,
   hint,
   icon,
+  className,
 }) => {
   return (
     <FormField
       control={formControl}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className={className}>
           {label && (
             <FormLabel className="text-[11px] font-medium uppercase tracking-wide text-tosho-700">
               {label}
@@ -57,7 +59,7 @@ const FormInput: React.FC<FormFieldProps> = ({
             </div>
           </FormControl>
 
-          <FormDescription className="text-xs">{hint}</FormDescription>
+          {hint && <FormDescription className="text-xs">{hint}</FormDescription>}
 
           <FormMessage className="text-xs" />
         </FormItem>
