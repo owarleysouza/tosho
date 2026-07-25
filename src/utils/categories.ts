@@ -54,21 +54,52 @@ function toTitleCase(value: string): string {
     .join(' ');
 }
 
-// Case/whitespace-insensitive so "fruta", "Fruta" and "FRUTA" all collapse
-// into the same group instead of three — exported so handleProductsInput
-// can normalize at write time too (keeps RN-17's duplicate check correct,
-// not just how things group on screen).
-export function normalizeCategory(category: string): string {
+// Strips accents/diacritics for comparison only ("Laticínios" ~ "Laticinios")
+// — never used for the displayed value, just to decide if two spellings
+// mean the same category.
+function foldForComparison(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+// Case/accent/whitespace-insensitive so "fruta", "Fruta", "FRUTA" and (for
+// the fixed 16) "Laticinios" vs "Laticínios" all collapse into the same
+// group instead of fragmenting — exported so handleProductsInput can
+// normalize at write time too (keeps RN-17's duplicate check correct, not
+// just how things group on screen).
+//
+// `knownCategories` extends this same folding to CUSTOM categories (not in
+// the fixed 16): pass in the categories already used elsewhere in the
+// purchase, and a fold-equal match reuses that exact spelling instead of
+// title-casing a new one — so "Sao Paulo" typed after an existing "São
+// Paulo" item collapses into the same group. Whichever spelling was used
+// FIRST becomes canonical; there's no way to know which one is "more
+// correct" without a dictionary, so first-write-wins is the tiebreak.
+export function normalizeCategory(
+  category: string,
+  knownCategories: string[] = []
+): string {
   const trimmed = category.trim();
   if (!trimmed) return DEFAULT_CATEGORY;
 
-  const legacyMatch = LEGACY_CATEGORY_MAP[trimmed.toLowerCase()];
+  const folded = foldForComparison(trimmed);
+
+  const legacyMatch = LEGACY_CATEGORY_MAP[folded];
   if (legacyMatch) return legacyMatch;
 
   const fixedMatch = FIXED_CATEGORIES.find(
-    (fixed) => fixed.toLowerCase() === trimmed.toLowerCase()
+    (fixed) => foldForComparison(fixed) === folded
   );
   if (fixedMatch) return fixedMatch;
+
+  const knownMatch = knownCategories.find(
+    (known) => foldForComparison(known) === folded
+  );
+  if (knownMatch) return knownMatch;
 
   return toTitleCase(trimmed);
 }
@@ -97,11 +128,20 @@ export function sortItemsByName<T extends { name: string }>(items: T[]): T[] {
 }
 
 // RN-12 — items are always grouped by category, never organized manually.
+// Threads resolved categories across items so two custom-category spellings
+// that only differ by case/accent (e.g. pre-existing Firestore data typed
+// before this normalization existed) still land in the same group.
 export function groupByCategory<T extends { category: string }>(
   items: T[]
 ): Record<string, T[]> {
+  const resolvedCategories: string[] = [];
+
   return items.reduce((acc, item) => {
-    const category = normalizeCategory(item.category || DEFAULT_CATEGORY);
+    const category = normalizeCategory(
+      item.category || DEFAULT_CATEGORY,
+      resolvedCategories
+    );
+    if (!resolvedCategories.includes(category)) resolvedCategories.push(category);
     if (!acc[category]) acc[category] = [];
     acc[category].push(item);
     return acc;

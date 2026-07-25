@@ -154,7 +154,17 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     data: z.infer<typeof ProductsCreateFormSchema>,
     form: UseFormReturn<{ text: string }>
   ): Promise<void> {
-    const productsToAdd = handleProductsInput(data.text);
+    // RN-17 — same name (case-insensitive) + category as something already
+    // in the purchase (pending or cart) is skipped silently, no error.
+    // Duplicates within the same pasted batch are folded in as we go, so
+    // pasting the same line twice doesn't create two identical documents.
+    const existingProducts = currentShopPendingProducts.concat(currentShopCartProducts);
+
+    // Lets a custom category typed with a different case/accent resolve to
+    // whatever spelling is already used in this purchase, instead of
+    // starting a second group for the same category.
+    const existingCategories = existingProducts.map((product) => product.category);
+    const productsToAdd = handleProductsInput(data.text, existingCategories);
 
     if (productsToAdd.length > 30) {
       toast({
@@ -166,11 +176,6 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
       return;
     }
 
-    // RN-17 — same name (case-insensitive) + category as something already
-    // in the purchase (pending or cart) is skipped silently, no error.
-    // Duplicates within the same pasted batch are folded in as we go, so
-    // pasting the same line twice doesn't create two identical documents.
-    const existingProducts = currentShopPendingProducts.concat(currentShopCartProducts);
     const isSameItem = (a: { name: string; category: string }, b: { name: string; category: string }) =>
       a.name.toLowerCase() === b.name.toLowerCase() &&
       normalizeCategory(a.category).toLowerCase() === normalizeCategory(b.category).toLowerCase();

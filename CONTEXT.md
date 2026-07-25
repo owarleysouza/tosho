@@ -174,6 +174,7 @@ Itens são sempre agrupados por categoria automaticamente. Usuário nunca organi
 
 **RN-13 — Ordem fixa das categorias**
 Categorias seguem ordem fixa pré-definida pelo sistema — não alfabética e não alterável pelo usuário. Novas categorias adicionadas pelo usuário são inseridas ao final da ordem fixa.
+Categorias digitadas pelo usuário fora da lista fixa são preservadas como categorias independentes, inseridas na ordem imediatamente antes de "Outros". Qualquer seletor de categoria (edição de item, por exemplo) deve oferecer a união das categorias fixas com as categorias já em uso na compra ou template atual, para nunca perder uma categoria custom existente.
 
 **Ordem fixa das categorias:**
 ```
