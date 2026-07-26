@@ -6,7 +6,10 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
+// RN-24 — must allow several undo toasts to coexist: deleting more than one
+// item within the 5s window needs each item's own actionable "Desfazer",
+// not just the most recent one evicting the rest from state.
+const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 1000000
 
 type ToasterToast = ToastProps & {

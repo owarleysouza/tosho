@@ -32,6 +32,8 @@ const toastVariants = cva(
           "destructive group border-destructive bg-destructive text-destructive-foreground",
         success: "success group border-green-500 bg-green-500 text-neutral-50",
         warning: "border-yellow-300 bg-yellow-50 text-yellow-900",
+        // RN-24 — item removal undo toast (section 11.2 spec).
+        undo: "undo group border-transparent bg-foreground text-tosho-hero-fg",
       },
     },
     defaultVariants: {

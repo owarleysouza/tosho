@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import DecisionDialog from '@/components/commom/DecisionDialog';
 import ProductEditDialog from '@/components/shop/ProductEditDialog';
 import { toast } from '@/components/ui/use-toast';
 import { EllipsisVertical } from 'lucide-react';
@@ -18,12 +17,15 @@ import { doc, increment, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 import { UserContext } from '@/context/commom/UserContext';
+import { useUndoableDelete } from '@/hooks/useUndoableDelete';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/app/store';
 import {
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts,
+  removeCurrentShopProduct,
+  restoreCurrentShopProduct,
 } from '@/app/shop/shopSlice';
 import { cn } from '@/lib/utils';
 
@@ -58,17 +60,8 @@ const ProductCard: React.FC<ProductProps> = ({
   );
   const shopDocRef = doc(db, `users/${user?.uid}/shops`, currentShop.uid);
 
-  //Remove Product
-  const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
-  const [removeProductLoading, setRemoveProductLoading] = useState(false);
-
   //Edit Product
   const [openEditDialog, setOpenEditDialog] = useState(false);
-
-  // An item checked into the cart of an active (not read-only) purchase gets
-  // the undo-only treatment from the print — checking it off is still done
-  // via the same checkbox/toggle, editing/deleting isn't offered there.
-  const isInCart = currentProduct.isDone && !isCompletedShop;
 
   async function toggleProductStatus() {
     const newProductStatus = !currentProduct.isDone;
@@ -123,53 +116,42 @@ const ProductCard: React.FC<ProductProps> = ({
     }
   }
 
-  function onOpenRemoveDialog() {
-    setOpenRemoveDialog(true);
-    setOpenMenu(false);
-  }
-
-  async function removeProduct() {
-    try {
-      setRemoveProductLoading(true);
-
-      // Deletes the product and decrements the shop's itemsCount counter
-      // atomically, so PurchasesPage never needs a per-card products query.
-      const batch = writeBatch(db);
-      batch.delete(productRef);
-      batch.update(shopDocRef, { itemsCount: increment(-1) });
-      await batch.commit();
-
-      currentProduct.isDone
-        ? dispatch(
-            setCurrentShopCartProducts(
-              currentShopCartProducts.filter(
-                (product) => product.uid != currentProduct.uid
-              )
-            )
+  // RN-24 — remove immediately, no confirmation modal (that pattern is
+  // RN-25, for entities like purchases/templates, not individual items).
+  // The 5s undo window + delayed Firestore commit is handled generically by
+  // useUndoableDelete (HU-26 reuses the same hook for template items).
+  const { remove: removeProductWithUndo } = useUndoableDelete<Product>({
+    onRemoveLocally: (product) => {
+      dispatch(
+        removeCurrentShopProduct({ uid: product.uid, isDone: product.isDone })
+      );
+    },
+    onRestoreLocally: (product) => {
+      dispatch(restoreCurrentShopProduct(product));
+    },
+    onCommit: async (product) => {
+      try {
+        // Deletes the product and decrements the shop's itemsCount counter
+        // atomically, so PurchasesPage never needs a per-card products query.
+        const batch = writeBatch(db);
+        batch.delete(
+          doc(
+            db,
+            `users/${user?.uid}/shops/${currentShop.uid}/products`,
+            product.uid
           )
-        : dispatch(
-            setCurrentShopPendingProducts(
-              currentShopPendingProducts.filter(
-                (product) => product.uid != currentProduct.uid
-              )
-            )
-          );
-
-      toast({
-        variant: 'success',
-        title: 'Sucesso!',
-        description: 'Produto excluído',
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Ops! Algo de errado aconteceu',
-        description: 'Um erro inesperado aconteceu ao excluir o produto',
-      });
-    } finally {
-      setRemoveProductLoading(false);
-    }
-  }
+        );
+        batch.update(shopDocRef, { itemsCount: increment(-1) });
+        await batch.commit();
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Ops! Algo de errado aconteceu',
+          description: 'Um erro inesperado aconteceu ao excluir o produto',
+        });
+      }
+    },
+  });
 
 
   return (
@@ -214,7 +196,7 @@ const ProductCard: React.FC<ProductProps> = ({
         )}
       </div>
 
-      {!isCompletedShop && !isInCart && (
+      {!isCompletedShop && (
         <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
           <DropdownMenuTrigger asChild>
             <EllipsisVertical className="h-[17px] w-[17px] shrink-0 cursor-pointer text-tosho-500" />
@@ -234,24 +216,16 @@ const ProductCard: React.FC<ProductProps> = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer"
-              onClick={onOpenRemoveDialog}
+              onClick={() => {
+                setOpenMenu(false);
+                removeProductWithUndo(currentProduct);
+              }}
             >
               Excluir
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-
-      <DecisionDialog
-        title="Excluir produto?"
-        description="Todos os dados desse produto serão perdidos e esta ação não poderá ser desfeita."
-        actionLabel="Excluir"
-        type="danger"
-        open={openRemoveDialog}
-        setOpen={setOpenRemoveDialog}
-        loading={removeProductLoading}
-        onConfirm={removeProduct}
-      />
 
       <ProductEditDialog
         product={currentProduct}
