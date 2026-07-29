@@ -57,6 +57,20 @@ export const shopSlice = createSlice({
         }
       }
     },
+    // RN-18/RN-09 — one atomic move between arrays (not two separate
+    // dispatches computed from a component-side snapshot), so a rapid
+    // checkbox tap can't race a stale array the way HU-11's delete/undo did.
+    // `isDone` here is the product's NEW status, i.e. the destination.
+    toggleCurrentShopProductStatus: (state, action: PayloadAction<{ uid: string; isDone: boolean }>) => {
+      const { uid, isDone } = action.payload
+      const source = isDone ? state.currentShopPendingProducts : state.currentShopCartProducts
+      const destinationKey = isDone ? 'currentShopCartProducts' : 'currentShopPendingProducts'
+      const index = source.findIndex(p => p.uid === uid)
+      if (index === -1) return
+      const [product] = source.splice(index, 1)
+      product.isDone = isDone
+      state[destinationKey].push(product)
+    },
     cleanStore: state => {
       state.currentShop = {}
       state.currentShopPendingProducts = []
@@ -72,6 +86,7 @@ export const {
   setCurrentShopCartProducts,
   removeCurrentShopProduct,
   restoreCurrentShopProduct,
+  toggleCurrentShopProductStatus,
   cleanStore,
 } = shopSlice.actions
 

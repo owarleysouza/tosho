@@ -22,10 +22,9 @@ import { useUndoableDelete } from '@/hooks/useUndoableDelete';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/app/store';
 import {
-  setCurrentShopPendingProducts,
-  setCurrentShopCartProducts,
   removeCurrentShopProduct,
   restoreCurrentShopProduct,
+  toggleCurrentShopProductStatus,
 } from '@/app/shop/shopSlice';
 import { cn } from '@/lib/utils';
 
@@ -41,12 +40,6 @@ const ProductCard: React.FC<ProductProps> = ({
   const { user } = useContext(UserContext);
 
   const currentShop = useSelector((state: RootState) => state.shop.currentShop);
-  const currentShopPendingProducts = useSelector(
-    (state: RootState) => state.shop.currentShopPendingProducts
-  );
-  const currentShopCartProducts = useSelector(
-    (state: RootState) => state.shop.currentShopCartProducts
-  );
 
   const dispatch = useDispatch();
 
@@ -63,57 +56,34 @@ const ProductCard: React.FC<ProductProps> = ({
   //Edit Product
   const [openEditDialog, setOpenEditDialog] = useState(false);
 
-  async function toggleProductStatus() {
+  // RN-09/RN-18 — optimistic: flip locally first so the tap feels instant
+  // even on bad store wifi, persist to Firestore in the background, and
+  // only surface an error (with rollback to the previous status) if the
+  // write actually fails.
+  function toggleProductStatus() {
     const newProductStatus = !currentProduct.isDone;
-    try {
-      await updateDoc(productRef, { isDone: newProductStatus });
 
-      const changedProduct = { ...currentProduct };
-      changedProduct.isDone = newProductStatus;
+    dispatch(
+      toggleCurrentShopProductStatus({
+        uid: currentProduct.uid,
+        isDone: newProductStatus,
+      })
+    );
 
-      newProductStatus === true
-        ? dispatch(
-            setCurrentShopPendingProducts(
-              currentShopPendingProducts.filter(
-                (product) => product.uid != changedProduct.uid
-              )
-            )
-          )
-        : dispatch(
-            setCurrentShopCartProducts(
-              currentShopCartProducts.filter(
-                (product) => product.uid != changedProduct.uid
-              )
-            )
-          );
-
-      newProductStatus === true
-        ? dispatch(
-            setCurrentShopCartProducts(
-              currentShopCartProducts.concat(changedProduct)
-            )
-          )
-        : dispatch(
-            setCurrentShopPendingProducts(
-              currentShopPendingProducts.concat(changedProduct)
-            )
-          );
-
-      toast({
-        variant: 'success',
-        title: 'Sucesso!',
-        description: newProductStatus
-          ? 'Produto adicionado ao carrinho'
-          : 'Produto removido do carrinho',
-      });
-    } catch (error) {
+    updateDoc(productRef, { isDone: newProductStatus }).catch(() => {
+      dispatch(
+        toggleCurrentShopProductStatus({
+          uid: currentProduct.uid,
+          isDone: !newProductStatus,
+        })
+      );
       toast({
         variant: 'destructive',
         title: 'Ops! Algo de errado aconteceu',
         description:
           'Um erro inesperado aconteceu ao mudar o status do produto',
       });
-    }
+    });
   }
 
   // RN-24 — remove immediately, no confirmation modal (that pattern is
@@ -161,13 +131,17 @@ const ProductCard: React.FC<ProductProps> = ({
         currentProduct.isDone && 'bg-tosho-25'
       )}
     >
-      <Checkbox
-        id={currentProduct.uid}
-        className="h-7 w-7 shrink-0 rounded-[8px] border-border bg-tosho-50 data-[state=checked]:border-primary"
-        checked={isCompletedShop ? true : currentProduct.isDone}
-        onCheckedChange={toggleProductStatus}
-        disabled={isCompletedShop}
-      />
+      {/* 44px hit area around the 28px visual checkbox — the visual itself
+          stays spec-sized, but the tap target meets the thumb minimum. */}
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center">
+        <Checkbox
+          id={currentProduct.uid}
+          className="h-7 w-7 shrink-0 rounded-lg border-border bg-tosho-50 data-[state=checked]:border-primary"
+          checked={isCompletedShop ? true : currentProduct.isDone}
+          onCheckedChange={toggleProductStatus}
+          disabled={isCompletedShop}
+        />
+      </div>
 
       <div className="min-w-0 flex-1">
         <label
