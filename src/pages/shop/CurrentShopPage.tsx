@@ -58,7 +58,17 @@ interface ShopProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
   // RN-07 — called after the shop is marked completed, so Home can
   // re-derive whichever purchase is active now (or show the create CTA).
-  onCompleted: () => void;
+  // Only Home ever passes this — it's how CompleteShopBar knows whether to
+  // render at all (HU-17: completing isn't offered from a purchase's own
+  // detail view, only from the true active purchase).
+  onCompleted?: () => void;
+  // HU-17 — a completed purchase's detail view: every mutation control
+  // (checkbox, edit/excluir, add-items FAB, complete bar) is removed from
+  // the tree entirely, not just disabled.
+  readOnly?: boolean;
+  // HU-17 — only the detail route passes this (Home has nowhere to go
+  // back to).
+  onBack?: () => void;
 }
 
 const tabTriggerClassName =
@@ -71,7 +81,12 @@ const ALL_CATEGORIES = 'all';
 const categoryChipClassName =
   'shrink-0 rounded-full border border-border bg-muted px-3.5 py-1 text-xs font-medium text-muted-foreground data-[state=on]:border-transparent data-[state=on]:bg-tosho-900 data-[state=on]:text-tosho-hero-fg';
 
-const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
+const CurrentShopPage: React.FC<ShopProps> = ({
+  shop,
+  onCompleted,
+  readOnly = false,
+  onBack,
+}) => {
   const { user } = useContext(UserContext);
 
   const productsCollectionRef = collection(
@@ -266,20 +281,32 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
   const completedCount = currentShopCartProducts.length;
   const totalCount = currentShopPendingProducts.length + completedCount;
 
+  // HU-17 — this screen is now reused for pending/completed purchases too,
+  // not just the true active one (only Home passes onCompleted for that).
+  const purchaseStatus = readOnly ? 'completed' : onCompleted ? 'in-progress' : 'pending';
+
+  // HU-17 — a completed purchase has no Lista/Carrinho split (nothing to
+  // migrate between anymore): browse everything as one merged, still
+  // category-grouped list instead. The editable case keeps browsing just
+  // the pending list, same as before.
+  const browsableProducts = readOnly
+    ? currentShopPendingProducts.concat(currentShopCartProducts)
+    : currentShopPendingProducts;
+
   // Chips reflect the categories actually present in the purchase (not
   // filtered by the current search term) — reusing the same helper that
   // groups the list itself guarantees chips never diverge from the
   // headings actually rendered below.
-  const presentCategories = getSortedCategoryGroups(currentShopPendingProducts).map(
+  const presentCategories = getSortedCategoryGroups(browsableProducts).map(
     (group) => group.category
   );
 
-  const visiblePendingProducts = getVisibleItems(currentShopPendingProducts, {
+  const visibleProducts = getVisibleItems(browsableProducts, {
     searchTerm,
     category: selectedCategory === ALL_CATEGORIES ? undefined : selectedCategory,
   });
 
-  const searchInput = currentShopPendingProducts.length > 0 && (
+  const searchInput = browsableProducts.length > 0 && (
     <div className="relative w-full">
       <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-tosho-500" />
       <Input
@@ -291,7 +318,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
     </div>
   );
 
-  const categoryChips = currentShopPendingProducts.length > 0 && (
+  const categoryChips = browsableProducts.length > 0 && (
     <ToggleGroup
       type="single"
       value={selectedCategory}
@@ -315,22 +342,45 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
     </ToggleGroup>
   );
 
-  const listContent = !currentShopPendingProducts.length ? (
+  const listContent = !browsableProducts.length ? (
     <BlankState
       image={productsBlankStateSVG}
-      title="Nenhum produto pendente na lista"
+      title={
+        readOnly ? 'Nenhum produto nessa compra' : 'Nenhum produto pendente na lista'
+      }
     />
-  ) : visiblePendingProducts.length ? (
-    <ProductList products={visiblePendingProducts} isCompletedShop={false} />
+  ) : visibleProducts.length ? (
+    <ProductList products={visibleProducts} isCompletedShop={readOnly} />
   ) : (
     <BlankState image={productsBlankStateSVG} title="Nenhum item encontrado" />
   );
+
+  if (readOnly) {
+    return (
+      <div className="w-full">
+        <PurchaseHero
+          name={shop.name}
+          scheduledAt={shop.scheduledAt}
+          date={shop.date}
+          completedCount={completedCount}
+          totalCount={totalCount}
+          status={purchaseStatus}
+          onBack={onBack}
+        />
+        <section className="mx-auto flex w-full max-w-3xl flex-col items-center space-y-3 px-5 py-4 md:px-8 md:py-6">
+          {searchInput}
+          {categoryChips}
+          {listContent}
+        </section>
+      </div>
+    );
+  }
 
   // RN-25/RN-14 — the complete button is always available (not gated on the
   // cart having items — you can finish a purchase with nothing checked off);
   // only the list vs. blank-state below it depends on the cart's contents.
   const cartListContent = currentShopCartProducts.length ? (
-    <ProductList products={currentShopCartProducts} isCompletedShop={false} />
+    <ProductList products={currentShopCartProducts} isCompletedShop={readOnly} />
   ) : (
     <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
   );
@@ -406,6 +456,8 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
         date={shop.date}
         completedCount={completedCount}
         totalCount={totalCount}
+        status={purchaseStatus}
+        onBack={onBack}
       >
         {/* Mobile-only tabs, embedded in the same green hero box as the
             print. Desktop shows both columns at once — genuinely different
@@ -438,11 +490,13 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
             <div className="flex w-full justify-end">{addItemsTrigger}</div>
           </section>
           <section className="min-w-0 flex w-full flex-col items-center space-y-3 border-l border-border pl-6">
-            <CompleteShopBar
-              cartItemCount={currentShopCartProducts.length}
-              pendingItemCount={currentShopPendingProducts.length}
-              onCompleted={onCompleted}
-            />
+            {onCompleted && (
+              <CompleteShopBar
+                cartItemCount={currentShopCartProducts.length}
+                pendingItemCount={currentShopPendingProducts.length}
+                onCompleted={onCompleted}
+              />
+            )}
             {cartListContent}
           </section>
         </div>
@@ -458,13 +512,21 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
           </TabsContent>
           <TabsContent value="cart" forceMount hidden={activeTab !== 'cart'}>
             {/* pb-28 keeps the last card clear of CompleteShopBar's fixed
-                position above the bottom nav. */}
-            <section className="flex w-full flex-col items-center px-5 py-4 pb-28">
-              <CompleteShopBar
-                cartItemCount={currentShopCartProducts.length}
-                pendingItemCount={currentShopPendingProducts.length}
-                onCompleted={onCompleted}
-              />
+                position above the bottom nav — only needed when the bar
+                actually renders. */}
+            <section
+              className={cn(
+                'flex w-full flex-col items-center px-5 py-4',
+                onCompleted ? 'pb-28' : 'pb-4'
+              )}
+            >
+              {onCompleted && (
+                <CompleteShopBar
+                  cartItemCount={currentShopCartProducts.length}
+                  pendingItemCount={currentShopPendingProducts.length}
+                  onCompleted={onCompleted}
+                />
+              )}
               {cartListContent}
             </section>
           </TabsContent>

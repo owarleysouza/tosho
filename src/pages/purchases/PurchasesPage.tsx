@@ -93,11 +93,10 @@ const PurchasesPage = () => {
 
   if (loading) return <LoadingPage />;
 
-  // Reuses the existing (read-only) shop detail route for now. HU-17 will
-  // give pending purchases their own editable detail view — this just wires
-  // the click to something that already works instead of nothing.
+  // HU-17 — the detail page fetches the shop itself by id, so no router
+  // state needs to travel with the navigation.
   function goToShopDetail(shop: ShopDocument) {
-    navigate(`/complete-shops/${shop.uid}`, { state: { shop } });
+    navigate(`/purchases/${shop.uid}`);
   }
 
   return (

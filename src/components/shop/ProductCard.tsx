@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ProductEditDialog from '@/components/shop/ProductEditDialog';
 import { toast } from '@/components/ui/use-toast';
-import { EllipsisVertical } from 'lucide-react';
+import { Check, EllipsisVertical } from 'lucide-react';
 
 import { doc, increment, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -132,22 +132,40 @@ const ProductCard: React.FC<ProductProps> = ({
       )}
     >
       {/* 44px hit area around the 28px visual checkbox — the visual itself
-          stays spec-sized, but the tap target meets the thumb minimum. */}
+          stays spec-sized, but the tap target meets the thumb minimum.
+          HU-17 — read-only mode gets a plain static indicator, not a
+          disabled Checkbox: no interactive control in the tree at all. A
+          completed purchase can still have unmarked items (HU-14 allows
+          completing with pending ones), so this reflects the item's real
+          isDone instead of forcing it to look checked. */}
       <div className="flex h-11 w-11 shrink-0 items-center justify-center">
-        <Checkbox
-          id={currentProduct.uid}
-          className="h-7 w-7 shrink-0 rounded-lg border-border bg-tosho-50 data-[state=checked]:border-primary"
-          checked={isCompletedShop ? true : currentProduct.isDone}
-          onCheckedChange={toggleProductStatus}
-          disabled={isCompletedShop}
-        />
+        {isCompletedShop ? (
+          <div
+            className={cn(
+              'flex h-7 w-7 items-center justify-center rounded-lg border',
+              currentProduct.isDone
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-tosho-50'
+            )}
+          >
+            {currentProduct.isDone && <Check className="h-[18px] w-[18px]" />}
+          </div>
+        ) : (
+          <Checkbox
+            id={currentProduct.uid}
+            className="h-7 w-7 shrink-0 rounded-lg border-border bg-tosho-50 data-[state=checked]:border-primary"
+            checked={currentProduct.isDone}
+            onCheckedChange={toggleProductStatus}
+          />
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
         <label
-          htmlFor={currentProduct.uid}
+          htmlFor={isCompletedShop ? undefined : currentProduct.uid}
           className={cn(
-            'block cursor-pointer truncate text-sm font-bold text-foreground',
+            'block truncate text-sm font-bold text-foreground',
+            !isCompletedShop && 'cursor-pointer',
             currentProduct.isDone && 'text-tosho-500 line-through'
           )}
         >
@@ -201,11 +219,13 @@ const ProductCard: React.FC<ProductProps> = ({
         </DropdownMenu>
       )}
 
-      <ProductEditDialog
-        product={currentProduct}
-        open={openEditDialog}
-        onOpenChange={setOpenEditDialog}
-      />
+      {!isCompletedShop && (
+        <ProductEditDialog
+          product={currentProduct}
+          open={openEditDialog}
+          onOpenChange={setOpenEditDialog}
+        />
+      )}
     </div>
   );
 };

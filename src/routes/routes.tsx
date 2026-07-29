@@ -8,7 +8,7 @@ import SignUp from '@/pages/auth/SignUpPage';
 import Login from '@/pages/auth/LoginPage';
 import AccountPage from '@/pages/account/AccountPage';
 import PurchasesPage from '@/pages/purchases/PurchasesPage';
-import CompletedShopDetailPage from '@/pages/completed-shops/CompletedShopDetailPage';
+import PurchaseDetailPage from '@/pages/purchases/PurchaseDetailPage';
 import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 
@@ -29,8 +29,8 @@ const router = createBrowserRouter([
         element: <PurchasesPage />,
       },
       {
-        path: '/complete-shops/:shopId',
-        element: <CompletedShopDetailPage />,
+        path: '/purchases/:shopId',
+        element: <PurchaseDetailPage />,
       },
     ],
   },
