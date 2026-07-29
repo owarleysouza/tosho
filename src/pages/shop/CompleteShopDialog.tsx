@@ -1,115 +1,101 @@
-import React from 'react';
-
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import FormInput from '@/components/form/FormInput';
-
-import { useForm } from 'react-hook-form';
-import { CompleteShopFormSchema } from '@/utils/formValidations';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-
 import { Loader2 } from 'lucide-react';
 
-interface CompleteShopDialogProps {
-  title: string;
-  description: string;
-  actionLabel: string;
-  type: string;
-  open: boolean;
-  loading?: boolean;
-  setOpen: (open: boolean) => void;
-  onConfirm: (inputShopPrice: number | undefined) => void;
-}
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-interface ButtonBackgroundType {
-  [key: string]: string;
+interface CompleteShopDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  loading?: boolean;
+  pendingCount: number;
 }
 
 const CompleteShopDialog: React.FC<CompleteShopDialogProps> = ({
-  title,
-  description,
-  actionLabel,
   open,
-  setOpen,
-  loading,
+  onOpenChange,
   onConfirm,
-  type,
+  loading,
+  pendingCount,
 }) => {
-  const ButtonBackground: ButtonBackgroundType = {
-    success: 'bg-primary',
-    danger: 'bg-destructive',
-  };
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
-  const form = useForm<z.infer<typeof CompleteShopFormSchema>>({
-    resolver: zodResolver(CompleteShopFormSchema),
-    defaultValues: {
-      totalPrice: 0,
-    },
-  });
+  const title = 'Concluir compra?';
+  // RN-25 asks for confirmation before an irreversible action — it doesn't
+  // say block on incomplete items. Real shopping trips run out of stock, so
+  // this is a heads-up, not a gate.
+  const description =
+    pendingCount > 0
+      ? `${pendingCount} ${
+          pendingCount === 1
+            ? 'item ainda não foi marcado'
+            : 'itens ainda não foram marcados'
+        }. Você pode concluir mesmo assim — a compra será movida para o histórico.`
+      : 'A compra será movida para o histórico.';
 
-  function onSubmit(data: z.infer<typeof CompleteShopFormSchema>) {
-    onConfirm(data.totalPrice);
+  const actions = (
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        className="rounded-full"
+        onClick={() => onOpenChange(false)}
+      >
+        Cancelar
+      </Button>
+      <Button
+        type="button"
+        disabled={loading}
+        onClick={onConfirm}
+        className="rounded-full"
+      >
+        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Concluir'}
+      </Button>
+    </>
+  );
+
+  if (isDesktop) {
+    return (
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{title}</AlertDialogTitle>
+            <AlertDialogDescription>{description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>{actions}</AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        className="w-[340px]"
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-3 w-full"
-          >
-            <FormInput
-              formControl={form.control}
-              name="totalPrice"
-              hint="Digite o valor total da compra ou deixe vazio para usar o valor calculado no carrinho"
-              placeholder="Preço"
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                className="hover:bg-transparent"
-                onClick={() => setOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                disabled={loading}
-                type="submit"
-                className={`${ButtonBackground[type]} rounded-2xl px-8`}
-              >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  actionLabel
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader className="text-left">
+          <DrawerTitle>{title}</DrawerTitle>
+          <DrawerDescription>{description}</DrawerDescription>
+        </DrawerHeader>
+        <DrawerFooter className="flex-row justify-end gap-2">
+          {actions}
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 };
 

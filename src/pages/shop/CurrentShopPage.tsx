@@ -15,7 +15,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import productsBlankStateSVG from '@/assets/images/products-blank-state.svg';
 import cartBlankStateSVG from '@/assets/images/cart-blank-state.svg';
 
-import CurrentShopPriceCard from '@/pages/shop/CurrentShopPriceCard';
+import CompleteShopBar from '@/pages/shop/CompleteShopBar';
 
 import PurchaseHero from '@/components/purchase/PurchaseHero';
 import BlankState from '@/components/commom/BlankState';
@@ -56,6 +56,9 @@ import {
 
 interface ShopProps {
   shop: DocumentData; //TODO: Change this type to a Shop type
+  // RN-07 — called after the shop is marked completed, so Home can
+  // re-derive whichever purchase is active now (or show the create CTA).
+  onCompleted: () => void;
 }
 
 const tabTriggerClassName =
@@ -68,7 +71,7 @@ const ALL_CATEGORIES = 'all';
 const categoryChipClassName =
   'shrink-0 rounded-full border border-border bg-muted px-3.5 py-1 text-xs font-medium text-muted-foreground data-[state=on]:border-transparent data-[state=on]:bg-tosho-900 data-[state=on]:text-tosho-hero-fg';
 
-const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
+const CurrentShopPage: React.FC<ShopProps> = ({ shop, onCompleted }) => {
   const { user } = useContext(UserContext);
 
   const productsCollectionRef = collection(
@@ -323,11 +326,11 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
     <BlankState image={productsBlankStateSVG} title="Nenhum item encontrado" />
   );
 
-  const cartContent = currentShopCartProducts.length ? (
-    <div className="w-full">
-      <CurrentShopPriceCard products={currentShopCartProducts} />
-      <ProductList products={currentShopCartProducts} isCompletedShop={false} />
-    </div>
+  // RN-25/RN-14 — the complete button is always available (not gated on the
+  // cart having items — you can finish a purchase with nothing checked off);
+  // only the list vs. blank-state below it depends on the cart's contents.
+  const cartListContent = currentShopCartProducts.length ? (
+    <ProductList products={currentShopCartProducts} isCompletedShop={false} />
   ) : (
     <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
   );
@@ -434,8 +437,13 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
             {listContent}
             <div className="flex w-full justify-end">{addItemsTrigger}</div>
           </section>
-          <section className="min-w-0 flex flex-col items-center space-y-3 border-l border-border pl-6">
-            {cartContent}
+          <section className="min-w-0 flex w-full flex-col items-center space-y-3 border-l border-border pl-6">
+            <CompleteShopBar
+              cartItemCount={currentShopCartProducts.length}
+              pendingItemCount={currentShopPendingProducts.length}
+              onCompleted={onCompleted}
+            />
+            {cartListContent}
           </section>
         </div>
       ) : (
@@ -449,8 +457,15 @@ const CurrentShopPage: React.FC<ShopProps> = ({ shop }) => {
             </section>
           </TabsContent>
           <TabsContent value="cart" forceMount hidden={activeTab !== 'cart'}>
-            <section className="flex flex-col items-center px-5 py-4 pb-2">
-              {cartContent}
+            {/* pb-28 keeps the last card clear of CompleteShopBar's fixed
+                position above the bottom nav. */}
+            <section className="flex w-full flex-col items-center px-5 py-4 pb-28">
+              <CompleteShopBar
+                cartItemCount={currentShopCartProducts.length}
+                pendingItemCount={currentShopPendingProducts.length}
+                onCompleted={onCompleted}
+              />
+              {cartListContent}
             </section>
           </TabsContent>
         </>

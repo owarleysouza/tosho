@@ -23,11 +23,6 @@ export const shopSlice = createSlice({
     addCurrentShop: (state, action: PayloadAction<DocumentData>) => {
       state.currentShop = action.payload
     },
-    completeCurrentShop: state => {
-      state.currentShop = {}
-      state.currentShopPendingProducts = []
-      state.currentShopCartProducts = [] 
-    },
     setCurrentShopPendingProducts: (state, action: PayloadAction<Product[]>) => {
       state.currentShopPendingProducts = action.payload
     }, 
@@ -81,7 +76,6 @@ export const shopSlice = createSlice({
 
 export const {
   addCurrentShop,
-  completeCurrentShop,
   setCurrentShopPendingProducts,
   setCurrentShopCartProducts,
   removeCurrentShopProduct,

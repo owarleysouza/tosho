@@ -16,7 +16,7 @@ import { getDocs, collection, query, where, DocumentData } from 'firebase/firest
 import { db } from '@/lib/firebase';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { addCurrentShop } from '@/app/shop/shopSlice';
+import { addCurrentShop, cleanStore } from '@/app/shop/shopSlice';
 import { RootState } from '@/app/store';
 
 const Home = () => {
@@ -30,6 +30,10 @@ const Home = () => {
   const { toast } = useToast();
 
   async function getCurrentShop() {
+    // Re-invoked after creating or completing a purchase (not just on
+    // mount) — reset to loading each time so a stale/completed shop can't
+    // flash on screen while the next active one (or lack thereof) resolves.
+    setLoadingCurrentShop(true);
     try {
       if (!user || !Object.keys(user).length) {
         toast({
@@ -54,6 +58,16 @@ const Home = () => {
       // HU-06 and HU-14 reuse the same rule instead of re-deriving it.
       const activeShop = getActivePurchase(openShops);
 
+      // Always clear first: currentShopPendingProducts/currentShopCartProducts
+      // are their own Redux fields, not reset just by swapping currentShop —
+      // without this, the previous (possibly just-completed) shop's items
+      // stay in state and CurrentShopPage's fetch guard skips loading the
+      // new shop's actual products.
+      dispatch(cleanStore());
+
+      // RN-07 — no active shop left means either none was ever created or
+      // the last one was just completed; either way, Home falls through to
+      // the CTA once currentShop stays empty.
       if (activeShop) {
         dispatch(addCurrentShop(activeShop));
       }
@@ -77,7 +91,14 @@ const Home = () => {
   return (
     <PrivateLayout>
       {Object.keys(currentShop).length ? (
-        <CurrentShopPage shop={currentShop} />
+        // key forces a full remount when the active shop changes (e.g.
+        // after completing one) so CurrentShopPage's own product state
+        // can't leak across purchases.
+        <CurrentShopPage
+          key={currentShop.uid}
+          shop={currentShop}
+          onCompleted={getCurrentShop}
+        />
       ) : (
         <section className="h-screen flex flex-col justify-center items-center">
           <BlankState
