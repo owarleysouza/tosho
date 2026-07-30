@@ -8,6 +8,7 @@ import { ProductsCreateFormSchema } from '@/utils/formValidations';
 import { handleProductsInput } from '@/utils/handleProductsInput';
 import { getVisibleItems } from '@/utils/itemVisibility';
 import { getSortedCategoryGroups, normalizeCategory } from '@/utils/categories';
+import { addProductsToShop } from '@/utils/addProductsToShop';
 
 import { UserContext } from '@/context/commom/UserContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -38,14 +39,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 
 import { db } from '@/lib/firebase';
-import {
-  collection,
-  doc,
-  DocumentData,
-  getDocs,
-  increment,
-  writeBatch,
-} from 'firebase/firestore';
+import { collection, DocumentData, getDocs } from 'firebase/firestore';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/app/store';
@@ -88,13 +82,6 @@ const CurrentShopPage: React.FC<ShopProps> = ({
   onBack,
 }) => {
   const { user } = useContext(UserContext);
-
-  const productsCollectionRef = collection(
-    db,
-    `users/${user?.uid}/shops/${shop.uid}/products`
-  );
-
-  const shopDocRef = doc(db, `users/${user?.uid}/shops`, shop.uid);
 
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -235,20 +222,11 @@ const CurrentShopPage: React.FC<ShopProps> = ({
     try {
       setCreateProductsLoading(true);
       if (user) {
-        // Writes every product and the shop's itemsCount counter in one
-        // atomic batch, so the denormalized count never drifts from the
-        // actual number of product documents.
-        const batch = writeBatch(db);
-
-        const addedProducts = newProducts.map((product) => {
-          const productRef = doc(productsCollectionRef);
-          batch.set(productRef, product);
-          return { uid: productRef.id, ...product };
-        });
-
-        batch.update(shopDocRef, { itemsCount: increment(addedProducts.length) });
-
-        await batch.commit();
+        const addedProducts = await addProductsToShop(
+          user.uid,
+          shop.uid,
+          newProducts
+        );
 
         dispatch(
           setCurrentShopPendingProducts(

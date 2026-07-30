@@ -36,8 +36,9 @@ import { ShopCreateFormSchema, ShopStartingPointEnum } from "@/utils/formValidat
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { collection, addDoc, doc, serverTimestamp, updateDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, doc, getDocs, query, serverTimestamp, updateDoc, where, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase"
+import { addProductsToShop } from "@/utils/addProductsToShop"
 
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '@/context/commom/UserContext'
@@ -68,35 +69,31 @@ interface ShopFormDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-// RN-29/HU-20 will wire "template" and "previous" up; for now they're shown
-// disabled so the starting-point choice is visible ahead of time.
+// RN-29 will wire "template" up; "previous" (HU-20) is enabled based on
+// whether a completed purchase actually exists to clone from.
 const startingPointOptions: Array<{
   value: z.infer<typeof ShopStartingPointEnum>;
   icon: React.ElementType;
   title: string;
   description: string;
-  disabled: boolean;
 }> = [
   {
     value: 'scratch',
     icon: FilePlus2,
     title: 'Do zero',
     description: 'Começar com lista vazia',
-    disabled: false,
   },
   {
     value: 'template',
     icon: LayoutTemplate,
     title: 'Carregar template',
     description: 'Usar um modelo salvo',
-    disabled: true,
   },
   {
     value: 'previous',
     icon: History,
     title: 'Compra anterior',
     description: 'Usar última compra como base',
-    disabled: true,
   },
 ]
 
@@ -106,6 +103,26 @@ function buildDefaultValues(shop?: EditableShop) {
     scheduledAt: shop ? (shop.scheduledAt ?? shop.date)?.toDate() : undefined,
     startingPoint: "scratch" as const,
   }
+}
+
+interface CompletedShopCandidate {
+  uid: string;
+  completedAt?: Timestamp;
+  scheduledAt?: Timestamp;
+  date?: Timestamp; // legacy fallback, same as EditableShop
+}
+
+// RN-06-style "which one" helper, symmetrical to getActivePurchase but for
+// the most recent *completed* purchase instead of the closest pending one.
+// Only one call site today, so it stays local instead of a shared util.
+function getMostRecentCompletedShop(
+  shops: CompletedShopCandidate[]
+): CompletedShopCandidate | undefined {
+  return shops.reduce<CompletedShopCandidate | undefined>((latest, shop) => {
+    const shopMillis = (shop.completedAt ?? shop.scheduledAt ?? shop.date)?.toMillis() ?? -Infinity
+    const latestMillis = (latest?.completedAt ?? latest?.scheduledAt ?? latest?.date)?.toMillis() ?? -Infinity
+    return shopMillis > latestMillis ? shop : latest
+  }, undefined)
 }
 
 const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
@@ -145,9 +162,51 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
+  // HU-20 — "Compra anterior" only makes sense (and is only enabled) once at
+  // least one completed purchase exists. Fetched on mount rather than on
+  // open: this component is already sitting in the tree (as the "Nova
+  // compra" trigger) well before the user actually clicks it, so by the
+  // time the dialog opens the answer is already known — no disabled→enabled
+  // flash on every open. Reused at submit time to pick the most recent one,
+  // instead of a second read.
+  const [completedShops, setCompletedShops] = useState<CompletedShopCandidate[]>([])
+
+  useEffect(() => {
+    async function loadCompletedShops() {
+      if (isEditMode || !user) return
+
+      try {
+        const completedShopsRef = query(
+          collection(db, 'users', user.uid, 'shops'),
+          where('isDone', '==', true)
+        )
+        const snapshot = await getDocs(completedShopsRef)
+        setCompletedShops(
+          snapshot.docs.map((document) => ({
+            uid: document.id,
+            ...(document.data() as Omit<CompletedShopCandidate, 'uid'>),
+          }))
+        )
+      } catch (error) {
+        // Transient read failure — keep whatever was last known instead of
+        // forcing the option back to disabled.
+      }
+    }
+
+    loadCompletedShops()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, user])
+
+  const disabledMap: Record<z.infer<typeof ShopStartingPointEnum>, boolean> = {
+    scratch: false,
+    template: true, // RN-29 — not built yet
+    previous: completedShops.length === 0,
+  }
+
   const onSubmit = async (data: z.infer<typeof ShopCreateFormSchema>): Promise<void> => {
-    // Only "scratch" is functional this session — the other two options are
-    // disabled in the UI, so this branch can't be reached with them selected.
+    // "template" is still disabled in the UI (RN-29), so this branch can't
+    // be reached with it selected — only "scratch" and "previous" (HU-20)
+    // are actually reachable here.
     try {
       setLoading(true)
       if (!user) return
@@ -167,7 +226,7 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
       } else {
         const docRef = doc(db, "users", user.uid)
         const colRef = collection(docRef, "shops")
-        await addDoc(colRef, {
+        const newShopRef = await addDoc(colRef, {
           name: data.name,
           scheduledAt: data.scheduledAt,
           isDone: false,
@@ -175,6 +234,29 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
           itemsCount: 0,
           createdAt: serverTimestamp(),
         })
+
+        // RN-20/RN-21 — clone every item from the most recent completed
+        // purchase as brand-new documents (own ids, no pointer back to the
+        // source — editing/deleting one side never touches the other), all
+        // reset to pending regardless of the source's own status (it's
+        // completed, so every item there is currently marked done).
+        if (data.startingPoint === "previous") {
+          const sourceShop = getMostRecentCompletedShop(completedShops)
+
+          if (sourceShop) {
+            const sourceProductsRef = collection(
+              db,
+              `users/${user.uid}/shops/${sourceShop.uid}/products`
+            )
+            const sourceSnapshot = await getDocs(sourceProductsRef)
+            const clonedProducts = sourceSnapshot.docs.map((productDoc) => {
+              const { name, quantity, category, description } = productDoc.data()
+              return { name, quantity, category, description, isDone: false }
+            })
+
+            await addProductsToShop(user.uid, newShopRef.id, clonedProducts)
+          }
+        }
 
         toast({
           variant: "success",
@@ -234,43 +316,56 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
                     onValueChange={field.onChange}
                     className="gap-2"
                   >
-                    {startingPointOptions.map((option) => (
-                      <label
-                        key={option.value}
-                        htmlFor={`starting-point-${option.value}`}
-                        className={cn(
-                          "flex items-center gap-3 rounded-xl border p-3 transition-colors",
-                          option.disabled
-                            ? "cursor-not-allowed opacity-60 border-border"
-                            : "cursor-pointer border-border",
-                          !option.disabled && field.value === option.value
-                            ? "border-primary bg-secondary"
-                            : "bg-background"
-                        )}
-                      >
-                        <option.icon className="h-5 w-5 text-tosho-700 shrink-0" />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-foreground">
-                              {option.title}
-                            </span>
-                            {option.disabled && (
-                              <Badge variant="pending" className="text-[10px]">
-                                Em breve
-                              </Badge>
-                            )}
+                    {startingPointOptions.map((option) => {
+                      const disabled = disabledMap[option.value]
+                      // "Em breve" (not built) vs. a precondition simply
+                      // not met yet (RN-29 vs. HU-20) — different reasons,
+                      // shouldn't share the same label.
+                      const disabledLabel =
+                        option.value === "template"
+                          ? "Em breve"
+                          : option.value === "previous"
+                          ? "Nenhuma compra concluída"
+                          : undefined
+
+                      return (
+                        <label
+                          key={option.value}
+                          htmlFor={`starting-point-${option.value}`}
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl border p-3 transition-colors",
+                            disabled
+                              ? "cursor-not-allowed opacity-60 border-border"
+                              : "cursor-pointer border-border",
+                            !disabled && field.value === option.value
+                              ? "border-primary bg-secondary"
+                              : "bg-background"
+                          )}
+                        >
+                          <option.icon className="h-5 w-5 text-tosho-700 shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground">
+                                {option.title}
+                              </span>
+                              {disabled && disabledLabel && (
+                                <Badge variant="pending" className="text-[10px]">
+                                  {disabledLabel}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {option.description}
+                            </p>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            {option.description}
-                          </p>
-                        </div>
-                        <RadioGroupItem
-                          id={`starting-point-${option.value}`}
-                          value={option.value}
-                          disabled={option.disabled}
-                        />
-                      </label>
-                    ))}
+                          <RadioGroupItem
+                            id={`starting-point-${option.value}`}
+                            value={option.value}
+                            disabled={disabled}
+                          />
+                        </label>
+                      )
+                    })}
                   </RadioGroup>
                 </FormControl>
                 <FormMessage className="text-xs" />
