@@ -1,4 +1,9 @@
+import { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
+
 import { getTemplateIcon } from '@/utils/templateIcons';
+import TemplateFormDialog from '@/pages/templates/TemplateFormDialog';
+import DeleteTemplateDialog from '@/components/templates/DeleteTemplateDialog';
 
 export interface TemplateCardData {
   uid: string;
@@ -10,19 +15,25 @@ export interface TemplateCardData {
 
 interface TemplateCardProps {
   template: TemplateCardData;
+  // Refetch trigger after a successful edit or delete — undefined skips
+  // rendering the edit/delete icons entirely, same convention as
+  // PurchaseCard's onChanged.
+  onChanged?: () => void;
 }
 
-// No edit/delete icons and no click-through yet — those belong to HU-27
-// (editar informações), HU-28 (excluir) and HU-23-26 (gerenciar itens),
-// none of which exist yet. This is a plain display card for now.
-const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
+// No click-through to a detail view yet — that's HU-23-26 (gerenciar itens),
+// which doesn't exist yet.
+const TemplateCard: React.FC<TemplateCardProps> = ({ template, onChanged }) => {
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const itemsLabel = `${template.itemsCount ?? 0} ${
     template.itemsCount === 1 ? 'item' : 'itens'
   }`;
   const Icon = getTemplateIcon(template.icon);
 
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-border bg-background p-4">
+    <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tosho-50 text-tosho-700">
         <Icon className="h-5 w-5" />
       </div>
@@ -38,6 +49,45 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template }) => {
           </p>
         )}
       </div>
+
+      {onChanged && (
+        <div className="flex shrink-0 items-center gap-3">
+          <button
+            type="button"
+            aria-label="Editar template"
+            onClick={() => setEditOpen(true)}
+            className="text-tosho-500"
+          >
+            <Pencil className="h-[17px] w-[17px]" />
+          </button>
+          <button
+            type="button"
+            aria-label="Excluir template"
+            onClick={() => setDeleteOpen(true)}
+            className="text-tosho-500"
+          >
+            <Trash2 className="h-[17px] w-[17px]" />
+          </button>
+        </div>
+      )}
+
+      {onChanged && (
+        <>
+          <TemplateFormDialog
+            template={template}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            onSaved={onChanged}
+          />
+
+          <DeleteTemplateDialog
+            templateUid={template.uid}
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            onDeleted={onChanged}
+          />
+        </>
+      )}
     </div>
   );
 };

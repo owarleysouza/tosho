@@ -34,9 +34,10 @@ import { TemplateCreateFormSchema } from "@/utils/formValidations"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase"
 import { DEFAULT_TEMPLATE_ICON, TEMPLATE_ICONS } from "@/utils/templateIcons"
+import type { TemplateCardData } from "@/components/templates/TemplateCard"
 
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '@/context/commom/UserContext'
@@ -50,6 +51,10 @@ interface TemplateFormDialogProps {
   // compact trigger next to an existing list (same convention as
   // ShopFormDialog).
   trigger?: React.ReactNode;
+  // Presence of `template` switches the form to edit mode (HU-27): prefilled
+  // values, updateDoc instead of addDoc — same convention as ShopFormDialog's
+  // `shop` prop.
+  template?: TemplateCardData;
   // Controlled open state — same convention as ShopFormDialog, for callers
   // that need to open this without nesting a Trigger inside another Radix
   // trigger.
@@ -57,23 +62,23 @@ interface TemplateFormDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-function buildDefaultValues() {
+function buildDefaultValues(template?: TemplateCardData) {
   return {
-    name: "",
-    description: "",
-    icon: DEFAULT_TEMPLATE_ICON,
+    name: template?.name ?? "",
+    description: template?.description ?? "",
+    icon: (template?.icon as z.infer<typeof TemplateCreateFormSchema>["icon"]) ?? DEFAULT_TEMPLATE_ICON,
   }
 }
 
-// Create-only for now — HU-27 will add edit mode to this same component
-// later, the same way HU-18 added it to ShopFormDialog after the fact,
-// rather than building it in ahead of time.
 const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
   onSaved,
   trigger,
+  template,
   open: controlledOpen,
   onOpenChange: setControlledOpen,
 }) => {
+  const isEditMode = !!template
+
   const isControlled = controlledOpen !== undefined
 
   const [loading, setLoading] = useState(false)
@@ -88,7 +93,7 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
 
   const form = useForm<z.infer<typeof TemplateCreateFormSchema>>({
     resolver: zodResolver(TemplateCreateFormSchema),
-    defaultValues: buildDefaultValues(),
+    defaultValues: buildDefaultValues(template),
   })
 
   // Same react-hook-form gotcha as ShopFormDialog: defaultValues only apply
@@ -96,7 +101,7 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
   // explicitly every time it opens instead of showing stale values.
   useEffect(() => {
     if (open) {
-      form.reset(buildDefaultValues())
+      form.reset(buildDefaultValues(template))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
@@ -106,22 +111,37 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
       setLoading(true)
       if (!user) return
 
-      // RN-23 — valid with zero items; itemsCount starts at 0 and is
-      // maintained by increment() once HU-23 adds items, same convention
-      // as shops' itemsCount.
-      await addDoc(collection(db, "users", user.uid, "templates"), {
-        name: data.name,
-        description: data.description || "",
-        icon: data.icon,
-        itemsCount: 0,
-        createdAt: serverTimestamp(),
-      })
+      if (isEditMode) {
+        const templateRef = doc(db, "users", user.uid, "templates", template.uid)
+        await updateDoc(templateRef, {
+          name: data.name,
+          description: data.description || "",
+          icon: data.icon,
+        })
 
-      toast({
-        variant: "success",
-        title: "Sucesso!",
-        description: "Template criado",
-      })
+        toast({
+          variant: "success",
+          title: "Sucesso!",
+          description: "Template atualizado",
+        })
+      } else {
+        // RN-23 — valid with zero items; itemsCount starts at 0 and is
+        // maintained by increment() once HU-23 adds items, same convention
+        // as shops' itemsCount.
+        await addDoc(collection(db, "users", user.uid, "templates"), {
+          name: data.name,
+          description: data.description || "",
+          icon: data.icon,
+          itemsCount: 0,
+          createdAt: serverTimestamp(),
+        })
+
+        toast({
+          variant: "success",
+          title: "Sucesso!",
+          description: "Template criado",
+        })
+      }
 
       setOpen(false)
       onSaved()
@@ -129,7 +149,9 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
       toast({
         variant: "destructive",
         title: "Ops! Algo de errado aconteceu",
-        description: "Um erro inesperado aconteceu ao criar o template",
+        description: isEditMode
+          ? "Um erro inesperado aconteceu ao atualizar o template"
+          : "Um erro inesperado aconteceu ao criar o template",
       })
     } finally {
       setLoading(false)
@@ -200,14 +222,16 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
         <Button disabled={loading} type="submit" className='w-full rounded-full'>
           {loading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : "Criar template"}
+          ) : isEditMode ? "Salvar alterações" : "Criar template"}
         </Button>
       </form>
     </Form>
   )
 
-  const title = "Novo template"
-  const description = "Crie um modelo reutilizável para compras futuras."
+  const title = isEditMode ? "Editar template" : "Novo template"
+  const description = isEditMode
+    ? "Atualize o nome ou a descrição do template."
+    : "Crie um modelo reutilizável para compras futuras."
 
   if (isDesktop) {
     return (

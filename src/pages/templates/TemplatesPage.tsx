@@ -117,7 +117,11 @@ const TemplatesPage = () => {
           {templates.length ? (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               {templates.map((template) => (
-                <TemplateCard key={template.uid} template={template} />
+                <TemplateCard
+                  key={template.uid}
+                  template={template}
+                  onChanged={getTemplates}
+                />
               ))}
 
               {/* Trailing CTA card, desktop only (print 14) — mobile already
