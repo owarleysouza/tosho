@@ -9,6 +9,7 @@ import Login from '@/pages/auth/LoginPage';
 import AccountPage from '@/pages/account/AccountPage';
 import PurchasesPage from '@/pages/purchases/PurchasesPage';
 import PurchaseDetailPage from '@/pages/purchases/PurchaseDetailPage';
+import TemplatesPage from '@/pages/templates/TemplatesPage';
 import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
       {
         path: '/purchases/:shopId',
         element: <PurchaseDetailPage />,
+      },
+      {
+        path: '/templates',
+        element: <TemplatesPage />,
       },
     ],
   },

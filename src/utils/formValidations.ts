@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { TEMPLATE_ICONS, TemplateIconKey } from "./templateIcons"
 
 // Minimum 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character
 const passwordValidation = new RegExp(
@@ -8,8 +9,9 @@ const passwordValidation = new RegExp(
 // Accepts full names: letters and accents, single spaces between words — no leading/trailing spaces, numbers or other special characters
 const usernameValidation = new RegExp(/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s[A-Za-zÀ-ÖØ-öø-ÿ]+)*$/);
 
-//It doesn't permit only spaces, or numbers or special character
-const shopNameValidation = new RegExp(/^(?![\s\d]*$)(?![\W_]*$).*$/);
+// It doesn't permit only spaces, or numbers or special character — shared by
+// shop and template names, not specific to either.
+const entityNameValidation = new RegExp(/^(?![\s\d]*$)(?![\W_]*$).*$/);
 
 
 export const SignUpFormSchema = z.object({
@@ -63,7 +65,7 @@ export const ShopCreateFormSchema = z.object({
     .max(30, {
       message: "O nome deve ter no máximo 30 caracteres.",
     })
-    .regex(shopNameValidation, {
+    .regex(entityNameValidation, {
       message: 'Nome inválido',
     }),
   scheduledAt: z.date({
@@ -72,7 +74,34 @@ export const ShopCreateFormSchema = z.object({
   startingPoint: ShopStartingPointEnum,
 })
 
-export const ProductsCreateFormSchema = z.object({ 
+const templateIconKeys = TEMPLATE_ICONS.map((option) => option.key) as [
+  TemplateIconKey,
+  ...TemplateIconKey[],
+]
+export const TemplateIconEnum = z.enum(templateIconKeys)
+
+export const TemplateCreateFormSchema = z.object({
+  name: z
+    .string()
+    .min(2, {
+      message: "O nome deve ter pelo menos 2 caracteres.",
+    })
+    .max(30, {
+      message: "O nome deve ter no máximo 30 caracteres.",
+    })
+    .regex(entityNameValidation, {
+      message: 'Nome inválido',
+    }),
+  description: z
+    .string()
+    .max(60, {
+      message: "Número máximo de caracteres atingido (60)",
+    })
+    .optional(),
+  icon: TemplateIconEnum,
+})
+
+export const ProductsCreateFormSchema = z.object({
   text: z
     .string()
     .min(2, {

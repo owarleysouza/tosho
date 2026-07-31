@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ClipboardList, ShoppingCart } from 'lucide-react';
+import { ClipboardList, LayoutTemplate, ShoppingCart } from 'lucide-react';
 
 import Header from '@/components/commom/Header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,11 +13,10 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-// Only routes that exist today — Templates isn't built yet (Fase 6-8), so
-// it's left out instead of linking to a page that doesn't exist.
 const navItems = [
   { label: 'Compra atual', path: '/', icon: ShoppingCart },
   { label: 'Compras', path: '/purchases', icon: ClipboardList },
+  { label: 'Templates', path: '/templates', icon: LayoutTemplate },
 ];
 
 const PrivateLayout = ({ children }: LayoutProps) => {
