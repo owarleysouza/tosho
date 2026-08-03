@@ -6,11 +6,27 @@ import { normalizeCategory } from '@/utils/categories';
 // no content-based guessing, position is all that decides a field's role.
 //
 // `existingCategories` should be the categories already used elsewhere in
-// the purchase — passing them in lets a custom category typed with a
-// different case/accent (e.g. "Sao Paulo" after an existing "São Paulo"
-// item) resolve to that same spelling instead of starting a new group.
-export function handleProductsInput(text: string, existingCategories: string[] = []) {
-  const products = [];
+// the purchase or template — passing them in lets a custom category typed
+// with a different case/accent (e.g. "Sao Paulo" after an existing "São
+// Paulo" item) resolve to that same spelling instead of starting a new
+// group.
+//
+// Destination-agnostic on purpose (HU-07 and HU-23 both call this): returns
+// only the fields RN-16 actually parses. Anything specific to where the
+// item lands — e.g. PurchaseItem's `isDone` — is the caller's job to attach
+// afterwards, not this function's.
+export interface ParsedItem {
+  name: string;
+  quantity?: string;
+  description?: string;
+  category: string;
+}
+
+export function handleProductsInput(
+  text: string,
+  existingCategories: string[] = []
+): ParsedItem[] {
+  const products: ParsedItem[] = [];
   const rows = text.trim().split('\n');
   const knownCategories = [...existingCategories];
 
@@ -37,7 +53,6 @@ export function handleProductsInput(text: string, existingCategories: string[] =
       quantity: quantity || undefined,
       description: description || undefined,
       category: resolvedCategory,
-      isDone: false,
     });
   }
 

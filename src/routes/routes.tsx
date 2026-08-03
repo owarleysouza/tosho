@@ -10,6 +10,7 @@ import AccountPage from '@/pages/account/AccountPage';
 import PurchasesPage from '@/pages/purchases/PurchasesPage';
 import PurchaseDetailPage from '@/pages/purchases/PurchaseDetailPage';
 import TemplatesPage from '@/pages/templates/TemplatesPage';
+import TemplateDetailPage from '@/pages/templates/TemplateDetailPage';
 import RecoveryPasswordPage from '@/pages/auth/RecoveryPasswordPage';
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage';
 
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: '/templates',
         element: <TemplatesPage />,
+      },
+      {
+        path: '/templates/:templateId',
+        element: <TemplateDetailPage />,
       },
     ],
   },

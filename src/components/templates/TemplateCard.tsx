@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash2 } from 'lucide-react';
 
 import { getTemplateIcon } from '@/utils/templateIcons';
@@ -21,9 +22,12 @@ interface TemplateCardProps {
   onChanged?: () => void;
 }
 
-// No click-through to a detail view yet — that's HU-23-26 (gerenciar itens),
-// which doesn't exist yet.
+// HU-23 — clicking the card opens the template's detail view (print 15).
+// Edit/delete icons stop propagation so they don't also trigger the
+// navigation underneath them.
 const TemplateCard: React.FC<TemplateCardProps> = ({ template, onChanged }) => {
+  const navigate = useNavigate();
+
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -33,7 +37,15 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onChanged }) => {
   const Icon = getTemplateIcon(template.icon);
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(`/templates/${template.uid}`)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') navigate(`/templates/${template.uid}`);
+      }}
+      className="flex cursor-pointer items-center gap-3 rounded-2xl border border-border bg-background p-4"
+    >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tosho-50 text-tosho-700">
         <Icon className="h-5 w-5" />
       </div>
@@ -51,7 +63,15 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onChanged }) => {
       </div>
 
       {onChanged && (
-        <div className="flex shrink-0 items-center gap-3">
+        // Same convention as PurchaseCard: wraps the trigger icons *and* the
+        // dialogs themselves. React bubbles synthetic events through the
+        // component tree, not the portal's DOM position, so a click inside
+        // the (portaled) Dialog/Drawer content still needs this boundary to
+        // avoid also firing the card's navigate.
+        <div
+          onClick={(event) => event.stopPropagation()}
+          className="flex shrink-0 items-center gap-3"
+        >
           <button
             type="button"
             aria-label="Editar template"
@@ -68,11 +88,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onChanged }) => {
           >
             <Trash2 className="h-[17px] w-[17px]" />
           </button>
-        </div>
-      )}
 
-      {onChanged && (
-        <>
           <TemplateFormDialog
             template={template}
             open={editOpen}
@@ -86,7 +102,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onChanged }) => {
             onOpenChange={setDeleteOpen}
             onDeleted={onChanged}
           />
-        </>
+        </div>
       )}
     </div>
   );

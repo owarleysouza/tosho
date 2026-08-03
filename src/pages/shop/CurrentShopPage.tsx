@@ -6,8 +6,9 @@ import { Product } from '@/types';
 import { ProductsCreateFormSchema } from '@/utils/formValidations';
 
 import { handleProductsInput } from '@/utils/handleProductsInput';
+import { dedupeIncomingItems } from '@/utils/dedupeIncomingItems';
 import { getVisibleItems } from '@/utils/itemVisibility';
-import { getSortedCategoryGroups, normalizeCategory } from '@/utils/categories';
+import { getSortedCategoryGroups } from '@/utils/categories';
 import { addProductsToShop } from '@/utils/addProductsToShop';
 
 import { UserContext } from '@/context/commom/UserContext';
@@ -169,9 +170,9 @@ const CurrentShopPage: React.FC<ShopProps> = ({
     // whatever spelling is already used in this purchase, instead of
     // starting a second group for the same category.
     const existingCategories = existingProducts.map((product) => product.category);
-    const productsToAdd = handleProductsInput(data.text, existingCategories);
+    const parsedProducts = handleProductsInput(data.text, existingCategories);
 
-    if (productsToAdd.length > 30) {
+    if (parsedProducts.length > 30) {
       toast({
         variant: 'destructive',
         title: 'Ops! Algo de errado aconteceu',
@@ -181,20 +182,17 @@ const CurrentShopPage: React.FC<ShopProps> = ({
       return;
     }
 
-    const isSameItem = (a: { name: string; category: string }, b: { name: string; category: string }) =>
-      a.name.toLowerCase() === b.name.toLowerCase() &&
-      normalizeCategory(a.category).toLowerCase() === normalizeCategory(b.category).toLowerCase();
+    // The parser is destination-agnostic (shared with HU-23's template
+    // flow) — `isDone` is a PurchaseItem-only field, attached here rather
+    // than by handleProductsInput itself.
+    const productsToAdd = parsedProducts.map((product) => ({
+      ...product,
+      isDone: false,
+    }));
 
-    const duplicateNames: string[] = [];
-    const newProducts = productsToAdd.reduce<typeof productsToAdd>(
-      (accepted, candidate) => {
-        const isDuplicate =
-          existingProducts.some((existing) => isSameItem(existing, candidate)) ||
-          accepted.some((existing) => isSameItem(existing, candidate));
-        if (isDuplicate) duplicateNames.push(candidate.name);
-        return isDuplicate ? accepted : accepted.concat(candidate);
-      },
-      []
+    const { newItems: newProducts, duplicateNames } = dedupeIncomingItems(
+      productsToAdd,
+      existingProducts
     );
 
     // RN-17 says no *error* for duplicates, but silence makes it look like
