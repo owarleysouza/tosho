@@ -1,14 +1,29 @@
+import { useState } from 'react';
+import { Pencil } from 'lucide-react';
+
 import type { TemplateItem } from '@/types';
+import TemplateItemEditDialog from '@/components/templates/TemplateItemEditDialog';
 
 interface TemplateItemCardProps {
   item: TemplateItem;
+  templateUid: string;
+  existingCategories: string[];
+  onItemUpdated: (updatedItem: TemplateItem) => void;
 }
 
 // No checkbox — unlike ProductCard, a template item has no completion
 // state (RN-20/RN-21: that's created fresh only once cloned into a
-// purchase). Edit/delete icons come in HU-25/HU-26, same incremental path
-// ProductCard took across HU-09/10/11.
-const TemplateItemCard: React.FC<TemplateItemCardProps> = ({ item }) => {
+// purchase). Direct pencil icon (not a "..." dropdown like ProductCard) —
+// same convention TemplateCard already uses for its own edit/delete.
+// Delete icon comes in HU-26.
+const TemplateItemCard: React.FC<TemplateItemCardProps> = ({
+  item,
+  templateUid,
+  existingCategories,
+  onItemUpdated,
+}) => {
+  const [editOpen, setEditOpen] = useState(false);
+
   return (
     <div className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3.5">
       <div className="min-w-0 flex-1">
@@ -22,6 +37,24 @@ const TemplateItemCard: React.FC<TemplateItemCardProps> = ({ item }) => {
           </p>
         )}
       </div>
+
+      <button
+        type="button"
+        aria-label="Editar item"
+        onClick={() => setEditOpen(true)}
+        className="shrink-0 text-tosho-500"
+      >
+        <Pencil className="h-[17px] w-[17px]" />
+      </button>
+
+      <TemplateItemEditDialog
+        item={item}
+        templateUid={templateUid}
+        existingCategories={existingCategories}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSaved={onItemUpdated}
+      />
     </div>
   );
 };

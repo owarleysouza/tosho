@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore';
-import { ArrowLeft, Pencil, Plus } from 'lucide-react';
+import { ArrowLeft, Pencil, Plus, Search } from 'lucide-react';
 import { z } from 'zod';
 import { UseFormReturn } from 'react-hook-form';
 
@@ -12,6 +12,7 @@ import { ProductsCreateFormSchema } from '@/utils/formValidations';
 import { handleProductsInput } from '@/utils/handleProductsInput';
 import { dedupeIncomingItems } from '@/utils/dedupeIncomingItems';
 import { addItemsToTemplate } from '@/utils/addItemsToTemplate';
+import { getVisibleItems } from '@/utils/itemVisibility';
 
 import PrivateLayout from '@/layouts/PrivateLayout';
 import LoadingPage from '@/pages/commom/LoadingPage';
@@ -20,6 +21,7 @@ import TemplateItemList from '@/components/templates/TemplateItemList';
 import TemplateFormDialog from '@/pages/templates/TemplateFormDialog';
 import ProductFormFooter from '@/components/form/ProductFormFooter';
 import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
 import {
   Sheet,
   SheetContent,
@@ -55,6 +57,7 @@ const TemplateDetailPage = () => {
   const [items, setItems] = useState<TemplateItem[]>([]);
   const [addItemsLoading, setAddItemsLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Re-reads just the template doc (name/description/icon/itemsCount) —
   // shared by the initial load and by the edit dialog's onSaved, so a name
@@ -168,6 +171,15 @@ const TemplateDetailPage = () => {
     }
   }
 
+  // HU-25 — TemplateItemEditDialog already wrote to Firestore; this just
+  // merges the result into local state (no Redux for templates), same as
+  // onSubmitItems does for additions above.
+  function onItemUpdated(updatedItem: TemplateItem) {
+    setItems((current) =>
+      current.map((item) => (item.uid === updatedItem.uid ? updatedItem : item))
+    );
+  }
+
   if (loading) {
     return (
       <PrivateLayout>
@@ -185,6 +197,12 @@ const TemplateDetailPage = () => {
   const itemsLabel = `${template.itemsCount ?? 0} ${
     template.itemsCount === 1 ? 'item' : 'itens'
   }`;
+
+  // HU-24 — same pure filter HU-12 already uses on the purchase's item
+  // list, applied here to the template's. Category-group headings for
+  // categories with no match disappear on their own once
+  // getSortedCategoryGroups runs on the filtered result.
+  const visibleItems = getVisibleItems(items, { searchTerm });
 
   const addItemsTrigger = (
     <Sheet>
@@ -250,13 +268,32 @@ const TemplateDetailPage = () => {
         </div>
 
         <section className="mx-auto flex w-full max-w-3xl flex-col items-center space-y-3 px-5 py-4 md:px-8 md:py-6">
-          {items.length ? (
-            <TemplateItemList items={items} />
-          ) : (
+          {items.length > 0 && (
+            <div className="relative w-full">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-tosho-500" />
+              <Input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Buscar item..."
+                className="rounded-xl border-border bg-muted pl-10 placeholder:text-tosho-text-3"
+              />
+            </div>
+          )}
+
+          {!items.length ? (
             <BlankState
               image={productsBlankStateSVG}
               title="Nenhum item nesse template ainda"
             />
+          ) : visibleItems.length ? (
+            <TemplateItemList
+              items={visibleItems}
+              templateUid={template.uid}
+              existingCategories={items.map((item) => item.category)}
+              onItemUpdated={onItemUpdated}
+            />
+          ) : (
+            <BlankState image={productsBlankStateSVG} title="Nenhum item encontrado" />
           )}
 
           <div className="fixed bottom-20 right-5 z-40 md:static md:flex md:w-full md:justify-end">

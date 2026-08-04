@@ -31,74 +31,71 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/app/store';
-import {
-  setCurrentShopPendingProducts,
-  setCurrentShopCartProducts,
-} from '@/app/shop/shopSlice';
-
-import { Product } from '@/types';
+import { TemplateItem } from '@/types';
 import { FIXED_CATEGORIES, normalizeCategory, sortCategoryNames } from '@/utils/categories';
 
-interface ProductEditDialogProps {
-  product: Product;
+interface TemplateItemEditDialogProps {
+  item: TemplateItem;
+  templateUid: string;
+  // RN-13 — categories already in use across the whole template (not just
+  // the currently-filtered/visible items), so an in-progress search never
+  // hides a custom category from the select.
+  existingCategories: string[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // Same convention as HU-23's addItemsToTemplate call site: templates have
+  // no Redux slice, so the caller (TemplateDetailPage) owns the item list
+  // and merges the update itself.
+  onSaved: (updatedItem: TemplateItem) => void;
 }
 
-function buildDefaultValues(product: Product) {
+function buildDefaultValues(item: TemplateItem) {
   return {
-    name: product.name,
-    quantity: product.quantity ?? '',
-    category: product.category,
-    description: product.description ?? '',
+    name: item.name,
+    quantity: item.quantity ?? '',
+    category: item.category,
+    description: item.description ?? '',
   };
 }
 
-const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
-  product,
+// HU-25 — same form as ProductEditDialog (HU-10): same schema, same fields,
+// same quantity-as-string handling. Only the destination differs — this
+// writes to a template's items subcollection and has no isDone to branch
+// on, since TemplateItem has no completion state at all.
+const TemplateItemEditDialog: React.FC<TemplateItemEditDialogProps> = ({
+  item,
+  templateUid,
+  existingCategories,
   open,
   onOpenChange,
+  onSaved,
 }) => {
   const { user } = useContext(UserContext);
   const { toast } = useToast();
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
-  const currentShop = useSelector((state: RootState) => state.shop.currentShop);
-  const currentShopPendingProducts = useSelector(
-    (state: RootState) => state.shop.currentShopPendingProducts
-  );
-  const currentShopCartProducts = useSelector(
-    (state: RootState) => state.shop.currentShopCartProducts
-  );
-  const dispatch = useDispatch();
-
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof ProductEditFormSchema>>({
     resolver: zodResolver(ProductEditFormSchema),
-    defaultValues: buildDefaultValues(product),
+    defaultValues: buildDefaultValues(item),
   });
 
-  // Same react-hook-form gotcha as ShopFormDialog: defaultValues only apply
-  // at mount, and this dialog stays mounted between opens — re-sync every
-  // time it opens instead of showing whatever product it first saw.
+  // Same react-hook-form gotcha as ProductEditDialog: defaultValues only
+  // apply at mount, and this dialog stays mounted between opens — re-sync
+  // every time it opens instead of showing whatever item it first saw.
   useEffect(() => {
     if (open) {
-      form.reset(buildDefaultValues(product));
+      form.reset(buildDefaultValues(item));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, product]);
+  }, [open, item]);
 
   // RN-13 — the select offers the fixed 16 plus whatever custom categories
-  // are already in use in this purchase, so an item with a custom category
+  // are already in use in this template, so an item with a custom category
   // never shows up blank and gets silently overwritten on save.
-  const categoriesInUse = currentShopPendingProducts
-    .concat(currentShopCartProducts)
-    .map((item) => item.category);
   const categoryOptions = sortCategoryNames(
-    Array.from(new Set([...FIXED_CATEGORIES, ...categoriesInUse]))
+    Array.from(new Set([...FIXED_CATEGORIES, ...existingCategories]))
   );
 
   async function onSubmit(data: z.infer<typeof ProductEditFormSchema>) {
@@ -106,10 +103,10 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
       setLoading(true);
       if (!user) return;
 
-      const productRef = doc(
+      const itemRef = doc(
         db,
-        `users/${user.uid}/shops/${currentShop.uid}/products`,
-        product.uid
+        `users/${user.uid}/templates/${templateUid}/items`,
+        item.uid
       );
 
       // Empty string, not undefined — updateDoc needs an explicit value to
@@ -119,37 +116,19 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
         name: data.name,
         quantity: data.quantity || '',
         // RN-15 — no category chosen falls back to "Outros", same helper
-        // HU-07 already uses. Not a parallel validation.
+        // HU-07/HU-23 already use. Not a parallel validation.
         category: normalizeCategory(data.category || ''),
         description: data.description || '',
       };
 
-      await updateDoc(productRef, updatedFields);
+      await updateDoc(itemRef, updatedFields);
 
-      const updatedProduct = { ...product, ...updatedFields };
-
-      if (product.isDone) {
-        dispatch(
-          setCurrentShopCartProducts(
-            currentShopCartProducts.map((item) =>
-              item.uid === product.uid ? updatedProduct : item
-            )
-          )
-        );
-      } else {
-        dispatch(
-          setCurrentShopPendingProducts(
-            currentShopPendingProducts.map((item) =>
-              item.uid === product.uid ? updatedProduct : item
-            )
-          )
-        );
-      }
+      onSaved({ ...item, ...updatedFields });
 
       toast({
         variant: 'success',
         title: 'Sucesso!',
-        description: 'Produto editado',
+        description: 'Item editado',
       });
 
       onOpenChange(false);
@@ -157,7 +136,7 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
       toast({
         variant: 'destructive',
         title: 'Ops! Algo de errado aconteceu',
-        description: 'Um erro inesperado aconteceu ao editar o produto',
+        description: 'Um erro inesperado aconteceu ao editar o item',
       });
     } finally {
       setLoading(false);
@@ -212,4 +191,4 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
   );
 };
 
-export default ProductEditDialog;
+export default TemplateItemEditDialog;
