@@ -1165,7 +1165,7 @@ Substituir o bloco de tokens existente no arquivo de CSS global:
 | Botão Google OAuth | `Button` variant `outline` + ícone | |
 | Input de formulário | `Input` + `Label` | usar `Form` (react-hook-form + zod) para validação e erro inline |
 | Erro inline de validação | `FormMessage` | vem de graça com `Form` |
-| Checkbox do item | `Checkbox` | customizar tamanho para 28px e `rounded-lg` |
+| Checkbox do item | `Checkbox` | customizar para 26px, `rounded-lg`, ancorado numa faixa lateral de 52-54px (ver seção 11.2 — Card de item) |
 | Chips de filtro por categoria | `ToggleGroup` type `single` | ou `Badge` clicável — `ToggleGroup` dá o comportamento de seleção única (RN: um filtro por vez) |
 | Badge de status (compra) | `Badge` — **novas variants** | `active` (derivado, RN-06), `pending`, `completed` |
 | Abas Lista / Carrinho (mobile) | `Tabs` | customizar `TabsTrigger` ativo: `text-tosho-500` + `border-b-tosho-500` |
@@ -1267,33 +1267,55 @@ Abas Lista/Carrinho (mobile apenas):
 
 ---
 
-### Card de item (Lista)
+### Card de item (Lista e Carrinho)
+
+> **Redesenhado.** O checkbox deixou de ficar solto na margem do card — agora vive numa faixa lateral dedicada, que aumenta a área de toque e ancora visualmente a ação principal (marcar/desmarcar). Metadados (quantidade + descrição) foram unificados numa única linha para reduzir a altura do card em listas longas.
+
 ```
-bg: #FFFFFF
-border: 0.5px solid #C8EBE0
-border-radius: 14px
-padding: 12px 14px
-layout: flex, items-center, gap-12px
+Card:
+  bg: #FFFFFF
+  border: 0.5px solid #C8EBE0
+  border-radius: 12px
+  layout: flex, items-stretch (não items-center — a faixa do checkbox estica
+    para ocupar a altura inteira do card)
+  overflow: hidden
 
-Estado concluído:
-  bg: #F7FBF9 (card inteiro)
+Faixa do checkbox (lado esquerdo, full-height):
+  width: 52px (mobile) | 54px (desktop)
+  bg: #F7FBF9
+  border-right: 0.5px solid #C8EBE0
+  layout: flex, items-center, justify-center
+  flex-shrink: 0
 
-Checkbox (substitui ícone de categoria):
-  size: 28x28px
+Checkbox (dentro da faixa):
+  size: 26x26px
   border-radius: 8px
-  Default: bg #EDF7F3, border 1px #C8EBE0, check-icon 16px #C8EBE0
-  Marcado: bg #0F6E56, border #0F6E56, check-icon 18px #E1F5EE
+  Default: bg #EDF7F3, border 1.5px #1D9E75
+  Marcado (carrinho): bg #0F6E56, border #0F6E56, check-icon 15px #E1F5EE
 
-Conteúdo do item (flex-1):
+Conteúdo (flex-1, min-width: 0):
+  padding: 11px 13px (mobile) | 12px 14px (desktop)
   Nome: 14px, 500, #0D2B22
-  Nome concluído: 14px, 500, #1D9E75, line-through
-  Quantidade: 12px, 500, #0F6E56 | concluído: #1D9E75
-  Descrição: 12px, #3D6B5A
+  Nome concluído (carrinho): 14px, 500, #1D9E75, line-through
+  Metadados — LINHA ÚNICA, quantidade + descrição separadas por " · ":
+    12px, #5D8A7A
+    ex: "1 pacote · Zero lactose"
+    Se não houver descrição, mostra só a quantidade, sem o separador
+    Quebra para 2 linhas naturalmente se o conteúdo não couber — não trunca
+  Metadados concluído (carrinho): #1D9E75
 
-Ações (flex-shrink-0):
-  Ícones editar + excluir: 17px, #1D9E75
-  Ícone desfazer (carrinho): 17px, #1D9E75
+Ações (lado direito):
+  padding: 0 14px (mobile) | 0 16px (desktop)
+  layout: flex, items-center, gap-14px (mobile) | gap-16px (desktop)
+  Lista — editar + excluir: ícones 17px, #1D9E75
+  Carrinho — desfazer: ícone 16-17px, #1D9E75 (substitui editar/excluir)
+
+Espaçamento entre cards: 8-9px
 ```
+
+**Por que a faixa lateral em vez do checkbox solto:** aumenta a área de toque (a faixa inteira de 52-54px de largura × altura do card é clicável, não só os 26px do checkbox visual) e cria uma associação visual clara entre "tocar aqui" e "marcar item" — importante para o uso com uma mão durante a compra (princípio de produto nº2).
+
+**Estado concluído no carrinho:** o card inteiro não muda de bg (permanece branco) — o que muda é o checkbox (preenchido), o nome (line-through, cor esmaecida) e os metadados (mesma cor esmaecida). O ícone de ação vira "desfazer" no lugar de editar/excluir.
 
 ---
 
