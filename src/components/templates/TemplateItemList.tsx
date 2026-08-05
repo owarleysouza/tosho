@@ -10,6 +10,8 @@ interface TemplateItemListProps {
   // in-progress search never shrinks the edit dialog's category options.
   existingCategories: string[];
   onItemUpdated: (updatedItem: TemplateItem) => void;
+  onItemRemoved: (uid: string) => void;
+  onItemRestored: (item: TemplateItem) => void;
 }
 
 // RN-12/13/14 — grouped by category in the fixed order, alphabetical
@@ -20,6 +22,8 @@ const TemplateItemList: React.FC<TemplateItemListProps> = ({
   templateUid,
   existingCategories,
   onItemUpdated,
+  onItemRemoved,
+  onItemRestored,
 }) => {
   const categoryGroups = getSortedCategoryGroups(items);
 
@@ -39,6 +43,8 @@ const TemplateItemList: React.FC<TemplateItemListProps> = ({
                 templateUid={templateUid}
                 existingCategories={existingCategories}
                 onItemUpdated={onItemUpdated}
+                onItemRemoved={onItemRemoved}
+                onItemRestored={onItemRestored}
               />
             ))}
           </section>

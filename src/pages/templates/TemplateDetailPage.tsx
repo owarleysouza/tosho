@@ -151,11 +151,6 @@ const TemplateDetailPage = () => {
         const addedItems = await addItemsToTemplate(user.uid, templateId, newItems);
 
         setItems((current) => current.concat(addedItems));
-        setTemplate((current) =>
-          current
-            ? { ...current, itemsCount: (current.itemsCount ?? 0) + addedItems.length }
-            : current
-        );
 
         form.reset();
         notifyDuplicates();
@@ -180,6 +175,19 @@ const TemplateDetailPage = () => {
     );
   }
 
+  // HU-26 — useUndoableDelete calls this immediately (RN-24), before the
+  // Firestore delete is even scheduled. Position doesn't matter for
+  // restore: getSortedCategoryGroups re-derives category/alphabetical
+  // placement from the flat array on every render, so a plain filter/concat
+  // pair is enough.
+  function onItemRemoved(uid: string) {
+    setItems((current) => current.filter((item) => item.uid !== uid));
+  }
+
+  function onItemRestored(item: TemplateItem) {
+    setItems((current) => current.concat(item));
+  }
+
   if (loading) {
     return (
       <PrivateLayout>
@@ -194,9 +202,16 @@ const TemplateDetailPage = () => {
     return <Navigate to="/templates" replace />;
   }
 
-  const itemsLabel = `${template.itemsCount ?? 0} ${
-    template.itemsCount === 1 ? 'item' : 'itens'
-  }`;
+  // Derived from the fully-loaded items array, not the cached itemsCount
+  // field — same "never stored" principle as RN-09's purchase progress.
+  // Everything this screen adds/removes/undoes is already reflected in
+  // `items`, so this can't drift the way a separately-tracked counter
+  // would. The Firestore itemsCount field still exists and is still kept
+  // in sync (addItemsToTemplate/onCommit below) — it's just not what this
+  // header reads anymore, since TemplatesPage's cards are the only
+  // consumer that actually needs a denormalized count (they don't load
+  // the items subcollection).
+  const itemsLabel = `${items.length} ${items.length === 1 ? 'item' : 'itens'}`;
 
   // HU-24 — same pure filter HU-12 already uses on the purchase's item
   // list, applied here to the template's. Category-group headings for
@@ -291,6 +306,8 @@ const TemplateDetailPage = () => {
               templateUid={template.uid}
               existingCategories={items.map((item) => item.category)}
               onItemUpdated={onItemUpdated}
+              onItemRemoved={onItemRemoved}
+              onItemRestored={onItemRestored}
             />
           ) : (
             <BlankState image={productsBlankStateSVG} title="Nenhum item encontrado" />
