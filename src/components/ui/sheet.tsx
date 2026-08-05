@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useVisualViewportInset } from "@/hooks/useVisualViewportInset"
 
 const Sheet = SheetPrimitive.Root
 
@@ -54,22 +55,47 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <SheetPrimitive.Content
-      ref={ref}
-      className={cn(sheetVariants({ side }), className)}
-      {...props}
-    >
-      {children}
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
-    </SheetPrimitive.Content>
-  </SheetPortal>
-))
+>(({ side = "right", className, children, style, ...props }, ref) => {
+  // Bottom sheets are the ones that get covered by the on-screen mobile
+  // keyboard: fixed to `bottom: 0` of the layout viewport, which doesn't
+  // shrink when the keyboard opens — only the visual viewport does. Shift
+  // the panel up by exactly the obscured amount and cap its height to
+  // what's actually visible, so a focused input inside (e.g. HU-07/HU-23's
+  // free-text textarea) never ends up hidden behind the keyboard. Called
+  // unconditionally (Rules of Hooks) — the result is simply unused for
+  // every other side, and on desktop it's always 0 anyway.
+  const keyboardInset = useVisualViewportInset()
+
+  return (
+    <SheetPortal>
+      <SheetOverlay />
+      <SheetPrimitive.Content
+        ref={ref}
+        className={cn(
+          sheetVariants({ side }),
+          side === "bottom" && "overflow-y-auto",
+          className
+        )}
+        style={
+          side === "bottom"
+            ? {
+                bottom: keyboardInset,
+                maxHeight: `calc(100dvh - ${keyboardInset}px)`,
+                ...style,
+              }
+            : style
+        }
+        {...props}
+      >
+        {children}
+        <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </SheetPrimitive.Close>
+      </SheetPrimitive.Content>
+    </SheetPortal>
+  )
+})
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
 const SheetHeader = ({

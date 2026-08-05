@@ -479,7 +479,10 @@ const CurrentShopPage: React.FC<ShopProps> = ({
       ) : (
         <>
           <TabsContent value="list" forceMount hidden={activeTab !== 'list'}>
-            <section className="flex flex-col items-center justify-center space-y-3 px-5 py-4">
+            {/* pb-36 clears the fixed FAB (bottom-20 + its own 44px height
+                = 124px from the viewport bottom) with a safety margin, so
+                it never overlaps the last card's edit/delete icons. */}
+            <section className="flex flex-col items-center justify-center space-y-3 px-5 pt-4 pb-36">
               {searchInput}
               {categoryChips}
               {listContent}

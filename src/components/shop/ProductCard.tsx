@@ -3,15 +3,9 @@ import React, { useContext, useState } from 'react';
 import { Product } from '@/types';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import ProductEditDialog from '@/components/shop/ProductEditDialog';
 import { toast } from '@/components/ui/use-toast';
-import { Check, EllipsisVertical } from 'lucide-react';
+import { Check, Pencil, Trash2 } from 'lucide-react';
 
 import { doc, increment, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -42,8 +36,6 @@ const ProductCard: React.FC<ProductProps> = ({
   const currentShop = useSelector((state: RootState) => state.shop.currentShop);
 
   const dispatch = useDispatch();
-
-  const [openMenu, setOpenMenu] = useState(false);
 
   //Firestore Reference
   const productRef = doc(
@@ -123,100 +115,94 @@ const ProductCard: React.FC<ProductProps> = ({
     },
   });
 
+  // Metadata (quantity + description) is unified into a single line,
+  // separated by " · " — with only one of the two present, no separator.
+  const metadata = [currentProduct.quantity, currentProduct.description]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <div
-      className={cn(
-        'flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3.5',
-        currentProduct.isDone && 'bg-tosho-25'
-      )}
-    >
-      {/* 44px hit area around the 28px visual checkbox — the visual itself
-          stays spec-sized, but the tap target meets the thumb minimum.
-          HU-17 — read-only mode gets a plain static indicator, not a
-          disabled Checkbox: no interactive control in the tree at all. A
-          completed purchase can still have unmarked items (HU-14 allows
-          completing with pending ones), so this reflects the item's real
-          isDone instead of forcing it to look checked. */}
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center">
-        {isCompletedShop ? (
+    // items-stretch (not items-center) — the checkbox strip stretches to
+    // the card's full height. Bg stays white regardless of isDone: the
+    // card itself never changes color, only the checkbox/name/metadata do.
+    <div className="flex w-full items-stretch overflow-hidden rounded-xl border border-border bg-card">
+      {/* Checkbox strip — a dedicated, full-height tap target (RN-09/
+          RN-18), not just the 26px visual box. The whole strip is a
+          <label> pointing at the checkbox, so a tap anywhere in it
+          toggles the item, same mechanism the name text used to rely on
+          alone. HU-17 — read-only mode renders a plain static indicator
+          instead: no interactive control in the tree at all. A completed
+          purchase can still have unmarked items (HU-14 allows completing
+          with pending ones), so this reflects the item's real isDone
+          instead of forcing it to look checked. */}
+      {isCompletedShop ? (
+        <div className="flex w-[52px] shrink-0 items-center justify-center border-r border-border bg-muted md:w-[54px]">
           <div
             className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-lg border',
+              'flex h-[26px] w-[26px] items-center justify-center rounded-md border',
               currentProduct.isDone
                 ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-border bg-tosho-50'
+                : 'border-[1.5px] border-tosho-500 bg-secondary'
             )}
           >
-            {currentProduct.isDone && <Check className="h-[18px] w-[18px]" />}
+            {currentProduct.isDone && <Check className="h-[15px] w-[15px]" />}
           </div>
-        ) : (
+        </div>
+      ) : (
+        <label
+          htmlFor={currentProduct.uid}
+          className="flex w-[52px] shrink-0 cursor-pointer items-center justify-center border-r border-border bg-muted md:w-[54px]"
+        >
           <Checkbox
             id={currentProduct.uid}
-            className="h-7 w-7 shrink-0 rounded-lg border-border bg-tosho-50 data-[state=checked]:border-primary"
+            aria-label={currentProduct.name}
+            className="h-[26px] w-[26px] shrink-0 rounded-md border-[1.5px] border-tosho-500 bg-secondary data-[state=checked]:border-primary data-[state=checked]:bg-primary"
             checked={currentProduct.isDone}
             onCheckedChange={toggleProductStatus}
           />
-        )}
-      </div>
+        </label>
+      )}
 
-      <div className="min-w-0 flex-1">
-        <label
-          htmlFor={isCompletedShop ? undefined : currentProduct.uid}
+      <div className="min-w-0 flex-1 px-[13px] py-[11px] md:px-3.5 md:py-3">
+        <p
           className={cn(
-            'block truncate text-sm font-bold text-foreground',
-            !isCompletedShop && 'cursor-pointer',
+            'truncate text-sm font-medium text-foreground',
             currentProduct.isDone && 'text-tosho-500 line-through'
           )}
         >
           {currentProduct.name}
-        </label>
-        {currentProduct.quantity && (
+        </p>
+        {metadata && (
           <p
             className={cn(
-              'text-xs font-medium text-primary',
-              currentProduct.isDone && 'text-tosho-500 line-through'
+              'text-xs text-tosho-text-3',
+              currentProduct.isDone && 'text-tosho-500'
             )}
           >
-            {currentProduct.quantity}
-          </p>
-        )}
-        {currentProduct.description && (
-          <p className="truncate text-xs text-muted-foreground">
-            {currentProduct.description}
+            {metadata}
           </p>
         )}
       </div>
 
       {!isCompletedShop && (
-        <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
-          <DropdownMenuTrigger asChild>
-            <EllipsisVertical className="h-[17px] w-[17px] shrink-0 cursor-pointer text-tosho-500" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={() => {
-                // Let the dropdown close on its own default behavior first —
-                // opening the edit dialog in the same tick fights it for
-                // focus and leaves the dropdown stuck (same bug hit in the
-                // purchases manager's Editar/Excluir menu).
-                setTimeout(() => setOpenEditDialog(true), 0);
-              }}
-            >
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => {
-                setOpenMenu(false);
-                removeProductWithUndo(currentProduct);
-              }}
-            >
-              Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex shrink-0 items-center gap-3.5 px-3.5 md:gap-4 md:px-4">
+          <button
+            type="button"
+            aria-label="Editar item"
+            onClick={() => setOpenEditDialog(true)}
+            className="text-tosho-500"
+          >
+            <Pencil className="h-[17px] w-[17px]" />
+          </button>
+          <button
+            type="button"
+            aria-label="Excluir item"
+            onClick={() => removeProductWithUndo(currentProduct)}
+            className="text-tosho-500"
+          >
+            <Trash2 className="h-[17px] w-[17px]" />
+          </button>
+        </div>
       )}
 
       {!isCompletedShop && (

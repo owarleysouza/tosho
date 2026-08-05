@@ -70,37 +70,41 @@ const TemplateItemCard: React.FC<TemplateItemCardProps> = ({
     },
   });
 
+  // Metadata (quantity + description) unified into a single line, same
+  // convention as the redesigned ProductCard — separated by " · ", no
+  // separator when only one of the two is present.
+  const metadata = [item.quantity, item.description].filter(Boolean).join(' · ');
+
   return (
-    <div className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3.5">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold text-foreground">{item.name}</p>
-        {item.quantity && (
-          <p className="text-xs font-medium text-primary">{item.quantity}</p>
-        )}
-        {item.description && (
-          <p className="truncate text-xs text-muted-foreground">
-            {item.description}
-          </p>
-        )}
+    // Same card shell/typography/spacing as the redesigned ProductCard,
+    // minus the checkbox strip — a template item has no completion state
+    // (RN-20/RN-21: that's created fresh only once cloned into a purchase),
+    // so there's nothing for a strip to toggle.
+    <div className="flex w-full items-center overflow-hidden rounded-xl border border-border bg-card">
+      <div className="min-w-0 flex-1 px-[13px] py-[11px] md:px-3.5 md:py-3">
+        <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
+        {metadata && <p className="text-xs text-tosho-text-3">{metadata}</p>}
       </div>
 
-      <button
-        type="button"
-        aria-label="Editar item"
-        onClick={() => setEditOpen(true)}
-        className="shrink-0 text-tosho-500"
-      >
-        <Pencil className="h-[17px] w-[17px]" />
-      </button>
+      <div className="flex shrink-0 items-center gap-3.5 px-3.5 md:gap-4 md:px-4">
+        <button
+          type="button"
+          aria-label="Editar item"
+          onClick={() => setEditOpen(true)}
+          className="text-tosho-500"
+        >
+          <Pencil className="h-[17px] w-[17px]" />
+        </button>
 
-      <button
-        type="button"
-        aria-label="Excluir item"
-        onClick={() => removeItemWithUndo(item)}
-        className="shrink-0 text-tosho-500"
-      >
-        <Trash2 className="h-[17px] w-[17px]" />
-      </button>
+        <button
+          type="button"
+          aria-label="Excluir item"
+          onClick={() => removeItemWithUndo(item)}
+          className="text-tosho-500"
+        >
+          <Trash2 className="h-[17px] w-[17px]" />
+        </button>
+      </div>
 
       <TemplateItemEditDialog
         item={item}

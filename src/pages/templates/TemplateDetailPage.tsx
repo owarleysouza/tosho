@@ -282,7 +282,12 @@ const TemplateDetailPage = () => {
           </p>
         </div>
 
-        <section className="mx-auto flex w-full max-w-3xl flex-col items-center space-y-3 px-5 py-4 md:px-8 md:py-6">
+        {/* pb-36 clears the fixed FAB on mobile (bottom-20 + its own 44px
+            height = 124px from the viewport bottom) with a safety margin,
+            so it never overlaps the last card's edit/delete icons. The FAB
+            is md:static (inline, not fixed) on desktop, so md:py-6
+            reverts to the normal, symmetric padding there. */}
+        <section className="mx-auto flex w-full max-w-3xl flex-col items-center space-y-3 px-5 pt-4 pb-36 md:px-8 md:py-6">
           {items.length > 0 && (
             <div className="relative w-full">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-tosho-500" />
