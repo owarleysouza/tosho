@@ -40,6 +40,7 @@ import { collection, addDoc, doc, getDocs, query, serverTimestamp, updateDoc, wh
 import { db } from "@/lib/firebase"
 import { addProductsToShop } from "@/utils/addProductsToShop"
 import { getTemplateIcon } from "@/utils/templateIcons"
+import StepDots from "@/components/commom/StepDots"
 
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '@/context/commom/UserContext'
@@ -132,29 +133,6 @@ function getMostRecentCompletedShop(
     const latestMillis = (latest?.completedAt ?? latest?.scheduledAt ?? latest?.date)?.toMillis() ?? -Infinity
     return shopMillis > latestMillis ? shop : latest
   }, undefined)
-}
-
-// RN-26 — a wide pill for the current step, a small dot for the other one.
-// Shown on step 1 too (once "Carregar template" is picked) as well as step
-// 2, so the two-step nature of that path has context from the start
-// instead of only appearing once already on step 2.
-function StepDots({ activeStep }: { activeStep: 1 | 2 }) {
-  return (
-    <div className="flex items-center justify-center gap-1">
-      <div
-        className={cn(
-          "h-2 rounded-full",
-          activeStep === 1 ? "w-4 bg-primary" : "w-2 bg-tosho-200"
-        )}
-      />
-      <div
-        className={cn(
-          "h-2 rounded-full",
-          activeStep === 2 ? "w-4 bg-primary" : "w-2 bg-tosho-200"
-        )}
-      />
-    </div>
-  )
 }
 
 const ShopFormDialog: React.FC<ShopFormDialogProps> = ({

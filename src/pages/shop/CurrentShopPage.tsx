@@ -20,20 +20,13 @@ import cartBlankStateSVG from '@/assets/images/cart-blank-state.svg';
 import CompleteShopBar from '@/pages/shop/CompleteShopBar';
 
 import PurchaseHero from '@/components/purchase/PurchaseHero';
+import AddItemsFromTemplateSheet from '@/components/purchase/AddItemsFromTemplateSheet';
+import AddItemsByTextSheet from '@/components/purchase/AddItemsByTextSheet';
 import BlankState from '@/components/commom/BlankState';
-import ProductFormFooter from '@/components/form/ProductFormFooter';
 import LoadingPage from '@/pages/commom/LoadingPage';
 import { useToast } from '@/components/ui/use-toast';
 import ProductList from '@/components/shop/ProductList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import { Plus, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -361,8 +354,8 @@ const CurrentShopPage: React.FC<ShopProps> = ({
     <BlankState image={cartBlankStateSVG} title="Nenhum produto no carrinho :(" />
   );
 
-  // FAB expands into "Por template" (HU-08, placeholder for now) and "Por
-  // texto livre" pills (print 06) instead of opening the Sheet directly.
+  // FAB expands into "Por template" and "Por texto livre" pills (print 06)
+  // instead of opening the Sheet directly.
   const addItemsTrigger = (
     <div
       className={cn(
@@ -372,44 +365,29 @@ const CurrentShopPage: React.FC<ShopProps> = ({
     >
       {fabExpanded && (
         <>
-          <button
-            type="button"
-            disabled
-            className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-4 py-2.5 text-xs font-medium text-tosho-900 opacity-60"
-          >
-            Por template
-          </button>
-
-          <Sheet
+          <AddItemsFromTemplateSheet
+            userUid={user?.uid}
+            shopUid={shop.uid}
+            existingProducts={currentShopPendingProducts.concat(currentShopCartProducts)}
+            onItemsAdded={(addedProducts) => {
+              dispatch(
+                setCurrentShopPendingProducts(
+                  currentShopPendingProducts.concat(addedProducts)
+                )
+              );
+            }}
             onOpenChange={(open) => {
               if (!open) setFabExpanded(false);
             }}
-          >
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-4 py-2.5 text-xs font-medium text-tosho-900"
-              >
-                Por texto livre
-              </button>
-            </SheetTrigger>
-            <SheetContent side="bottom">
-              <SheetHeader className="sm:text-center">
-                <SheetTitle>Adicionar itens</SheetTitle>
-                <SheetDescription className="text-xs">
-                  Digite um ou mais produtos, um por linha, no formato Nome,
-                  Categoria, Quantidade, Descrição. Apenas o nome é
-                  obrigatório — campos do final podem ficar em branco.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="flex justify-center pt-3">
-                <ProductFormFooter
-                  createProductsLoading={createProductsLoading}
-                  onProductsAdd={onSubmitProduct}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
+          />
+
+          <AddItemsByTextSheet
+            createProductsLoading={createProductsLoading}
+            onProductsAdd={onSubmitProduct}
+            onOpenChange={(open) => {
+              if (!open) setFabExpanded(false);
+            }}
+          />
         </>
       )}
 
