@@ -52,7 +52,6 @@ export interface EditableShop {
   uid: string;
   name: string;
   scheduledAt?: Timestamp;
-  date?: Timestamp; // legacy fallback for shops created before scheduledAt (HU-16)
 }
 
 interface ShopFormDialogProps {
@@ -102,7 +101,7 @@ const startingPointOptions: Array<{
 function buildDefaultValues(shop?: EditableShop) {
   return {
     name: shop?.name ?? "",
-    scheduledAt: shop ? (shop.scheduledAt ?? shop.date)?.toDate() : undefined,
+    scheduledAt: shop?.scheduledAt?.toDate(),
     startingPoint: "scratch" as const,
   }
 }
@@ -111,7 +110,6 @@ interface CompletedShopCandidate {
   uid: string;
   completedAt?: Timestamp;
   scheduledAt?: Timestamp;
-  date?: Timestamp; // legacy fallback, same as EditableShop
 }
 
 interface TemplateCandidate {
@@ -129,8 +127,8 @@ function getMostRecentCompletedShop(
   shops: CompletedShopCandidate[]
 ): CompletedShopCandidate | undefined {
   return shops.reduce<CompletedShopCandidate | undefined>((latest, shop) => {
-    const shopMillis = (shop.completedAt ?? shop.scheduledAt ?? shop.date)?.toMillis() ?? -Infinity
-    const latestMillis = (latest?.completedAt ?? latest?.scheduledAt ?? latest?.date)?.toMillis() ?? -Infinity
+    const shopMillis = (shop.completedAt ?? shop.scheduledAt)?.toMillis() ?? -Infinity
+    const latestMillis = (latest?.completedAt ?? latest?.scheduledAt)?.toMillis() ?? -Infinity
     return shopMillis > latestMillis ? shop : latest
   }, undefined)
 }
@@ -406,7 +404,13 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
                     key={template.uid}
                     htmlFor={`template-${template.uid}`}
                     className={cn(
-                      "flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors",
+                      // w-full + min-w-0 — RadioGroup is a CSS grid, and a
+                      // grid item doesn't automatically stretch to the
+                      // column's width the way a flex/block child would;
+                      // without it the row's own content can determine its
+                      // width, pushing the radio circle past the dialog's
+                      // edge instead of the text truncating within it.
+                      "flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors",
                       isSelected ? "border-primary bg-secondary" : "border-border bg-background"
                     )}
                   >
@@ -422,7 +426,11 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
                         {template.description ? ` · ${template.description}` : ""}
                       </p>
                     </div>
-                    <RadioGroupItem id={`template-${template.uid}`} value={template.uid} />
+                    <RadioGroupItem
+                      id={`template-${template.uid}`}
+                      value={template.uid}
+                      className="shrink-0"
+                    />
                   </label>
                 )
               })}
@@ -482,7 +490,11 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
                               key={option.value}
                               htmlFor={`starting-point-${option.value}`}
                               className={cn(
-                                "flex items-center gap-3 rounded-xl border p-3 transition-colors",
+                                // w-full + min-w-0 — RadioGroup is a CSS
+                                // grid; without this a grid item doesn't
+                                // stretch to the column's width the way a
+                                // flex/block child would.
+                                "flex w-full min-w-0 items-center gap-3 rounded-xl border p-3 transition-colors",
                                 disabled
                                   ? "cursor-not-allowed opacity-60 border-border"
                                   : "cursor-pointer border-border",
@@ -492,18 +504,18 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
                               )}
                             >
                               <option.icon className="h-5 w-5 text-tosho-700 shrink-0" />
-                              <div className="flex-1">
+                              <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium text-foreground">
+                                  <span className="truncate text-sm font-medium text-foreground">
                                     {option.title}
                                   </span>
                                   {disabled && disabledLabel && (
-                                    <Badge variant="pending" className="text-[10px]">
+                                    <Badge variant="pending" className="shrink-0 text-[10px]">
                                       {disabledLabel}
                                     </Badge>
                                   )}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="truncate text-xs text-muted-foreground">
                                   {option.description}
                                 </p>
                               </div>
@@ -511,6 +523,7 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
                                 id={`starting-point-${option.value}`}
                                 value={option.value}
                                 disabled={disabled}
+                                className="shrink-0"
                               />
                             </label>
                           )

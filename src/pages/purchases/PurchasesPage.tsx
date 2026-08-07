@@ -20,7 +20,6 @@ interface ShopDocument {
   name: string;
   isDone: boolean;
   scheduledAt?: Timestamp;
-  date?: Timestamp; // legacy fallback for shops created before scheduledAt (HU-16)
   completedAt?: Timestamp; // not written yet — HU-14
   itemsCount?: number;
 }
@@ -58,19 +57,15 @@ const PurchasesPage = () => {
 
       const pending = openShops
         .filter((shop) => shop.uid !== active?.uid)
-        .sort(
-          (a, b) =>
-            (a.scheduledAt ?? a.date)!.toMillis() -
-            (b.scheduledAt ?? b.date)!.toMillis()
-        );
+        .sort((a, b) => a.scheduledAt!.toMillis() - b.scheduledAt!.toMillis());
 
-      // completedAt doesn't exist yet (HU-14 will write it) — scheduledAt/date
+      // completedAt doesn't exist yet (HU-14 will write it) — scheduledAt
       // is a proxy until then; this sort picks up the real field automatically
       // once it exists, no change needed here.
       const completed = completedShops.sort(
         (a, b) =>
-          (b.completedAt ?? b.scheduledAt ?? b.date)!.toMillis() -
-          (a.completedAt ?? a.scheduledAt ?? a.date)!.toMillis()
+          (b.completedAt ?? b.scheduledAt)!.toMillis() -
+          (a.completedAt ?? a.scheduledAt)!.toMillis()
       );
 
       setActivePurchase(active);

@@ -932,7 +932,7 @@ Antes de iniciar cada fase que toque em dados, verificar a compatibilidade da co
 | Coleção (atual → alvo) | Estrutura alvo (seção 3) | Campos que existem | Campos que faltam | Campos que mudam de nome/tipo |
 |---|---|---|---|---|
 | `users` → `users` | `User` | `name`, `email` | `id` (implícito no doc id, ok), `createdAt` | — |
-| `shops` → `purchases` | `Purchase` | `name`, `date` (Timestamp), `isDone` (boolean), `total` (number) | `userId` (hoje só implícito no path), `scheduledAt`, `createdAt`, `completedAt` | `date` → renomeia para `scheduledAt`; **`isDone` PERMANECE como está** — o modelo de dois estados é o alvo (RN-07), não há migração de status a fazer; `total` (preço) não existe no modelo alvo — feature de preço fica fora do escopo desta evolução, decidir se remove ou mantém como campo extra |
+| `shops` → `purchases` | `Purchase` | `name`, `scheduledAt` (Timestamp), `isDone` (boolean), `total` (number) | `userId` (hoje só implícito no path), `createdAt`, `completedAt` | `date` → renomeado para `scheduledAt` (concluído: `scripts/migrate-scheduled-at.mjs` rodado em produção via Admin SDK — 41 docs migrados, 0 pendentes; fallbacks `?? date` removidos do código); **`isDone` PERMANECE como está** — o modelo de dois estados é o alvo (RN-07), não há migração de status a fazer; `total` (preço) não existe no modelo alvo — feature de preço fica fora do escopo desta evolução, decidir se remove ou mantém como campo extra |
 | `products` → `purchase items` | `PurchaseItem` | `name`, `quantity` (number), `category` (string livre), `description` (opcional), `isDone` (boolean), `price` (number, opcional) | `purchaseId` (implícito no path), `createdAt` | `isDone` → `completed`; `quantity: number` → `quantity?: string`; `category` hoje é chave livre sem ordem fixa — precisa migrar valores para o enum/ordem fixa da RN-13; `price` não existe no modelo alvo |
 | — → `templates` | `Template` | não existe | `id`, `userId`, `name`, `description`, `createdAt` | ➕ coleção nova |
 | — → `template items` | `TemplateItem` | não existe | `id`, `templateId`, `name`, `quantity`, `description`, `category` | ➕ coleção nova |
@@ -952,17 +952,17 @@ export function getActivePurchase<T extends ActivePurchaseCandidate>(
   const pending = purchases.filter((purchase) => !purchase.isDone);
 
   return pending.reduce<T | undefined>((closest, purchase) => {
-    const purchaseMillis = (purchase.scheduledAt ?? purchase.date)?.toMillis() ?? Infinity;
-    const closestMillis = (closest?.scheduledAt ?? closest?.date)?.toMillis() ?? Infinity;
+    // "no candidate yet" (undefined) must win against nothing, separate
+    // from "candidate with no date" (-Infinity) further below.
+    if (!closest) return purchase;
+
+    const purchaseMillis = purchase.scheduledAt?.toMillis() ?? -Infinity;
+    const closestMillis = closest.scheduledAt?.toMillis() ?? -Infinity;
 
     return purchaseMillis < closestMillis ? purchase : closest;
   }, undefined);
 }
 ```
-
-Dois pontos a revisar quando houver oportunidade (nenhum urgente):
-- O fallback `?? Infinity` faz uma compra sem data nunca ser escolhida como ativa, mesmo sendo a única pendente
-- O `scheduledAt ?? date` reflete dois nomes para o mesmo campo no banco — unificar em `scheduledAt`
 
 ---
 

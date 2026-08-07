@@ -63,7 +63,7 @@ const PurchaseCard: React.FC<PurchaseCardProps> = ({
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const timestamp = shop.scheduledAt ?? shop.date;
+  const timestamp = shop.scheduledAt;
   const config = statusConfig[status];
   const Icon = config.icon;
   const itemsLabel = `${shop.itemsCount ?? 0} ${shop.itemsCount === 1 ? 'item' : 'itens'}`;

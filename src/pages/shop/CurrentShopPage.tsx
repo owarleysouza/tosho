@@ -333,7 +333,6 @@ const CurrentShopPage: React.FC<ShopProps> = ({
         <PurchaseHero
           name={shop.name}
           scheduledAt={shop.scheduledAt}
-          date={shop.date}
           completedCount={completedCount}
           totalCount={totalCount}
           status={purchaseStatus}
@@ -410,7 +409,6 @@ const CurrentShopPage: React.FC<ShopProps> = ({
       <PurchaseHero
         name={shop.name}
         scheduledAt={shop.scheduledAt}
-        date={shop.date}
         completedCount={completedCount}
         totalCount={totalCount}
         status={purchaseStatus}

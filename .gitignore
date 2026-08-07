@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Firebase Admin SDK credentials — never commit these (used by one-off
+# scripts in scripts/, e.g. migrate-scheduled-at.mjs)
+serviceAccountKey.json
+*serviceAccount*.json
+
 # Editor directories and files
 .env
 .vscode/*

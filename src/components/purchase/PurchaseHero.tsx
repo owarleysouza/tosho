@@ -18,7 +18,6 @@ const statusLabel: Record<PurchaseStatus, string> = {
 interface PurchaseHeroProps {
   name: string;
   scheduledAt?: Timestamp;
-  date?: Timestamp; // legacy fallback for shops created before scheduledAt (HU-16)
   // RN-09 — derived from item state every render, never persisted, so it
   // can never drift out of sync with the actual list/cart.
   completedCount: number;
@@ -39,14 +38,12 @@ interface PurchaseHeroProps {
 const PurchaseHero: React.FC<PurchaseHeroProps> = ({
   name,
   scheduledAt,
-  date,
   completedCount,
   totalCount,
   status = 'in-progress',
   onBack,
   children,
 }) => {
-  const timestamp = scheduledAt ?? date;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
@@ -77,10 +74,10 @@ const PurchaseHero: React.FC<PurchaseHeroProps> = ({
           <h1 className="text-xl md:text-2xl font-black text-tosho-hero-fg">
             {name}
           </h1>
-          {timestamp && (
+          {scheduledAt && (
             <p className="mt-[3px] text-[13px] text-tosho-300">
-              {format(timestamp.toDate(), 'd MMM yyyy', { locale: ptBR })} ·{' '}
-              {format(timestamp.toDate(), 'HH:mm')}
+              {format(scheduledAt.toDate(), 'd MMM yyyy', { locale: ptBR })} ·{' '}
+              {format(scheduledAt.toDate(), 'HH:mm')}
             </p>
           )}
         </div>
