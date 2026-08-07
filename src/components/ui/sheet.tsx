@@ -73,7 +73,7 @@ const SheetContent = React.forwardRef<
         ref={ref}
         className={cn(
           sheetVariants({ side }),
-          side === "bottom" && "overflow-y-auto",
+          side === "bottom" && "w-full max-w-full overflow-x-hidden overflow-y-auto",
           className
         )}
         style={

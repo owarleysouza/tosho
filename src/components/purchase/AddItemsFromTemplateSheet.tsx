@@ -303,7 +303,14 @@ const AddItemsFromTemplateSheet: React.FC<AddItemsFromTemplateSheetProps> = ({
                   key={template.uid}
                   htmlFor={`add-template-${template.uid}`}
                   className={cn(
-                    'flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors',
+                    // w-full + min-w-0 — as a CSS grid item (RadioGroup's
+                    // default `display: grid`), this doesn't automatically
+                    // stretch to the column's width the way a flex/block
+                    // child would; without it, the row's own intrinsic
+                    // content width can win, pushing the RadioGroupItem
+                    // circle past the sheet's right edge instead of
+                    // wrapping/truncating within it.
+                    'flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors',
                     isSelected ? 'border-primary bg-secondary' : 'border-border bg-background'
                   )}
                 >
@@ -319,7 +326,11 @@ const AddItemsFromTemplateSheet: React.FC<AddItemsFromTemplateSheetProps> = ({
                       {template.description ? ` · ${template.description}` : ''}
                     </p>
                   </div>
-                  <RadioGroupItem id={`add-template-${template.uid}`} value={template.uid} />
+                  <RadioGroupItem
+                    id={`add-template-${template.uid}`}
+                    value={template.uid}
+                    className="shrink-0"
+                  />
                 </label>
               );
             })}
@@ -356,7 +367,7 @@ const AddItemsFromTemplateSheet: React.FC<AddItemsFromTemplateSheetProps> = ({
                   key={item.uid}
                   htmlFor={`add-item-${item.uid}`}
                   className={cn(
-                    'flex items-center gap-3 rounded-xl border p-3',
+                    'flex w-full min-w-0 items-center gap-3 rounded-xl border p-3',
                     isDuplicate
                       ? 'cursor-not-allowed border-border bg-muted opacity-60'
                       : 'cursor-pointer border-border bg-background'
