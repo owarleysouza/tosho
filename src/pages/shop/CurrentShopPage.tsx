@@ -151,7 +151,8 @@ const CurrentShopPage: React.FC<ShopProps> = ({
 
   async function onSubmitProduct(
     data: z.infer<typeof ProductsCreateFormSchema>,
-    form: UseFormReturn<{ text: string }>
+    form: UseFormReturn<{ text: string }>,
+    closeSheet: () => void
   ): Promise<void> {
     // RN-17 — same name (case-insensitive) + category as something already
     // in the purchase (pending or cart) is skipped silently, no error.
@@ -207,6 +208,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({
     if (!newProducts.length) {
       notifyDuplicates();
       form.reset();
+      closeSheet();
       return;
     }
 
@@ -227,6 +229,7 @@ const CurrentShopPage: React.FC<ShopProps> = ({
 
         form.reset();
         notifyDuplicates();
+        closeSheet();
       }
     } catch (error) {
       toast({

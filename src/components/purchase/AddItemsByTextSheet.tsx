@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -24,9 +25,14 @@ import ProductFormFooter from '@/components/form/ProductFormFooter';
 
 interface AddItemsByTextSheetProps {
   createProductsLoading: boolean;
+  // Third arg lets the caller close this sheet once its own submission
+  // logic actually succeeds (added, or everything was a RN-17 duplicate) —
+  // not called from the catch/error path, so a failed submit leaves the
+  // sheet open for the user to retry instead of silently discarding it.
   onProductsAdd: (
     data: z.infer<typeof ProductsCreateFormSchema>,
-    form: UseFormReturn<{ text: string }>
+    form: UseFormReturn<{ text: string }>,
+    closeSheet: () => void
   ) => void;
   onOpenChange: (open: boolean) => void;
 }
@@ -38,12 +44,23 @@ const description =
 // switches: a centered Dialog on desktop, the bottom Sheet on mobile, same
 // split as the "Por template" pill (AddItemsFromTemplateSheet) right next
 // to this one in the expanded FAB.
+//
+// Open state is controlled here (not left to Radix's own uncontrolled
+// default) specifically so a successful submit can close it — otherwise
+// there's no hook to call after ProductFormFooter's fire-and-forget
+// onProductsAdd resolves.
 const AddItemsByTextSheet: React.FC<AddItemsByTextSheetProps> = ({
   createProductsLoading,
   onProductsAdd,
   onOpenChange,
 }) => {
   const isDesktop = useMediaQuery('(min-width: 768px)');
+  const [open, setOpen] = useState(false);
+
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    onOpenChange(nextOpen);
+  }
 
   const trigger = (
     <button
@@ -58,14 +75,16 @@ const AddItemsByTextSheet: React.FC<AddItemsByTextSheetProps> = ({
     <div className="flex justify-center pt-3">
       <ProductFormFooter
         createProductsLoading={createProductsLoading}
-        onProductsAdd={onProductsAdd}
+        onProductsAdd={(data, formInstance) =>
+          onProductsAdd(data, formInstance, () => handleOpenChange(false))
+        }
       />
     </div>
   );
 
   if (isDesktop) {
     return (
-      <Dialog onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>{trigger}</DialogTrigger>
         <DialogContent className="w-[420px]">
           <DialogHeader>
@@ -79,7 +98,7 @@ const AddItemsByTextSheet: React.FC<AddItemsByTextSheetProps> = ({
   }
 
   return (
-    <Sheet onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent side="bottom">
         <SheetHeader className="sm:text-center">

@@ -56,6 +56,7 @@ const TemplateDetailPage = () => {
   const [template, setTemplate] = useState<TemplateDocument | null>(null);
   const [items, setItems] = useState<TemplateItem[]>([]);
   const [addItemsLoading, setAddItemsLoading] = useState(false);
+  const [addItemsOpen, setAddItemsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -142,6 +143,7 @@ const TemplateDetailPage = () => {
     if (!newItems.length) {
       notifyDuplicates();
       form.reset();
+      setAddItemsOpen(false);
       return;
     }
 
@@ -154,6 +156,7 @@ const TemplateDetailPage = () => {
 
         form.reset();
         notifyDuplicates();
+        setAddItemsOpen(false);
       }
     } catch (error) {
       toast({
@@ -220,7 +223,7 @@ const TemplateDetailPage = () => {
   const visibleItems = getVisibleItems(items, { searchTerm });
 
   const addItemsTrigger = (
-    <Sheet>
+    <Sheet open={addItemsOpen} onOpenChange={setAddItemsOpen}>
       <SheetTrigger asChild>
         <button
           type="button"
