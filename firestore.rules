@@ -1,0 +1,14 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Every app collection (users, shops/purchases, shop products, templates,
+    // template items) lives nested under the owning user's own document —
+    // users/{userId}/shops/**, users/{userId}/templates/**, etc. — so the
+    // path segment itself is the ownership check: this single recursive
+    // match secures all of them, no per-collection get() lookups needed.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

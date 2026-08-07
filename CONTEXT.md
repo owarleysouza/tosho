@@ -928,6 +928,8 @@ A modelagem atual é parcialmente compatível com a estrutura da seção 3. A es
 Antes de iniciar cada fase que toque em dados, verificar a compatibilidade da coleção correspondente:
 
 > **Nota de path:** as coleções atuais são subcoleções aninhadas em `users/{userId}`, não coleções raiz — `users/{userId}/shops/{shopId}/products/{productId}`. A estrutura alvo (seção 3) não especifica o path, só o shape do documento; manter o aninhamento é compatível.
+>
+> **Isso não é só um detalhe de organização — é o mecanismo de segurança atual.** As regras do Firestore (`firestore.rules`, na raiz do repo) autorizam leitura/escrita comparando `request.auth.uid` com o segmento `{userId}` do path; nenhum documento guarda um campo `userId` para isso hoje. Consequência: **se a migração para coleções raiz (`purchases`, `templates` — ver tabela abaixo) acontecer sem atualizar as regras junto**, o app perde a verificação de dono (ou passa a negar tudo, dependendo de como a regra for reescrita). Quando essa migração for feita, as regras precisam passar a checar o campo `userId` do documento (`request.resource.data.userId == request.auth.uid` na escrita, `resource.data.userId == request.auth.uid` na leitura) e, para os itens (`purchaseId`/`templateId`, sem `userId` direto), um `get()` no documento pai para confirmar o dono — isso tem custo de 1 leitura extra por operação.
 
 | Coleção (atual → alvo) | Estrutura alvo (seção 3) | Campos que existem | Campos que faltam | Campos que mudam de nome/tipo |
 |---|---|---|---|---|
