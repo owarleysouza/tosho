@@ -2,13 +2,23 @@ import * as React from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
 
 import { cn } from "@/lib/utils"
+import { useVisualViewportInset } from "@/hooks/useVisualViewportInset"
 
 const Drawer = ({
   shouldScaleBackground = true,
+  // vaul's own keyboard handling grows the drawer's DOM height to fill the
+  // visual viewport whenever a focused input is inside it, regardless of
+  // how tall the content actually is — on a short form (e.g. ProductEditDialog's
+  // "Editar item") that leaves a large blank strip of the drawer's background
+  // below the fields once the keyboard opens. Disabled in favor of the same
+  // visualViewport-based cap/shift sheet.tsx already uses, which sizes the
+  // panel to its content and scrolls instead of stretching it.
+  repositionInputs = false,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
+    repositionInputs={repositionInputs}
     {...props}
   />
 )
@@ -35,22 +45,67 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
-        className
-      )}
-      {...props}
-    >
-      <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-))
+>(({ className, children, style, ...props }, ref) => {
+  // Same fixed-to-bottom-of-layout-viewport problem sheet.tsx solves for:
+  // shift the panel up by whatever the keyboard is obscuring and cap its
+  // height to what's actually visible, scrolling internally past that.
+  const keyboardInset = useVisualViewportInset()
+
+  // The field is usually already focused (and thus already scrolled to,
+  // by whatever brought the user here) *before* the keyboard finishes
+  // opening and this panel shrinks around it — the browser has no reason
+  // to re-scroll on its own afterwards, so a field near the bottom of the
+  // form (e.g. ProductEditDialog's "Descrição") is left clipped below the
+  // now-shorter panel with nothing to reveal it. Do that scroll ourselves
+  // whenever the obscured amount changes.
+  const contentRef = React.useRef<HTMLDivElement | null>(null)
+  React.useEffect(() => {
+    if (keyboardInset) {
+      const active = document.activeElement
+      if (active instanceof HTMLElement && contentRef.current?.contains(active)) {
+        active.scrollIntoView({ block: "nearest" })
+      }
+      // Keyboard closed again (blur, submit, dismiss) — nothing scrolls
+      // the panel back on its own, so it's left stranded wherever the
+      // keyboard-open scroll last left it, header and all cut off above.
+    } else if (contentRef.current) {
+      contentRef.current.scrollTop = 0
+    }
+  }, [keyboardInset])
+
+  return (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={(node) => {
+          contentRef.current = node
+          if (typeof ref === "function") ref(node)
+          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node
+        }}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[96dvh] flex-col overflow-y-auto rounded-t-[10px] border bg-background",
+          className
+        )}
+        style={{
+          // transform instead of `bottom` — iOS Safari is known to lag or
+          // skip repainting `position: fixed` elements repositioned via a
+          // layout property (top/bottom/height) during the keyboard's
+          // show/hide animation, leaving the panel visually stuck at its
+          // pre-keyboard position (the "blank strip" the bottom-anchored
+          // box leaves behind). A transform is compositor-only and tracks
+          // the visualViewport resize events immediately.
+          transform: keyboardInset ? `translateY(-${keyboardInset}px)` : undefined,
+          maxHeight: `calc(96dvh - ${keyboardInset}px)`,
+          ...style,
+        }}
+        {...props}
+      >
+        <div className="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted" />
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  )
+})
 DrawerContent.displayName = "DrawerContent"
 
 const DrawerHeader = ({

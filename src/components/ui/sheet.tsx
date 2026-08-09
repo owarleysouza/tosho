@@ -66,11 +66,34 @@ const SheetContent = React.forwardRef<
   // every other side, and on desktop it's always 0 anyway.
   const keyboardInset = useVisualViewportInset()
 
+  // Same as drawer.tsx's DrawerContent: the field is usually already
+  // focused before the keyboard finishes opening and this panel shrinks
+  // around it, so the browser has no reason to re-scroll on its own
+  // afterwards — do it ourselves whenever the obscured amount changes.
+  const contentRef = React.useRef<HTMLDivElement | null>(null)
+  React.useEffect(() => {
+    if (keyboardInset) {
+      const active = document.activeElement
+      if (active instanceof HTMLElement && contentRef.current?.contains(active)) {
+        active.scrollIntoView({ block: "nearest" })
+      }
+      // Keyboard closed again — nothing scrolls the panel back on its
+      // own, so it's left stranded wherever the keyboard-open scroll
+      // last left it.
+    } else if (contentRef.current) {
+      contentRef.current.scrollTop = 0
+    }
+  }, [keyboardInset])
+
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
-        ref={ref}
+        ref={(node) => {
+          contentRef.current = node
+          if (typeof ref === "function") ref(node)
+          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node
+        }}
         className={cn(
           sheetVariants({ side }),
           side === "bottom" && "w-full max-w-full overflow-x-hidden overflow-y-auto",
@@ -79,7 +102,12 @@ const SheetContent = React.forwardRef<
         style={
           side === "bottom"
             ? {
-                bottom: keyboardInset,
+                // transform, not `bottom` — see drawer.tsx's DrawerContent
+                // for why: iOS Safari can lag repainting a `position: fixed`
+                // element repositioned via a layout property during the
+                // keyboard's show/hide animation, but a transform is
+                // compositor-only and tracks visualViewport resizes immediately.
+                transform: keyboardInset ? `translateY(-${keyboardInset}px)` : undefined,
                 maxHeight: `calc(100dvh - ${keyboardInset}px)`,
                 ...style,
               }
