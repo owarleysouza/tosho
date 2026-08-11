@@ -736,19 +736,19 @@ Dentro do template:
 
 ```css
 /* Cores principais */
---green-900: #085041;   /* hero, sidebar, topbar */
---green-700: #0F6E56;   /* botões primários, ícones, quantidade */
---green-500: #1D9E75;   /* badge em progresso, ícones secundários, barra progresso */
---green-300: #5DCAA5;   /* textos no hero, subtítulos */
---green-200: #9FE1CB;   /* bordas, ícones terciários */
---green-100: #C8EBE0;   /* bordas suaves, separadores */
---green-50:  #EDF7F3;   /* fundos de cards selecionados, badges pendente */
---green-25:  #F7FBF9;   /* fundo de inputs, chips inativos */
+--teal-900: #084350;   /* hero, sidebar, topbar */
+--teal-700: #0F5D6E;   /* botões primários, ícones, quantidade */
+--teal-500: #1D869E;   /* badge em progresso, ícones secundários, barra progresso */
+--teal-300: #5DB6CA;   /* textos no hero, subtítulos */
+--teal-200: #9FD5E1;   /* bordas, ícones terciários */
+--teal-100: #C8E5EB;   /* bordas suaves, separadores */
+--teal-50:  #EDF5F7;   /* fundos de cards selecionados, badges pendente */
+--teal-25:  #F7FAFB;   /* fundo de inputs, chips inativos */
 
 /* Textos */
 --text-primary:   #0D2B22;   /* nomes de itens, títulos */
---text-secondary: #3D6B5A;   /* meta info, labels, descrições */
---text-tertiary:  #5D8A7A;   /* placeholders, textos de apoio */
+--text-secondary: #3D626B;   /* meta info, labels, descrições */
+--text-tertiary:  #5D828A;   /* placeholders, textos de apoio */
 
 /* Superfícies */
 --surface-white: #FFFFFF;    /* cards de itens, modais */
@@ -1073,7 +1073,7 @@ Os prints do protótipo de cada tela estão na pasta `/design` na raiz do projet
 
 > **Regra de ouro:** nunca criar do zero um componente que o shadcn já oferece. Tematizar e usar.
 >
-> Corolário: nunca sobrescrever cores com classes utilitárias em cada uso (`className="bg-[#0F6E56]"`). Se a cor está certa nos tokens, o componente já nasce certo. Sobrescrita é sinal de que a tematização está incompleta.
+> Corolário: nunca sobrescrever cores com classes utilitárias em cada uso (`className="bg-[#0F5D6E]"`). Se a cor está certa nos tokens, o componente já nasce certo. Sobrescrita é sinal de que a tematização está incompleta.
 
 ### Verificações antes de começar
 
@@ -1096,29 +1096,29 @@ Substituir o bloco de tokens existente no arquivo de CSS global:
   --foreground: 162 53.6% 11%;          /* #0D2B22 — text-primary */
 
   /* Primário — botões, ações principais */
-  --primary: 164.8 76% 24.5%;           /* #0F6E56 */
-  --primary-foreground: 159 50% 92.2%;  /* #E1F5EE */
+  --primary: 191 76% 24.5%;             /* #0F5D6E */
+  --primary-foreground: 191 50% 92.2%;  /* #E1F1F5 */
 
   /* Secundário — superfícies suaves, cards selecionados */
-  --secondary: 156 38.5% 94.9%;         /* #EDF7F3 — green-50 */
-  --secondary-foreground: 167.5 81.8% 17.3%; /* #085041 */
+  --secondary: 191 38.5% 94.9%;         /* #EDF5F7 — teal-50 */
+  --secondary-foreground: 191 81.8% 17.3%; /* #084350 */
 
   /* Muted — inputs, chips inativos, textos de apoio */
-  --muted: 150 33.3% 97.6%;             /* #F7FBF9 — green-25 */
-  --muted-foreground: 157.8 27.4% 32.9%; /* #3D6B5A — text-secondary */
+  --muted: 191 33.3% 97.6%;             /* #F7FAFB — teal-25 */
+  --muted-foreground: 191 27.4% 32.9%;  /* #3D626B — text-secondary */
 
   /* Accent — hover states, destaques */
-  --accent: 156 38.5% 94.9%;            /* #EDF7F3 */
-  --accent-foreground: 167.5 81.8% 17.3%; /* #085041 */
+  --accent: 191 38.5% 94.9%;            /* #EDF5F7 */
+  --accent-foreground: 191 81.8% 17.3%; /* #084350 */
 
   /* Destructive — exclusões */
   --destructive: 0 72.2% 50.6%;         /* #DC2626 */
   --destructive-foreground: 0 0% 100%;
 
   /* Bordas e inputs */
-  --border: 161.1 46.7% 85.3%;          /* #C8EBE0 — green-100 */
-  --input: 161.1 46.7% 85.3%;           /* #C8EBE0 */
-  --ring: 160.9 69% 36.7%;              /* #1D9E75 — focus ring */
+  --border: 191 46.7% 85.3%;            /* #C8E5EB — teal-100 */
+  --input: 191 46.7% 85.3%;             /* #C8E5EB */
+  --ring: 191 69% 36.7%;                /* #1D869E — focus ring */
 
   /* Cards */
   --card: 0 0% 100%;
@@ -1138,22 +1138,22 @@ Substituir o bloco de tokens existente no arquivo de CSS global:
 :root {
   /* ... tokens acima ... */
 
-  /* ToSho — escala verde completa */
-  --tosho-900: 167.5 81.8% 17.3%;  /* #085041 — hero, topbar */
-  --tosho-700: 164.8 76% 24.5%;    /* #0F6E56 — botões */
-  --tosho-500: 160.9 69% 36.7%;    /* #1D9E75 — badge, progresso, aba ativa */
-  --tosho-300: 159.6 50.7% 57.8%;  /* #5DCAA5 — texto no hero */
-  --tosho-200: 160 52.4% 75.3%;    /* #9FE1CB — ícones terciários */
-  --tosho-100: 161.1 46.7% 85.3%;  /* #C8EBE0 — bordas */
-  --tosho-50:  156 38.5% 94.9%;    /* #EDF7F3 — superfícies */
-  --tosho-25:  150 33.3% 97.6%;    /* #F7FBF9 — inputs */
+  /* ToSho — escala teal completa */
+  --tosho-900: 191 81.8% 17.3%;  /* #084350 — hero, topbar */
+  --tosho-700: 191 76% 24.5%;    /* #0F5D6E — botões */
+  --tosho-500: 191 69% 36.7%;    /* #1D869E — badge, progresso, aba ativa */
+  --tosho-300: 191 50.7% 57.8%;  /* #5DB6CA — texto no hero */
+  --tosho-200: 191 52.4% 75.3%;  /* #9FD5E1 — ícones terciários */
+  --tosho-100: 191 46.7% 85.3%;  /* #C8E5EB — bordas */
+  --tosho-50:  191 38.5% 94.9%;  /* #EDF5F7 — superfícies */
+  --tosho-25:  191 33.3% 97.6%;  /* #F7FAFB — inputs */
 
-  --tosho-hero-fg: 159 50% 92.2%;  /* #E1F5EE — texto sobre verde escuro */
-  --tosho-text-3:  158.7 19.5% 45.3%; /* #5D8A7A — placeholders */
+  --tosho-hero-fg: 191 50% 92.2%;  /* #E1F1F5 — texto sobre teal escuro */
+  --tosho-text-3:  191 19.5% 45.3%; /* #5D828A — placeholders */
 }
 ```
 
-> **Tailwind v4:** os tokens custom vão em `@theme` em vez de `:root`, no formato `--color-tosho-900: hsl(167.5 81.8% 17.3%)`. Confirmar a versão antes de escrever.
+> **Tailwind v4:** os tokens custom vão em `@theme` em vez de `:root`, no formato `--color-tosho-900: hsl(191 81.8% 17.3%)`. Confirmar a versão antes de escrever.
 
 ---
 
@@ -1190,7 +1190,7 @@ Específicos demais para virarem componente de biblioteca. Implementar em `compo
 - **Card de item** — checkbox + info + ações, com estados pendente/concluído
 - **FAB expansível** — botão + pills "Por template" / "Por texto livre"
 - **Bottom nav** (mobile) e **Topbar** (desktop)
-- **Barra de progresso do hero** — `Progress` do shadcn é uma opção, mas o visual sobre fundo verde escuro pode não valer o esforço de tematizar. Avaliar.
+- **Barra de progresso do hero** — `Progress` do shadcn é uma opção, mas o visual sobre fundo teal escuro pode não valer o esforço de tematizar. Avaliar.
 
 ---
 
@@ -1218,53 +1218,53 @@ As especificações abaixo descrevem os valores exatos de cada elemento. Onde ho
 
 ### Topbar (desktop)
 ```
-bg: #085041
+bg: #084350
 height: 52px
 padding: 0 32px
 layout: flex, items-center, gap-8
 
-Logo: ícone shopping-cart (#5DCAA5) + texto "ToSho" (16px, 500, #E1F5EE)
+Logo: ícone shopping-cart (#5DB6CA) + texto "ToSho" (16px, 500, #E1F1F5)
 
 Nav items: flex, gap-1
-  - Default: text 13px #9FE1CB, padding 8px 14px, rounded-lg
-  - Active:  bg rgba(255,255,255,0.12), text #E1F5EE
+  - Default: text 13px #9FD5E1, padding 8px 14px, rounded-lg
+  - Active:  bg rgba(255,255,255,0.12), text #E1F1F5
 
-Avatar: 30px, rounded-full, bg #1D9E75, texto 12px 500 #E1F5EE
-Username: 13px #9FE1CB
+Avatar: 30px, rounded-full, bg #1D869E, texto 12px 500 #E1F1F5
+Username: 13px #9FD5E1
 ```
 
 ### Bottom nav (mobile)
 ```
 bg: #FFFFFF
-border-top: 0.5px solid #C8EBE0
+border-top: 0.5px solid #C8E5EB
 padding: 6px 0 8px
 
 Nav items: flex, flex-1, flex-col, items-center, gap-1, padding 4px 0
-  - Default: text 10px #5D8A7A, ícone 22px
-  - Active:  text/ícone #085041 + pip (4px circle bg #085041 abaixo do label)
+  - Default: text 10px #5D828A, ícone 22px
+  - Active:  text/ícone #084350 + pip (4px circle bg #084350 abaixo do label)
 ```
 
 ---
 
 ### Hero da compra ativa
 ```
-bg: #085041
+bg: #084350
 padding: 20px 20px 0 (mobile) | 24px 32px 0 (desktop)
 
-Nome da compra: 20-22px, 500, #E1F5EE
-Meta (data/hora): 12-13px, #E1F5EE, margin-top 3px
-Badge de status: bg #1D9E75, text #E1F5EE, 11px 500, padding 4px 10-12px, rounded-full
+Nome da compra: 20-22px, 500, #E1F1F5
+Meta (data/hora): 12-13px, #E1F1F5, margin-top 3px
+Badge de status: bg #1D869E, text #E1F1F5, 11px 500, padding 4px 10-12px, rounded-full
 
 Barra de progresso:
-  - Label "Progresso": 11px #E1F5EE
-  - Valor "X de Y itens": 11px 500 #E1F5EE
+  - Label "Progresso": 11px #E1F1F5
+  - Valor "X de Y itens": 11px 500 #E1F1F5
   - Track: height 5px, bg rgba(255,255,255,0.15), rounded
-  - Fill:  height 5px, bg #1D9E75, rounded
+  - Fill:  height 5px, bg #1D869E, rounded
 
 Abas Lista/Carrinho (mobile apenas):
   - Container: flex, margin-top 16px
   - Default: text 13px rgba(255,255,255,0.4), border-bottom 2.5px transparent
-  - Active:  text #1D9E75, font 500, border-bottom 2.5px #1D9E75
+  - Active:  text #1D869E, font 500, border-bottom 2.5px #1D869E
 ```
 
 ---
@@ -1276,7 +1276,7 @@ Abas Lista/Carrinho (mobile apenas):
 ```
 Card:
   bg: #FFFFFF
-  border: 0.5px solid #C8EBE0
+  border: 0.5px solid #C8E5EB
   border-radius: 12px
   layout: flex, items-stretch (não items-center — a faixa do checkbox estica
     para ocupar a altura inteira do card)
@@ -1284,33 +1284,33 @@ Card:
 
 Faixa do checkbox (lado esquerdo, full-height):
   width: 52px (mobile) | 54px (desktop)
-  bg: #F7FBF9
-  border-right: 0.5px solid #C8EBE0
+  bg: #F7FAFB
+  border-right: 0.5px solid #C8E5EB
   layout: flex, items-center, justify-center
   flex-shrink: 0
 
 Checkbox (dentro da faixa):
   size: 26x26px
   border-radius: 8px
-  Default: bg #EDF7F3, border 1.5px #1D9E75
-  Marcado (carrinho): bg #0F6E56, border #0F6E56, check-icon 15px #E1F5EE
+  Default: bg #EDF5F7, border 1.5px #1D869E
+  Marcado (carrinho): bg #0F5D6E, border #0F5D6E, check-icon 15px #E1F1F5
 
 Conteúdo (flex-1, min-width: 0):
   padding: 11px 13px (mobile) | 12px 14px (desktop)
   Nome: 14px, 500, #0D2B22
-  Nome concluído (carrinho): 14px, 500, #1D9E75, line-through
+  Nome concluído (carrinho): 14px, 500, #1D869E, line-through
   Metadados — LINHA ÚNICA, quantidade + descrição separadas por " · ":
-    12px, #5D8A7A
+    12px, #5D828A
     ex: "1 pacote · Zero lactose"
     Se não houver descrição, mostra só a quantidade, sem o separador
     Quebra para 2 linhas naturalmente se o conteúdo não couber — não trunca
-  Metadados concluído (carrinho): #1D9E75
+  Metadados concluído (carrinho): #1D869E
 
 Ações (lado direito):
   padding: 0 14px (mobile) | 0 16px (desktop)
   layout: flex, items-center, gap-14px (mobile) | gap-16px (desktop)
-  Lista — editar + excluir: ícones 17px, #1D9E75
-  Carrinho — desfazer: ícone 16-17px, #1D9E75 (substitui editar/excluir)
+  Lista — editar + excluir: ícones 17px, #1D869E
+  Carrinho — desfazer: ícone 16-17px, #1D869E (substitui editar/excluir)
 
 Espaçamento entre cards: 8-9px
 ```
@@ -1325,7 +1325,7 @@ Espaçamento entre cards: 8-9px
 ```
 font-size: 11px
 font-weight: 500
-color: #3D6B5A
+color: #3D626B
 text-transform: uppercase
 letter-spacing: 0.5px
 margin-bottom: 8px
@@ -1339,8 +1339,8 @@ margin-top: 4px (quando não é o primeiro grupo)
 layout: flex, gap-6px, overflow-x auto (mobile) | flex-wrap (desktop)
 padding-bottom: 16px
 
-Chip default: bg #F7FBF9, text #3D6B5A, border 0.5px #C8EBE0, 12px 500, padding 5px 12-14px, rounded-full
-Chip ativo:   bg #085041, text #E1F5EE, sem border, mesmas dimensões
+Chip default: bg #F7FAFB, text #3D626B, border 0.5px #C8E5EB, 12px 500, padding 5px 12-14px, rounded-full
+Chip ativo:   bg #084350, text #E1F1F5, sem border, mesmas dimensões
 ```
 
 ---
@@ -1348,14 +1348,14 @@ Chip ativo:   bg #085041, text #E1F5EE, sem border, mesmas dimensões
 ### Campo de busca
 ```
 layout: flex, items-center, gap-8px
-bg: #F7FBF9
-border: 0.5px solid #C8EBE0
+bg: #F7FAFB
+border: 0.5px solid #C8E5EB
 border-radius: 12px
 padding: 10px 14px
 margin-bottom: 14px
 
-Ícone search: 17px, #1D9E75
-Placeholder: 13px, #5D8A7A
+Ícone search: 17px, #1D869E
+Placeholder: 13px, #5D828A
 ```
 
 ---
@@ -1364,22 +1364,22 @@ Placeholder: 13px, #5D8A7A
 ```
 layout: flex, justify-end, items-center, gap-8px
 padding: 12px 20px 14px
-border-top: 0.5px solid #C8EBE0
+border-top: 0.5px solid #C8E5EB
 bg: #FFFFFF
 
 Pills (Por template / Por texto livre):
-  bg: #F7FBF9
-  border: 0.5px solid #C8EBE0
+  bg: #F7FAFB
+  border: 0.5px solid #C8E5EB
   padding: 10px 16px
   border-radius: 20px
-  font: 12px 500 #085041
+  font: 12px 500 #084350
   white-space: nowrap
 
 Círculo principal (+/x):
   size: 44px
   border-radius: 50%
-  bg: #0F6E56
-  ícone: 20px #E1F5EE
+  bg: #0F5D6E
+  ícone: 20px #E1F1F5
 ```
 
 ---
@@ -1387,48 +1387,48 @@ Círculo principal (+/x):
 ### Botões (geral)
 ```
 Primário (solid):
-  bg: #0F6E56
-  text: #E1F5EE, 14px, 500
+  bg: #0F5D6E
+  text: #E1F1F5, 14px, 500
   padding: 13-14px
   border-radius: 12px
   width: 100% (em modais e formulários)
 
 Primário pequeno (pill):
-  bg: #0F6E56
-  text: #E1F5EE, 12px, 500
+  bg: #0F5D6E
+  text: #E1F1F5, 12px, 500
   padding: 7px 14px
   border-radius: 20px
 
 Secundário (outline):
   bg: #FFFFFF
-  border: 0.5px solid #C8EBE0
-  text: #085041, 14px
+  border: 0.5px solid #C8E5EB
+  text: #084350, 14px
   padding: 13px
   border-radius: 12px
   width: 100%
 
 Google OAuth:
-  igual ao secundário + ícone Google (#0F6E56) à esquerda
+  igual ao secundário + ícone Google (#0F5D6E) à esquerda
 ```
 
 ---
 
 ### Inputs de formulário
 ```
-bg: #F7FBF9
-border: 0.5px solid #C8EBE0
+bg: #F7FAFB
+border: 0.5px solid #C8E5EB
 border-radius: 12px
 padding: 12px 14px 12px 40px (com ícone) | 12px 14px (sem ícone)
-font: 14px, #085041
+font: 14px, #084350
 
 Label acima do input:
-  font: 11px, 500, #0F6E56
+  font: 11px, 500, #0F5D6E
   text-transform: uppercase
   letter-spacing: 0.4px
   margin-bottom: 6px
 
-Ícone prefixo: 17px #1D9E75, posição absoluta left 13px
-Ícone sufixo (olho): 17px #1D9E75, posição absoluta right 13px
+Ícone prefixo: 17px #1D869E, posição absoluta left 13px
+Ícone sufixo (olho): 17px #1D869E, posição absoluta right 13px
 
 Erro inline: 12px, vermelho (use red-500 do Tailwind), margin-top 4px
 ```
@@ -1438,27 +1438,27 @@ Erro inline: 12px, vermelho (use red-500 do Tailwind), margin-top 4px
 ### Cards de compra/template (gerenciador)
 ```
 bg: #FFFFFF
-border: 0.5px solid #C8EBE0
+border: 0.5px solid #C8E5EB
 border-radius: 14px
 padding: 14px
 layout: flex, items-center, gap-12px
 
 Estado em progresso:
-  border: 0.5px solid #0F6E56
-  bg: #EDF7F3
+  border: 0.5px solid #0F5D6E
+  bg: #EDF5F7
 
 Ícone container: 40px, border-radius 11px
-  Default:      bg #F7FBF9, ícone #5D8A7A
-  Em progresso: bg #1D9E75, ícone #E1F5EE
-  Pendente:     bg #EDF7F3, ícone #0F6E56
+  Default:      bg #F7FAFB, ícone #5D828A
+  Em progresso: bg #1D869E, ícone #E1F1F5
+  Pendente:     bg #EDF5F7, ícone #0F5D6E
 
 Nome: 14px, 500, #0D2B22
-Meta: 12px, #3D6B5A, margin-top 2px
+Meta: 12px, #3D626B, margin-top 2px
 
 Badges de status:
-  Em progresso: bg #1D9E75, text #E1F5EE
-  Pendente:     bg #EDF7F3, text #085041
-  Concluída:    bg #F7FBF9, text #3D6B5A, border 0.5px #C8EBE0
+  Em progresso: bg #1D869E, text #E1F1F5
+  Pendente:     bg #EDF5F7, text #084350
+  Concluída:    bg #F7FAFB, text #3D626B, border 0.5px #C8E5EB
   font: 11px, 500, padding 4px 10px, rounded-full
 ```
 
@@ -1468,7 +1468,7 @@ Badges de status:
 ```
 position: fixed, bottom 24px, left 50%, transform translateX(-50%)
 bg: #0D2B22
-text: #E1F5EE, 13px
+text: #E1F1F5, 13px
 padding: 12px 16px
 border-radius: 12px
 layout: flex, items-center, gap-16px
@@ -1476,7 +1476,7 @@ z-index: 50
 duração: 5 segundos, some com fade-out
 
 Botão "Desfazer":
-  text: #1D9E75, 13px, 500
+  text: #1D869E, 13px, 500
   sem bg, sem border
 ```
 
@@ -1492,10 +1492,10 @@ Modal (mobile — bottom sheet):
   padding: 0 0 28px
   position: fixed bottom-0 left-0 right-0
 
-  Handle: 36x4px, bg #C8EBE0, rounded, margin 14px auto 18px
-  Header: padding 0 20px 16px, border-bottom 0.5px #C8EBE0
-    Título: 15px, 500, #085041
-    Botão X: ícone 20px #5D8A7A
+  Handle: 36x4px, bg #C8E5EB, rounded, margin 14px auto 18px
+  Header: padding 0 20px 16px, border-bottom 0.5px #C8E5EB
+    Título: 15px, 500, #084350
+    Botão X: ícone 20px #5D828A
 
 Modal (desktop — centralizado):
   bg: #FFFFFF
@@ -1514,11 +1514,11 @@ Modal (desktop — centralizado):
 Layout: flex-col
 
 Bloco superior (hero):
-  bg: #085041
+  bg: #084350
   padding: 48px 28px 32px
-  Eyebrow: 11px, 500, #5DCAA5, uppercase, letter-spacing 1px
-  Título: 28px, 500, #E1F5EE, line-height 1.2
-  Subtítulo: 13px, #5DCAA5, margin-top 4px
+  Eyebrow: 11px, 500, #5DB6CA, uppercase, letter-spacing 1px
+  Título: 28px, 500, #E1F1F5, line-height 1.2
+  Subtítulo: 13px, #5DB6CA, margin-top 4px
 
 Sheet inferior (formulário):
   bg: #FFFFFF
@@ -1532,7 +1532,7 @@ Layout: flex, min-height 100vh
 
 Coluna esquerda (hero):
   width: 360px
-  bg: #085041
+  bg: #084350
   padding: 48px 40px
   justify-content: center
   Logo + eyebrow + título + subtítulo
