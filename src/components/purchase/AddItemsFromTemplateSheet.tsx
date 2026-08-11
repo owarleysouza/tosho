@@ -173,33 +173,12 @@ const AddItemsFromTemplateSheet: React.FC<AddItemsFromTemplateSheetProps> = ({
   async function handleAddItems() {
     if (!userUid) return;
 
+    // Duplicates are disabled and never checked to begin with (each row
+    // already says "Já está na compra" inline), so there's no attempted
+    // add to report on for them — only itemsToAdd, what the user actually
+    // checked, matters here.
     const itemsToAdd = templateItems.filter((item) => checkedItemIds.has(item.uid));
-
-    // RN-17 — items skipped because they were already in the purchase
-    // (never enter checkedItemIds, so they can't be in itemsToAdd) still
-    // get the same "heads up" toast the free-text flow (HU-07) uses,
-    // instead of just quietly not mentioning them.
-    const duplicateNames = templateItems
-      .filter((item) => !nonDuplicateIds.has(item.uid))
-      .map((item) => item.name);
-
-    function notifyDuplicates() {
-      if (!duplicateNames.length) return;
-      toast({
-        variant: 'warning',
-        title: 'Já estava na compra',
-        description:
-          duplicateNames.length === 1
-            ? `"${duplicateNames[0]}" já estava na lista ou no carrinho e não foi adicionado de novo.`
-            : `Já estavam na lista ou no carrinho e não foram adicionados de novo: ${duplicateNames.join(', ')}.`,
-      });
-    }
-
-    if (!itemsToAdd.length) {
-      notifyDuplicates();
-      onOpenChange(false);
-      return;
-    }
+    if (!itemsToAdd.length) return;
 
     try {
       setSubmitting(true);
@@ -217,7 +196,6 @@ const AddItemsFromTemplateSheet: React.FC<AddItemsFromTemplateSheetProps> = ({
       const addedProducts = await addProductsToShop(userUid, shopUid, productsToAdd);
 
       onItemsAdded(addedProducts);
-      notifyDuplicates();
       onOpenChange(false);
 
       toast({
@@ -375,7 +353,11 @@ const AddItemsFromTemplateSheet: React.FC<AddItemsFromTemplateSheetProps> = ({
                 >
                   <Checkbox
                     id={`add-item-${item.uid}`}
-                    checked={isDuplicate || checkedItemIds.has(item.uid)}
+                    // Duplicates never enter checkedItemIds (see
+                    // goToItemsStep) — they can't be added regardless, so
+                    // showing them checked just makes it look like an add
+                    // was attempted and failed, when it was never tried.
+                    checked={checkedItemIds.has(item.uid)}
                     disabled={isDuplicate}
                     onCheckedChange={() => toggleItem(item.uid)}
                     className="h-4 w-4 shrink-0 rounded-[4px]"
@@ -396,7 +378,7 @@ const AddItemsFromTemplateSheet: React.FC<AddItemsFromTemplateSheetProps> = ({
           </div>
 
           <Button
-            disabled={submitting}
+            disabled={submitting || checkedItemIds.size === 0}
             onClick={handleAddItems}
             className="mt-4 w-full rounded-full"
           >
