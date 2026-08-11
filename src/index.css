@@ -15,42 +15,42 @@
       --popover-foreground: 162 53.6% 11%;
 
       /* Primário — botões, ações principais */
-      --primary: 164.8 76% 24.5%;           /* #0F6E56 */
-      --primary-foreground: 159 50% 92.2%;  /* #E1F5EE */
+      --primary: 191 76% 24.5%;
+      --primary-foreground: 191 50% 92.2%;
 
       /* Secundário — superfícies suaves, cards selecionados */
-      --secondary: 156 38.5% 94.9%;         /* #EDF7F3 — green-50 */
-      --secondary-foreground: 167.5 81.8% 17.3%; /* #085041 */
+      --secondary: 191 38.5% 94.9%;
+      --secondary-foreground: 191 81.8% 17.3%;
 
       /* Muted — inputs, chips inativos, textos de apoio */
-      --muted: 150 33.3% 97.6%;             /* #F7FBF9 — green-25 */
-      --muted-foreground: 157.8 27.4% 32.9%; /* #3D6B5A — text-secondary */
+      --muted: 191 33.3% 97.6%;
+      --muted-foreground: 191 27.4% 32.9%;
 
       /* Accent — hover states, destaques */
-      --accent: 156 38.5% 94.9%;            /* #EDF7F3 */
-      --accent-foreground: 167.5 81.8% 17.3%; /* #085041 */
+      --accent: 191 38.5% 94.9%;
+      --accent-foreground: 191 81.8% 17.3%;
 
       /* Destructive — exclusões */
       --destructive: 0 72.2% 50.6%;         /* #DC2626 */
       --destructive-foreground: 0 0% 100%;
 
       /* Bordas e inputs */
-      --border: 161.1 46.7% 85.3%;          /* #C8EBE0 — green-100 */
-      --input: 161.1 46.7% 85.3%;           /* #C8EBE0 */
-      --ring: 160.9 69% 36.7%;              /* #1D9E75 — focus ring */
+      --border: 191 46.7% 85.3%;
+      --input: 191 46.7% 85.3%;
+      --ring: 191 69% 36.7%;
 
-      /* ToSho — escala verde completa */
-      --tosho-900: 167.5 81.8% 17.3%;  /* #085041 — hero, topbar */
-      --tosho-700: 164.8 76% 24.5%;    /* #0F6E56 — botões */
-      --tosho-500: 160.9 69% 36.7%;    /* #1D9E75 — badge, progresso, aba ativa */
-      --tosho-300: 159.6 50.7% 57.8%;  /* #5DCAA5 — texto no hero */
-      --tosho-200: 160 52.4% 75.3%;    /* #9FE1CB — ícones terciários */
-      --tosho-100: 161.1 46.7% 85.3%;  /* #C8EBE0 — bordas */
-      --tosho-50:  156 38.5% 94.9%;    /* #EDF7F3 — superfícies */
-      --tosho-25:  150 33.3% 97.6%;    /* #F7FBF9 — inputs */
+      /* ToSho — escala teal completa */
+      --tosho-900: 191 81.8% 17.3%;  /* hero, topbar */
+      --tosho-700: 191 76% 24.5%;    /* botões */
+      --tosho-500: 191 69% 36.7%;    /* badge, progresso, aba ativa */
+      --tosho-300: 191 50.7% 57.8%;  /* texto no hero */
+      --tosho-200: 191 52.4% 75.3%;  /* ícones terciários */
+      --tosho-100: 191 46.7% 85.3%;  /* bordas */
+      --tosho-50:  191 38.5% 94.9%;  /* superfícies */
+      --tosho-25:  191 33.3% 97.6%;  /* inputs */
 
-      --tosho-hero-fg: 159 50% 92.2%;  /* #E1F5EE — texto sobre verde escuro */
-      --tosho-text-3:  158.7 19.5% 45.3%; /* #5D8A7A — placeholders */
+      --tosho-hero-fg: 191 50% 92.2%;  /* texto sobre fundo escuro */
+      --tosho-text-3:  191 19.5% 45.3%; /* placeholders */
 
       --radius: 0.75rem;                    /* 12px — base do design system */
     }
