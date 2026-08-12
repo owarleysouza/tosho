@@ -610,7 +610,7 @@ const ShopFormDialog: React.FC<ShopFormDialogProps> = ({
       {!isControlled && (
         <DrawerTrigger asChild>{trigger ?? defaultTrigger}</DrawerTrigger>
       )}
-      <DrawerContent>
+      <DrawerContent onInteractOutside={(e) => e.preventDefault()}>
         <DrawerHeader className="text-left">
           <DrawerTitle>{titleContent}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>

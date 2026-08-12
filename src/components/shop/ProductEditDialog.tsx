@@ -7,13 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import ItemEditFormFields from '@/components/form/ItemEditFormFields';
@@ -26,7 +19,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { UserContext } from '@/context/commom/UserContext';
 import { useToast } from '@/components/ui/use-toast';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -63,7 +55,6 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
 }) => {
   const { user } = useContext(UserContext);
   const { toast } = useToast();
-  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const currentShop = useSelector((state: RootState) => state.shop.currentShop);
   const currentShopPendingProducts = useSelector(
@@ -180,35 +171,36 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({
     </Form>
   );
 
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="w-[380px]"
-          onInteractOutside={(e) => {
-            e.preventDefault();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>Editar item</DialogTitle>
-            <DialogDescription>Atualize os dados do item.</DialogDescription>
-          </DialogHeader>
-          {formContent}
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
+  // Same centered Dialog on every viewport now — no mobile bottom Drawer.
+  // vaul's swipe-to-dismiss reads the panel's own `transform` to detect
+  // drags, which collided with any keyboard-avoidance positioning we tried
+  // driving through CSS (transform *or* bottom, depending on the browser's
+  // interactive-widget handling), closing the drawer on an ordinary tap
+  // between fields. The plain Dialog has none of that machinery.
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Editar item</DrawerTitle>
-          <DrawerDescription>Atualize os dados do item.</DrawerDescription>
-        </DrawerHeader>
-        <div className="px-4 pb-6">{formContent}</div>
-      </DrawerContent>
-    </Drawer>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        // max-h/overflow — Dialog doesn't reserve space for the on-screen
+        // keyboard the way the old Drawer tried to, so on a short mobile
+        // viewport with the keyboard up, capping height and scrolling
+        // internally keeps every field reachable instead of letting the
+        // panel run off-screen with no way to scroll to it.
+        // rounded-lg unprefixed — the base class is `sm:rounded-lg` only,
+        // meant for a Dialog that only ever showed at the sm breakpoint and
+        // up; this one now also renders on narrow phones, where it'd
+        // otherwise have square corners.
+        className="w-[calc(100%-2rem)] max-w-[380px] max-h-[85vh] overflow-x-hidden overflow-y-auto rounded-lg"
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Editar item</DialogTitle>
+          <DialogDescription>Atualize os dados do item.</DialogDescription>
+        </DialogHeader>
+        {formContent}
+      </DialogContent>
+    </Dialog>
   );
 };
 

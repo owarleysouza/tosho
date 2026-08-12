@@ -6,14 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
 
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -42,7 +34,6 @@ import type { TemplateCardData } from "@/components/templates/TemplateCard"
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '@/context/commom/UserContext'
 import { useToast } from "@/components/ui/use-toast"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 
 interface TemplateFormDialogProps {
@@ -85,8 +76,6 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen ?? internalOpen
   const setOpen = setControlledOpen ?? setInternalOpen
-
-  const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const { user } = useContext(UserContext)
   const { toast } = useToast()
@@ -197,7 +186,14 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
                   onValueChange={(value) => {
                     if (value) field.onChange(value)
                   }}
-                  className="justify-between gap-1.5"
+                  // flex-wrap — 7 fixed 36px icons plus gaps (~288px) don't
+                  // fit in the ~240px of content width a narrow phone leaves
+                  // inside this dialog's padding; without wrapping they just
+                  // overflowed the dialog horizontally instead of wrapping
+                  // to a second row. justify-start (overriding the base
+                  // component's justify-center) so icons pack left with a
+                  // fixed gap instead of stretching to fill each row.
+                  className="flex-wrap justify-start gap-2"
                 >
                   {TEMPLATE_ICONS.map(({ key, icon: Icon }) => (
                     <ToggleGroupItem
@@ -233,41 +229,26 @@ const TemplateFormDialog: React.FC<TemplateFormDialogProps> = ({
     ? "Atualize o nome ou a descrição do template."
     : "Crie um modelo reutilizável para compras futuras."
 
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        {!isControlled && (
-          <DialogTrigger asChild>{trigger ?? defaultTrigger}</DialogTrigger>
-        )}
-        <DialogContent
-          className="w-[400px]"
-          onInteractOutside={(e) => { e.preventDefault() }}
-        >
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
-          {formContent}
-        </DialogContent>
-      </Dialog>
-    )
-  }
-
+  // Same centered Dialog on every viewport now — see ProductEditDialog for
+  // why the mobile bottom Drawer was dropped (vaul's swipe-to-dismiss kept
+  // misreading our keyboard-avoidance positioning as a drag and closing on
+  // an ordinary tap between fields).
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       {!isControlled && (
-        <DrawerTrigger asChild>{trigger ?? defaultTrigger}</DrawerTrigger>
+        <DialogTrigger asChild>{trigger ?? defaultTrigger}</DialogTrigger>
       )}
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>{title}</DrawerTitle>
-          <DrawerDescription>{description}</DrawerDescription>
-        </DrawerHeader>
-        <div className="px-4 pb-6">
-          {formContent}
-        </div>
-      </DrawerContent>
-    </Drawer>
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-[400px] max-h-[85vh] overflow-x-hidden overflow-y-auto rounded-lg"
+        onInteractOutside={(e) => { e.preventDefault() }}
+      >
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        {formContent}
+      </DialogContent>
+    </Dialog>
   )
 }
 

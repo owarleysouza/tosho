@@ -7,13 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import ItemEditFormFields from '@/components/form/ItemEditFormFields';
@@ -26,7 +19,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { UserContext } from '@/context/commom/UserContext';
 import { useToast } from '@/components/ui/use-toast';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -72,7 +64,6 @@ const TemplateItemEditDialog: React.FC<TemplateItemEditDialogProps> = ({
 }) => {
   const { user } = useContext(UserContext);
   const { toast } = useToast();
-  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const [loading, setLoading] = useState(false);
 
@@ -159,35 +150,25 @@ const TemplateItemEditDialog: React.FC<TemplateItemEditDialogProps> = ({
     </Form>
   );
 
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="w-[380px]"
-          onInteractOutside={(e) => {
-            e.preventDefault();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>Editar item</DialogTitle>
-            <DialogDescription>Atualize os dados do item.</DialogDescription>
-          </DialogHeader>
-          {formContent}
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
+  // Same centered Dialog on every viewport now — see ProductEditDialog for
+  // why the mobile bottom Drawer was dropped (vaul's swipe-to-dismiss kept
+  // misreading our keyboard-avoidance positioning as a drag and closing on
+  // an ordinary tap between fields).
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Editar item</DrawerTitle>
-          <DrawerDescription>Atualize os dados do item.</DrawerDescription>
-        </DrawerHeader>
-        <div className="px-4 pb-6">{formContent}</div>
-      </DrawerContent>
-    </Drawer>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-[380px] max-h-[85vh] overflow-x-hidden overflow-y-auto rounded-lg"
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Editar item</DialogTitle>
+          <DialogDescription>Atualize os dados do item.</DialogDescription>
+        </DialogHeader>
+        {formContent}
+      </DialogContent>
+    </Dialog>
   );
 };
 
