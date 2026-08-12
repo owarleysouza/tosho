@@ -27,12 +27,18 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border bg-background text-foreground",
+        // Same dark base as the RN-24 undo toast (section 11.2 spec) for
+        // default/success — one visual family instead of success
+        // borrowing an unrelated Tailwind color (green-500) that had
+        // nothing to do with the ToSho palette. destructive and warning
+        // stay as their own full-color, unmissable treatment — same
+        // reasoning as destructive already had: a "pay attention" toast
+        // needs to read as different at a glance, not just a tinted title.
+        default: "border-transparent bg-foreground text-tosho-hero-fg",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
-        success: "success group border-green-500 bg-green-500 text-neutral-50",
-        warning: "border-yellow-300 bg-yellow-50 text-yellow-900",
-        // RN-24 — item removal undo toast (section 11.2 spec).
+        success: "success group border-transparent bg-foreground text-tosho-hero-fg",
+        warning: "warning group border-yellow-300 bg-yellow-50 text-yellow-900",
         undo: "undo group border-transparent bg-foreground text-tosho-hero-fg",
       },
     },
@@ -79,7 +85,12 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
+      // Base assumes the dark bg most variants now share (text-foreground/50
+      // was for the old light default toast — near-invisible on
+      // bg-foreground). destructive and warning are their own light-icon
+      // and dark-icon exceptions, respectively, since they kept/reverted
+      // to a full-color light-ish background instead.
+      "absolute right-2 top-2 rounded-md p-1 text-tosho-hero-fg/60 opacity-0 transition-opacity hover:text-tosho-hero-fg focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 group-[.warning]:text-yellow-900/50 group-[.warning]:hover:text-yellow-900",
       className
     )}
     toast-close=""
@@ -96,7 +107,10 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold", className)}
+    className={cn(
+      "text-sm font-semibold group-[.success]:text-tosho-300",
+      className
+    )}
     {...props}
   />
 ))
