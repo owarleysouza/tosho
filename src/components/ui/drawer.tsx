@@ -98,14 +98,17 @@ const DrawerContent = React.forwardRef<
           className
         )}
         style={{
-          // transform instead of `bottom` — iOS Safari is known to lag or
-          // skip repainting `position: fixed` elements repositioned via a
-          // layout property (top/bottom/height) during the keyboard's
-          // show/hide animation, leaving the panel visually stuck at its
-          // pre-keyboard position (the "blank strip" the bottom-anchored
-          // box leaves behind). A transform is compositor-only and tracks
-          // the visualViewport resize events immediately.
-          transform: keyboardInset ? `translateY(-${keyboardInset}px)` : undefined,
+          // `bottom`, not `transform` — vaul's own swipe-to-dismiss reads
+          // the drawer's current `transform` (getTranslate) on every
+          // pointer release, anywhere inside the content, to decide how
+          // far it's been "dragged". Driving our own keyboard-avoidance
+          // offset through `transform` fed it a large fake drag distance
+          // the instant the keyboard was already open (e.g. tapping a
+          // second field right after the first) — comfortably past its
+          // close threshold, so it dismissed the drawer on an ordinary
+          // tap. `bottom` is a property vaul never touches, so there's no
+          // collision.
+          bottom: keyboardInset,
           maxHeight: `calc(96dvh - ${keyboardInset}px)`,
           ...style,
         }}

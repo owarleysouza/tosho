@@ -6,7 +6,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- interactive-widget=resizes-visual pins down how Chrome reacts to the
+         on-screen keyboard: only `visualViewport` shrinks, `window.innerHeight`
+         stays put. Without it the behavior is whatever that browser/version
+         defaults to — on some it's `resizes-content`, where innerHeight
+         shrinks right along with visualViewport, making our keyboard-inset
+         math (innerHeight - visualViewport.height) always come out ~0 and
+         silently disabling every bit of keyboard-avoidance code that depends
+         on it (see drawer.tsx/sheet.tsx's useVisualViewportInset usage). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual" />
     <title>ToSho</title>
   </head>
   <body>
