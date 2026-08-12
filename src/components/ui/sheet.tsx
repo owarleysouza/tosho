@@ -85,15 +85,25 @@ const SheetContent = React.forwardRef<
     }
   }, [keyboardInset])
 
+  // See drawer.tsx's DrawerContent for why this is useCallback and not an
+  // inline arrow function: an unstable ref identity makes React detach and
+  // reattach the DOM ref on every re-render, which was enough to make
+  // Radix's outside-click detection see focus moving between two fields
+  // as "left the sheet" and close it.
+  const setRefs = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node
+      if (typeof ref === "function") ref(node)
+      else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node
+    },
+    [ref]
+  )
+
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
-        ref={(node) => {
-          contentRef.current = node
-          if (typeof ref === "function") ref(node)
-          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node
-        }}
+        ref={setRefs}
         className={cn(
           sheetVariants({ side }),
           side === "bottom" && "w-full max-w-full overflow-x-hidden overflow-y-auto",

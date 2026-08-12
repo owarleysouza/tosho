@@ -73,15 +73,26 @@ const DrawerContent = React.forwardRef<
     }
   }, [keyboardInset])
 
+  // A new inline ref callback on every render (e.g. from react-hook-form
+  // re-rendering on each keystroke) makes React detach-then-reattach the
+  // DOM ref every time — vaul's outside-click/focus detection reads that
+  // ref, and finding it momentarily null while focus moves between two
+  // fields was enough to look like "focus left the drawer" and close it.
+  // useCallback keeps the function identity stable across re-renders.
+  const setRefs = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node
+      if (typeof ref === "function") ref(node)
+      else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node
+    },
+    [ref]
+  )
+
   return (
     <DrawerPortal>
       <DrawerOverlay />
       <DrawerPrimitive.Content
-        ref={(node) => {
-          contentRef.current = node
-          if (typeof ref === "function") ref(node)
-          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node
-        }}
+        ref={setRefs}
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[96dvh] flex-col overflow-y-auto rounded-t-[10px] border bg-background",
           className
