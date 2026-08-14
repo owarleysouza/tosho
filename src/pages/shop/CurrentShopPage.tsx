@@ -420,10 +420,14 @@ const CurrentShopPage: React.FC<ShopProps> = ({
         {!isDesktop && (
           <TabsList className="mt-4 grid h-auto w-full grid-cols-2 rounded-none bg-transparent p-0">
             <TabsTrigger value="list" className={tabTriggerClassName}>
-              Lista
+              {/* ml-1 instead of a plain text space — TabsTrigger is
+                  inline-flex, which turns "Lista " and this span into two
+                  separate flex items; a trailing space at the edge of a
+                  flex item's box gets collapsed away by the browser. */}
+              Lista<span className="ml-1 font-normal opacity-70">({currentShopPendingProducts.length})</span>
             </TabsTrigger>
             <TabsTrigger value="cart" className={tabTriggerClassName}>
-              Carrinho
+              Carrinho<span className="ml-1 font-normal opacity-70">({currentShopCartProducts.length})</span>
             </TabsTrigger>
           </TabsList>
         )}
