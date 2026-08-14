@@ -8,14 +8,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
@@ -23,7 +15,6 @@ import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { UserContext } from '@/context/commom/UserContext';
 import { useToast } from '@/components/ui/use-toast';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface DeleteTemplateDialogProps {
   templateUid: string;
@@ -40,7 +31,6 @@ const DeleteTemplateDialog: React.FC<DeleteTemplateDialogProps> = ({
 }) => {
   const { user } = useContext(UserContext);
   const { toast } = useToast();
-  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const [loading, setLoading] = useState(false);
 
@@ -112,32 +102,18 @@ const DeleteTemplateDialog: React.FC<DeleteTemplateDialogProps> = ({
     </>
   );
 
-  if (isDesktop) {
-    return (
-      <AlertDialog open={open} onOpenChange={onOpenChange}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
-            <AlertDialogDescription>{description}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>{actions}</AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  }
-
+  // Same centered AlertDialog on every viewport now — see
+  // DeletePurchaseDialog for why.
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>{title}</DrawerTitle>
-          <DrawerDescription>{description}</DrawerDescription>
-        </DrawerHeader>
-        <DrawerFooter className="flex-row justify-end gap-2">
-          {actions}
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="w-[calc(100%-2rem)] max-w-[380px] max-h-[85vh] overflow-y-auto rounded-lg">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>{actions}</AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

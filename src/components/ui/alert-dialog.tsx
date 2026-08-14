@@ -65,7 +65,11 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      // gap-2 instead of sm:space-x-2 — space-x only applied once stacked
+      // buttons became a row (sm:flex-row), leaving them touching with no
+      // gap while stacked (flex-col-reverse) on mobile, which is now
+      // Delete*Dialog's only layout below the sm breakpoint.
+      "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
       className
     )}
     {...props}
